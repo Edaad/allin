@@ -1,0 +1,101 @@
+.container {
+    margin-top: 143px;
+    margin-right: 120px;
+    margin-left: 120px;
+}
+
+.form-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    font-family: 'Outfit';
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 45%;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0px 12px 15px rgba(0, 0, 0, 0.1);
+}
+
+.form .input {
+    font-size: 20px;
+}
+
+.form .input-label {
+    font-size: 15px;
+}
+
+.form h1 {
+    font-size: 32px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.access-heading {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 10px;
+}
+
+.access-heading-1 {
+    color: #343434
+}
+
+.access-heading-2 {
+    color: rgb(172, 161, 168);
+}
+
+.submit {
+    font-family: 'Outfit';
+    font-weight: 600;
+    width: 100px;
+    height: 40px;
+    font-size: 15px;
+    padding-bottom: 5px;
+    text-align: center;
+    background: none;
+    border: solid 2px;
+    border-color: rgb(53, 115, 55);
+    color: rgb(53, 115, 55);
+    transition: background-color 0.5s ease, color 0.5s ease;
+    border-radius: 2px;
+}
+
+.submit:hover {
+    background-color: rgb(53, 115, 55);
+    color: white;
+}
+
+.cancel {
+    background: none;
+    border: none;
+    color: #343434;
+    font-size: 15px;
+    font-weight: 600;
+    margin-left: 15px;
+    font-family: 'Outfit';
+    transition: color 0.5s ease;
+}
+
+.cancel:hover {
+    color: red;
+    transition: color 0.5s ease;
+}
+
+.form-change {
+    margin-top: 15px;
+    font-size: 13px;
+}
+
+.error {
+    font-size: 12px;
+    color: rgb(225, 36, 36);
+}
+
+.buttons {
+    padding-top: 18px;
+}

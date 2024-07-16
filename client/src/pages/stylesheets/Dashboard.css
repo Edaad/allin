@@ -1,0 +1,14 @@
+.dashboard {
+    font-family: 'Outfit', sans-serif;
+}
+
+.dashboard h1 {
+    font-size: 2rem;
+    color: #343434;
+}
+
+.dashboard-heading {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+}

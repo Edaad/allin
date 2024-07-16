@@ -1,0 +1,96 @@
+/* Header */
+.header {
+    display: flex;
+    align-items: center;
+    position: fixed;
+    width: 100%;
+    height: 100px;
+    font-family: 'Outfit', sans-serif;
+    z-index: 2;
+    top: 0;
+    background-color: white;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    margin-left: 120px;
+    cursor: pointer;
+}
+
+.logo-name {
+    display: flex;
+    flex-direction: row;
+    color: #343434;
+    font-size: 40px;
+    margin-left: 5px;
+    font-weight: 700;
+}
+
+.logo {
+    width: 45px;
+    height: 48px;
+}
+
+.nav {
+    display: flex;
+    align-items: center;
+    margin-left: 50px;
+}
+
+.nav-list {
+    list-style: none;
+    display: flex;
+    gap: 15px;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    justify-content: center;
+}
+
+.nav-item {
+    margin: 0;
+    padding: 0;
+}
+
+.nav-link {
+    font-size: 16px;
+    color: #2e2e2e;
+    text-align: center;
+    text-decoration: none;
+    padding: 5px 15px;
+    border-radius: 5px;
+    transition: background-color 0.1s ease;
+}
+
+.nav-link:hover {
+    background-color: #fdfcfc;
+    color: #2e2e2e;
+}
+
+.login-buttons {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    margin-right: 120px;
+    gap: 20px;
+}
+
+.header-signup-button,
+.header-signin-button {
+    font-family: 'Outfit', sans-serif;
+    font-size: 20px;
+    color: #2e2e2e;
+    text-align: center;
+    text-decoration: none;
+    padding: 5px 15px;
+    border-radius: 5px;
+    transition: color 0.1s ease;
+    background: none;
+    border: none;
+}
+
+.header-signup-button:hover,
+.header-signin-button:hover {
+    color: rgb(53, 115, 55);
+}

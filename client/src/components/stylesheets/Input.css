@@ -1,0 +1,44 @@
+/* Input */
+.input-container {
+    display: flex;
+    flex-direction: column;
+    gap: 3.5px;
+    width: 100%;
+}
+
+.input-label {
+    font-size: 12px;
+    font-weight: bold;
+    color: #585858;
+    margin-left: 4.5px;
+}
+
+.input {
+    border: none;
+    outline: none;
+    height: 30px;
+    font-size: 16px;
+    padding-bottom: 5px;
+    padding-left: 4px;
+    border-bottom: 1.5px solid rgb(219, 219, 219);
+    font-family: 'Outfit', sans-serif;
+}
+
+.input:focus {
+    border-bottom: 1.5px solid #585858;
+    transition: 0.5s ease;
+}
+
+.select {
+    border: none;
+    outline: none;
+    height: 35px;
+    font-size: 16px;
+    padding-bottom: 5px;
+    border-bottom: 1.5px solid rgb(219, 219, 219);
+    font-family: 'Outfit', sans-serif;
+}
+
+select:required:invalid {
+    color: rgb(117, 117, 117);
+}

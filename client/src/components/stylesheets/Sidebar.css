@@ -1,0 +1,71 @@
+.sidebar-container {
+    display: flex;
+    flex-direction: column;
+    width: 200px;
+    background-color: #ffffff;
+    height: 100vh;
+    /* Ensures the sidebar covers the full height of the viewport */
+    padding: 5px 17px;
+    /* Combined padding for horizontal and vertical spacing */
+    position: fixed;
+    top: 0;
+    /* Aligns the sidebar with the top of the viewport */
+    left: 0;
+    /* Ensures the sidebar is aligned to the left of the viewport */
+    transition: width 0.3s ease;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+}
+
+.menu {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.menu-item:hover {
+    background-color: rgb(242, 242, 242);
+}
+
+.menu-item span.title {
+    color: rgb(0, 0, 0);
+    font-size: 14px;
+    margin-left: 10px;
+    opacity: 1;
+    transition: opacity 0.2s ease;
+}
+
+.menu-item.bg-highlight {
+    font-weight: 700;
+}
+
+.signout-button {
+    font-family: 'Outfit';
+    width: 75px;
+    margin-top: auto;
+    margin-bottom: 40px;
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    /* transition: color 0.2s ease font-weight 0.2 ease; */
+    background: none;
+    border: none;
+}
+
+.signout-button:hover {
+    transition: color 0.2s ease, font-weight 0.2s ease;
+    color: red;
+    cursor: pointer;
+    font-weight: 700;
+}
