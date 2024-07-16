@@ -52,7 +52,6 @@ export function SignIn() {
                             <h1 className='access-heading-1'>Time to go all in.</h1>
                             <h1 className='access-heading-2'>Sign in to your allin. account</h1>
                         </div>
-                        {error && <p className='error'>{error}</p>}
                         {success && <p className='success'>{success}</p>}
                         <Input
                             name='email'
@@ -69,6 +68,8 @@ export function SignIn() {
                             placeholder='Enter your password'
                             onChange={onChangeHandler}
                         />
+                        {error && <p className='signin-error'>{error}</p>}
+
 
                         <div className='buttons'>
                             <button className="submit" type='submit'>Sign In</button>

@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const { hashPassword, comparePassword } = require('./utils/hashing');
 
 const app = express();
 app.use(cors()); // Enable all CORS requests
@@ -23,6 +24,21 @@ const userSchema = new mongoose.Schema({
     updated_at: { type: Date, default: Date.now },
 });
 
+userSchema.pre('save', async function (next) {
+    if (this.isModified('password') || this.isNew) {
+        try {
+            this.password = await hashPassword(this.password);
+            next();
+        } catch (err) {
+            next(err);
+        }
+    } else {
+        next();
+    }
+});
+
+const User = mongoose.model('User', userSchema);
+
 const gameSchema = new mongoose.Schema({
     host_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     game_name: { type: String, required: true },
@@ -33,6 +49,8 @@ const gameSchema = new mongoose.Schema({
     updated_at: { type: Date, default: Date.now },
 });
 
+const Game = mongoose.model('Game', gameSchema);
+
 const playerSchema = new mongoose.Schema({
     user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     game_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Game', required: true },
@@ -42,9 +60,6 @@ const playerSchema = new mongoose.Schema({
     updated_at: { type: Date, default: Date.now },
 });
 
-// Define Models
-const User = mongoose.model('User', userSchema);
-const Game = mongoose.model('Game', gameSchema);
 const Player = mongoose.model('Player', playerSchema);
 
 // Route for Sign In
@@ -52,8 +67,8 @@ app.post('/signin', async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        const user = await User.findOne({ email, password });
-        if (user) {
+        const user = await User.findOne({ email });
+        if (user && await comparePassword(password, user.password)) {
             res.status(200).send({ message: 'Sign-in successful', user });
         } else {
             res.status(400).send({ message: 'Invalid email or password' });

@@ -38,19 +38,20 @@
 
 .menu-item span.title {
     color: rgb(0, 0, 0);
-    font-size: 14px;
+    font-size: 16px;
     margin-left: 10px;
     opacity: 1;
     transition: opacity 0.2s ease;
 }
 
 .menu-item.bg-highlight {
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .signout-button {
     font-family: 'Outfit';
-    width: 75px;
+    font-size: 16px;
+    width: 90px;
     margin-top: auto;
     margin-bottom: 40px;
     display: flex;

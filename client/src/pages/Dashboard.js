@@ -8,7 +8,7 @@ export function Dashboard() {
     const [user, setUser] = useState(null);
     const { userId } = useParams();
     const navigate = useNavigate();
-    const [page, setPage] = useState('dashboard');
+    const [page, setPage] = useState('Dashboard');
 
     useEffect(() => {
         const loggedUser = JSON.parse(localStorage.getItem('user'));
@@ -19,7 +19,7 @@ export function Dashboard() {
         }
     }, [userId, navigate]);
 
-    const menus = [{ title: 'Dashboard', page: 'dashboard' }, { title: 'Account', page: 'account' }]
+    const menus = [{ title: 'Dashboard', page: 'Dashboard' }, { title: 'Account', page: 'Account' }]
 
     return (
         <div className="dashboard">

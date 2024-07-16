@@ -42,3 +42,9 @@
 select:required:invalid {
     color: rgb(117, 117, 117);
 }
+
+.error {
+    font-size: 15px;
+    color: rgb(225, 36, 36);
+    margin-left: 4.5px;
+}
