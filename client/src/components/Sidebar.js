@@ -1,10 +1,11 @@
 import React, { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import './stylesheets/Sidebar.css';
 import { minidenticon } from 'minidenticons';
 
-const Sidebar = ({ menus, setPage, page, username }) => {
-    const navigate = useNavigate()
+const Sidebar = ({ menus, page, username }) => {
+    const navigate = useNavigate();
+    const { userId } = useParams();
 
     const signOut = () => {
         localStorage.removeItem('user');
@@ -27,7 +28,7 @@ const Sidebar = ({ menus, setPage, page, username }) => {
                     <li
                         key={index}
                         className={`menu-item ${page === Menu.page ? "bg-highlight" : ""}`}
-                        onClick={() => setPage(Menu.page)}
+                        onClick={() => navigate(`/dashboard/${userId}/${Menu.page}`)}
                     >
                         <span className='title' >{Menu.title}</span>
                     </li>
@@ -36,7 +37,6 @@ const Sidebar = ({ menus, setPage, page, username }) => {
             <button className="signout-button" onClick={signOut}>Sign Out</button>
         </div>
     );
-
 };
 
 export default Sidebar;

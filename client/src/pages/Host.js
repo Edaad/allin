@@ -4,11 +4,11 @@ import './stylesheets/Dashboard.css';
 import '../App.css';
 import Sidebar from '../components/Sidebar';
 
-export function Dashboard() {
+export function Host() {
     const [user, setUser] = useState(null);
     const { userId } = useParams();
     const navigate = useNavigate();
-    const [page, setPage] = useState('overview');
+    const [page, setPage] = useState('host');
 
     useEffect(() => {
         const loggedUser = JSON.parse(localStorage.getItem('user'));
@@ -27,7 +27,7 @@ export function Dashboard() {
         <div className="dashboard">
             {user && <Sidebar menus={menus} setPage={setPage} page={page} username={user.username} />}
             <div className='logged-content-container'>
-                {user ? <div className='dashboard-heading'><h1>Hi</h1> <h1>{user.firstName} {user.lastName}</h1></div> : <h1>Loading...</h1>}
+                {user ? <div className='dashboard-heading'><h1>Host</h1></div> : <h1>Loading...</h1>}
             </div>
         </div>
     );

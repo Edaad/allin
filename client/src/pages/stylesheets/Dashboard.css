@@ -16,3 +16,8 @@
 .dashboard-heading h1 {
     font-weight: 500;
 }
+
+.logged-content-container {
+    margin-left: 280px;
+    margin-right: 45px;
+}

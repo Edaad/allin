@@ -26,7 +26,7 @@ export function SignIn() {
             const userData = { _id, firstName, lastName, username, email };
             localStorage.setItem('user', JSON.stringify(userData)); // Store the filtered user data
 
-            navigate(`/dashboard/${_id}`);
+            navigate(`/dashboard/${_id}/overview`);
         } catch (error) {
             setError(error.response ? error.response.data.message : 'Error signing in');
             setSuccess('');
