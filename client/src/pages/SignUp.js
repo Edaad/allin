@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { useFormik } from 'formik';
 import { signupSchema } from '../schemas';
@@ -10,6 +10,8 @@ import './stylesheets/Access.css';
 export function SignUp() {
     const navigate = useNavigate();
 
+    const [errorMessage, setErrorMessage] = useState('');
+
     const onSubmit = async (values) => {
         const { confirmPassword, ...signupValues } = values; // Exclude confirmPassword
         try {
@@ -18,12 +20,13 @@ export function SignUp() {
             navigate('/');
         } catch (error) {
             console.error('Error signing up user:', error);
+            setErrorMessage(error.response.data.message); // Set error message from the backend
         }
     };
-
     const { values, errors, touched, handleBlur, handleChange, handleSubmit } = useFormik({
         initialValues: {
-            name: '',
+            firstName: '',
+            lastName: '',
             username: '',
             email: '',
             password: '',
@@ -43,17 +46,31 @@ export function SignUp() {
                             <h1 className='access-heading-1'>Ready to go all in?</h1>
                             <h1 className='access-heading-2'>Create your allin. account</h1>
                         </div>
-                        <Input
-                            name='name'
-                            type='text'
-                            label='Name'
-                            placeholder='Enter your full name'
-                            value={values.name}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            error={errors.name}
-                            touched={touched.name}
-                        />
+                        <div className='form-user-names'>
+                            <Input
+                                label="First Name"
+                                type="text"
+                                value={values.firstName}
+                                onChange={handleChange}
+                                id="firstName"
+                                placeholder='Enter your first name'
+                                onBlur={handleBlur}
+                                error={errors.firstName}
+                                touched={touched.firstName}
+                            />
+
+                            <Input
+                                label="Last Name"
+                                type="text"
+                                value={values.lastName}
+                                onChange={handleChange}
+                                id="lastName"
+                                placeholder='Enter your last name'
+                                onBlur={handleBlur}
+                                error={errors.lastName}
+                                touched={touched.lastName}
+                            />
+                        </div>
 
                         <Input
                             name='username'
@@ -103,11 +120,13 @@ export function SignUp() {
                             touched={touched.confirmPassword}
                         />
 
+                        {errorMessage && <div className='submit-error'>{errorMessage}</div>}
+
                         <div className='buttons'>
                             <button className="submit" type='submit'>Sign Up</button>
                             <button className="cancel" type='button' onClick={() => { navigate('/') }}>Cancel</button>
                             <div className='form-change'>
-                                <span>Already have an account? <Link to="/signin">Sign in</Link></span>
+                                <span>Already have an account? <Link to="/signin" style={{ color: "black" }}>Sign in</Link></span>
                             </div>
                         </div>
                     </form>

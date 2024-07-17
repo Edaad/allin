@@ -22,6 +22,17 @@
     margin-top: 20px;
 }
 
+.profile-pic {
+    display: block;
+    border-radius: 4px;
+    width: 30px;
+    height: 30px;
+    background-color: rgb(247, 247, 247);
+    margin-left: 10px;
+    border: solid 0.001px rgb(191, 191, 191);
+    margin-right: 9px;
+}
+
 .menu-item {
     display: flex;
     align-items: center;

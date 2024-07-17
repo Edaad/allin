@@ -1,9 +1,11 @@
+/* Container styles */
 .container {
     margin-top: 113px;
     margin-right: 120px;
     margin-left: 120px;
 }
 
+/* Form container styles */
 .form-container {
     display: flex;
     justify-content: center;
@@ -11,6 +13,7 @@
     font-family: 'Outfit';
 }
 
+/* Form styles */
 .form {
     display: flex;
     flex-direction: column;
@@ -35,6 +38,7 @@
     margin: 0;
 }
 
+/* Access heading styles */
 .access-heading {
     display: flex;
     flex-direction: column;
@@ -42,11 +46,17 @@
 }
 
 .access-heading-1 {
-    color: #343434
+    color: #343434;
 }
 
 .access-heading-2 {
     color: rgb(172, 161, 168);
+}
+
+/* Form user names styles */
+.form-user-names {
+    display: flex;
+    gap: 30px;
 }
 
 .submit {
@@ -83,7 +93,6 @@
 
 .cancel:hover {
     color: red;
-    transition: color 0.5s ease;
 }
 
 .form-change {
@@ -95,8 +104,21 @@
     padding-top: 18px;
 }
 
-.signin-error {
+.submit-error {
     font-size: 15px;
     margin: 0 0 0 4.5px;
     color: red;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .form {
+        width: 90%;
+        padding: 20px;
+    }
+
+    .form-user-names {
+        flex-direction: column;
+        gap: 20px;
+    }
 }

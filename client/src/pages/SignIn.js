@@ -22,8 +22,8 @@ export function SignIn() {
             localStorage.removeItem('user'); // Clear any existing user data
 
             // Extract only necessary fields
-            const { _id, name, username, email } = response.data.user;
-            const userData = { _id, name, username, email };
+            const { _id, firstName, lastName, username, email } = response.data.user;
+            const userData = { _id, firstName, lastName, username, email };
             localStorage.setItem('user', JSON.stringify(userData)); // Store the filtered user data
 
             navigate(`/dashboard/${_id}`);
@@ -68,14 +68,14 @@ export function SignIn() {
                             placeholder='Enter your password'
                             onChange={onChangeHandler}
                         />
-                        {error && <p className='signin-error'>{error}</p>}
+                        {error && <p className='submit-error'>{error}</p>}
 
 
                         <div className='buttons'>
                             <button className="submit" type='submit'>Sign In</button>
                             <button className="cancel" type='button' onClick={() => { navigate('/') }}>Cancel</button>
                             <div className='form-change'>
-                                <span>Don't have an account? <Link to="/signup">Sign up</Link></span>
+                                <span>Don't have an account? <Link to="/signup" style={{ color: "black" }}>Sign up</Link></span>
                             </div>
                         </div>
                     </form>

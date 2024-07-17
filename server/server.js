@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const bcrypt = require('bcrypt');
 const { hashPassword, comparePassword } = require('./utils/hashing');
 
 const app = express();
@@ -16,7 +17,8 @@ mongoose.connect('mongodb+srv://admin:admin@allin.xq3ezsf.mongodb.net/poker', {
 
 // Define Schemas
 const userSchema = new mongoose.Schema({
-    name: { type: String, required: true },
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     email: { type: String, required: true, unique: true },
@@ -74,6 +76,7 @@ app.post('/signin', async (req, res) => {
             res.status(400).send({ message: 'Invalid email or password' });
         }
     } catch (err) {
+        console.error('Error during sign-in:', err);
         res.status(500).send({ message: 'Server error', error: err });
     }
 });
@@ -84,17 +87,31 @@ app.get('/users', async (req, res) => {
         const users = await User.find({});
         res.json(users);
     } catch (err) {
+        console.error('Error fetching users:', err);
         res.status(500).send(err);
     }
 });
 
 app.post('/users', async (req, res) => {
+    const { email, username } = req.body;
+
     try {
+        const existingEmail = await User.findOne({ email });
+        if (existingEmail) {
+            return res.status(400).send({ message: 'Account with this email already exists. Please try signing in.' });
+        }
+
+        const existingUsername = await User.findOne({ username });
+        if (existingUsername) {
+            return res.status(400).send({ message: 'Username already exists. Please choose another username.' });
+        }
+
         const newUser = new User(req.body);
         await newUser.save();
         res.status(201).send(newUser);
     } catch (err) {
-        res.status(400).send(err);
+        console.error('Error creating user:', err);
+        res.status(400).send({ message: 'Error creating user', error: err });
     }
 });
 
@@ -104,6 +121,7 @@ app.get('/games', async (req, res) => {
         const games = await Game.find({});
         res.json(games);
     } catch (err) {
+        console.error('Error fetching games:', err);
         res.status(500).send(err);
     }
 });
@@ -114,6 +132,7 @@ app.post('/games', async (req, res) => {
         await newGame.save();
         res.status(201).send(newGame);
     } catch (err) {
+        console.error('Error creating game:', err);
         res.status(400).send(err);
     }
 });
@@ -124,6 +143,7 @@ app.get('/players', async (req, res) => {
         const players = await Player.find({});
         res.json(players);
     } catch (err) {
+        console.error('Error fetching players:', err);
         res.status(500).send(err);
     }
 });
@@ -134,6 +154,7 @@ app.post('/players', async (req, res) => {
         await newPlayer.save();
         res.status(201).send(newPlayer);
     } catch (err) {
+        console.error('Error creating player:', err);
         res.status(400).send(err);
     }
 });

@@ -12,3 +12,7 @@
     flex-direction: row;
     gap: 5px;
 }
+
+.dashboard-heading h1 {
+    font-weight: 500;
+}
