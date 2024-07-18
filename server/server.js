@@ -5,8 +5,8 @@ const bcrypt = require('bcrypt');
 const { hashPassword, comparePassword } = require('./utils/hashing');
 
 const app = express();
-app.use(cors()); // Enable all CORS requests
-app.use(express.json()); // Middleware to parse JSON requests
+app.use(cors());
+app.use(express.json());
 
 mongoose.connect('mongodb+srv://admin:admin@allin.xq3ezsf.mongodb.net/poker', {
 }).then(() => {
@@ -15,10 +15,11 @@ mongoose.connect('mongodb+srv://admin:admin@allin.xq3ezsf.mongodb.net/poker', {
     console.error('Error connecting to MongoDB:', err);
 });
 
-// Define Schemas
 const userSchema = new mongoose.Schema({
-    firstName: { type: String, required: true },
-    lastName: { type: String, required: true },
+    names: {
+        firstName: { type: String, required: true },
+        lastName: { type: String, required: true },
+    },
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     email: { type: String, required: true, unique: true },
@@ -64,7 +65,6 @@ const playerSchema = new mongoose.Schema({
 
 const Player = mongoose.model('Player', playerSchema);
 
-// Route for Sign In
 app.post('/signin', async (req, res) => {
     const { email, password } = req.body;
 
@@ -81,10 +81,33 @@ app.post('/signin', async (req, res) => {
     }
 });
 
-// Routes for Users
 app.get('/users', async (req, res) => {
+    const { query } = req.query;
     try {
-        const users = await User.find({});
+        let users;
+        if (query) {
+            const searchRegex = new RegExp(query, 'i');
+            users = await User.aggregate([
+                {
+                    $addFields: {
+                        fullName: { $concat: ['$names.firstName', ' ', '$names.lastName'] }
+                    }
+                },
+                {
+                    $match: {
+                        $or: [
+                            { 'names.firstName': searchRegex },
+                            { 'names.lastName': searchRegex },
+                            { username: searchRegex },
+                            { email: searchRegex },
+                            { fullName: searchRegex }
+                        ]
+                    }
+                }
+            ]);
+        } else {
+            users = await User.find({});
+        }
         res.json(users);
     } catch (err) {
         console.error('Error fetching users:', err);
@@ -115,7 +138,6 @@ app.post('/users', async (req, res) => {
     }
 });
 
-// Routes for Games
 app.get('/games', async (req, res) => {
     try {
         const games = await Game.find({});
@@ -137,7 +159,6 @@ app.post('/games', async (req, res) => {
     }
 });
 
-// Routes for Players
 app.get('/players', async (req, res) => {
     try {
         const players = await Player.find({});

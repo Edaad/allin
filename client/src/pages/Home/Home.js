@@ -1,8 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import HeaderComp from '../components/Header';
-import heroImage from '../assets/hero_image.png'; // Ensure the path to your image is correct
-import './stylesheets/Home.css'
+import HeaderComp from '../../components/Header/Header';
+import heroImage from '../../assets/images/hero_image.png'; // Ensure the path to your image is correct
+import './Home.css'
 
 export function Home() {
     const navigate = useNavigate();

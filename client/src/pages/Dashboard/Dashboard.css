@@ -1,5 +1,7 @@
 .dashboard {
     font-family: 'Outfit', sans-serif;
+    height: 100vh;
+    background-color: rgb(253, 253, 253);
 }
 
 .dashboard h1 {

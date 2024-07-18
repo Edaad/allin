@@ -2,28 +2,28 @@
     font-family: 'Outfit', sans-serif;
     padding-top: 100px;
     position: relative;
-    overflow: hidden;
 }
 
 .hero {
     position: relative;
-    padding: 120px;
+    padding: 10vh 120px 120px 120px;
     height: calc(100vh - 100px);
     box-sizing: border-box;
     display: flex;
-    flex-direction: column;
+    gap: 10px;
+    flex-direction: row;
 }
 
 .hero-text {
     display: flex;
     flex-direction: column;
-    gap: 30px;
+    gap: 3vh;
     max-width: 47%;
     z-index: 1;
 }
 
 .hero-main {
-    font-size: 60px;
+    font-size: 8vh;
     font-weight: 700;
     color: #343434;
     margin: 0;
@@ -31,29 +31,29 @@
 }
 
 .hero-secondary {
-    font-size: 24px;
+    font-size: 3vh;
     color: #2e2e2e;
     margin: 0;
 }
 
 .hero-img {
-    position: absolute;
+    position: fixed;
     right: 0;
-    width: 50%;
-    max-height: 130%;
+    width: 90vh;
     z-index: 0;
+    overflow: hidden;
 }
 
 .cta {
     font-family: 'Outfit';
     font-weight: 600;
-    width: 180px;
-    height: 60px;
-    font-size: 22px;
+    width: 20vh;
+    height: 6vh;
+    font-size: 2.3vh;
     padding-bottom: 5px;
     text-align: center;
     background: none;
-    border: solid 3px;
+    border: solid 0.4vh;
     border-color: rgb(53, 115, 55);
     color: rgb(53, 115, 55);
     transition: background-color 0.5s ease, color 0.5s ease;
@@ -63,4 +63,28 @@
 .cta:hover {
     background-color: rgb(53, 115, 55);
     color: white;
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+    .hero {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .hero-text {
+        max-width: 100%;
+    }
+
+    .hero-img {
+        display: none;
+    }
+
+    .hero-main {
+        font-size: 5vh;
+    }
+
+    .hero-secondary {
+        font-size: 2vh;
+    }
 }

@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import './stylesheets/Dashboard.css';
-import '../App.css';
-import Sidebar from '../components/Sidebar';
+import '../Dashboard.css';
+import Sidebar from '../../../components/Sidebar/Sidebar';
 
 export function Overview() {
     const [user, setUser] = useState(null);
@@ -36,7 +35,7 @@ export function Overview() {
         <div className="dashboard">
             {user && <Sidebar menus={menus} page={page} username={user.username} userId={user._id} />}
             <div className='logged-content-container'>
-                {user ? <div className='dashboard-heading'><h1>Hi</h1> <h1>{user.firstName} {user.lastName}</h1></div> : <h1>Loading...</h1>}
+                {user ? <div className='dashboard-heading'><h1>Hi</h1> <h1>{user.names.firstName} {user.names.lastName}</h1></div> : <h1>Loading...</h1>}
                 <div>{/* Add content based on page */}</div>
             </div>
         </div>

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useFormik } from 'formik';
-import { signupSchema } from '../schemas';
-import Input from '../components/Input';
+import { signupSchema } from '../../schemas';
+import Input from '../../components/Input/Input';
 import { Link, useNavigate } from 'react-router-dom';
-import HeaderComp from '../components/Header';
-import './stylesheets/Access.css';
+import HeaderComp from '../../components/Header/Header';
+import './Access.css';
 
 export function SignUp() {
     const navigate = useNavigate();
@@ -13,9 +13,10 @@ export function SignUp() {
     const [errorMessage, setErrorMessage] = useState('');
 
     const onSubmit = async (values) => {
-        const { confirmPassword, ...signupValues } = values; // Exclude confirmPassword
+        const { confirmPassword, firstName, lastName, ...signupValues } = values;
+        const names = { firstName, lastName };
         try {
-            const response = await axios.post('http://localhost:3001/users', signupValues);
+            const response = await axios.post('http://localhost:3001/users', { ...signupValues, names });
             console.log('User signed up successfully:', response.data);
             navigate('/');
         } catch (error) {

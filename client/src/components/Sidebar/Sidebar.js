@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import './stylesheets/Sidebar.css';
+import './Sidebar.css';
 import { minidenticon } from 'minidenticons';
 
 const Sidebar = ({ menus, page, username }) => {

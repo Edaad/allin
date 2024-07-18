@@ -20,7 +20,9 @@
     gap: 20px;
     width: 45%;
     padding: 40px;
+    padding-right: 45px;
     border-radius: 8px;
+    margin-bottom: 20px;
     box-shadow: 0px 12px 15px rgba(0, 0, 0, 0.1);
 }
 
@@ -57,6 +59,11 @@
 .form-user-names {
     display: flex;
     gap: 30px;
+}
+
+.form-user-names .input-container {
+    flex: 1;
+    /* Add this line to make input containers flexible */
 }
 
 .submit {
@@ -115,6 +122,7 @@
     .form {
         width: 90%;
         padding: 20px;
+        padding: 25px;
     }
 
     .form-user-names {

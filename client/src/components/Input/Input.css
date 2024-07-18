@@ -22,6 +22,9 @@
     padding-left: 4px;
     border-bottom: 1.5px solid rgb(219, 219, 219);
     font-family: 'Outfit', sans-serif;
+    width: 100%;
+    background: none;
+    /* Ensure input takes full width */
 }
 
 .input:focus {
@@ -37,6 +40,8 @@
     padding-bottom: 5px;
     border-bottom: 1.5px solid rgb(219, 219, 219);
     font-family: 'Outfit', sans-serif;
+    width: 100%;
+    /* Ensure select takes full width */
 }
 
 select:required:invalid {
@@ -45,6 +50,6 @@ select:required:invalid {
 
 .error {
     font-size: 15px;
-    color: rgb(225, 36, 36);
+    color: red;
     margin-left: 4.5px;
 }

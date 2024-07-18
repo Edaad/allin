@@ -1,13 +1,13 @@
 import './App.css';
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { Home } from './pages/Home';
-import { SignUp } from './pages/SignUp';
-import { SignIn } from './pages/SignIn';
-import { Overview } from './pages/Overview';
-import { Community } from './pages/Community';
+import { Home } from './pages/Home/Home';
+import { SignUp } from './pages/Access/SignUp';
+import { SignIn } from './pages/Access/SignIn';
+import { Overview } from './pages/Dashboard/Overview/Overview';
+import { Community } from './pages/Dashboard/Community/Community';
 import ProtectedRoutes from './utils/ProtectedRoutes';
-import { Host } from './pages/Host';
-import { Bankroll } from './pages/Bankroll';
+import { Host } from './pages/Dashboard/Host/Host';
+import { Bankroll } from './pages/Dashboard/Bankroll/Bankroll';
 
 function App() {
   return (

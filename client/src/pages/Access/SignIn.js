@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Input from '../components/Input';
+import Input from '../../components/Input/Input';
 import axios from 'axios';
-import HeaderComp from '../components/Header';
-import './stylesheets/Access.css';
+import HeaderComp from '../../components/Header/Header';
+import './Access.css';
 
 export function SignIn() {
     const navigate = useNavigate();
@@ -22,8 +22,8 @@ export function SignIn() {
             localStorage.removeItem('user'); // Clear any existing user data
 
             // Extract only necessary fields
-            const { _id, firstName, lastName, username, email } = response.data.user;
-            const userData = { _id, firstName, lastName, username, email };
+            const { _id, names, username, email } = response.data.user;
+            const userData = { _id, names, username, email };
             localStorage.setItem('user', JSON.stringify(userData)); // Store the filtered user data
 
             navigate(`/dashboard/${_id}/overview`);
