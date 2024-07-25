@@ -30,3 +30,34 @@
     margin-right: 45px;
     padding-bottom: 20px;
 }
+
+.tab-container {
+    margin-left: 0;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: row;
+    text-align: center;
+    gap: 10px;
+}
+
+.tab {
+    font-size: 17px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #9f9f9f;
+    transition: color 0.5s ease, font-weight 0.5s ease;
+}
+
+.tab:hover {
+    color: #343434;
+    font-weight: 500;
+}
+
+.tab-selected {
+    font-size: 17px;
+    background: none;
+    border: none;
+    color: #343434;
+    font-weight: 500;
+}

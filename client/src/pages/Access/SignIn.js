@@ -21,9 +21,9 @@ export function SignIn() {
             setError('');
             localStorage.removeItem('user'); // Clear any existing user data
 
-            // Extract only necessary fields
-            const { _id, names, username, email } = response.data.user;
-            const userData = { _id, names, username, email };
+            // Extract necessary fields, including friends, pendingRequests, and friendRequests
+            const { _id, names, username, email, friends, pendingRequests, friendRequests } = response.data.user;
+            const userData = { _id, names, username, email, friends, pendingRequests, friendRequests };
             localStorage.setItem('user', JSON.stringify(userData)); // Store the filtered user data
 
             navigate(`/dashboard/${_id}/overview`);

@@ -6,6 +6,7 @@ const app = express();
 const userRoutes = require('./routes/userRoutes');
 const gameRoutes = require('./routes/gameRoutes');
 const playerRoutes = require('./routes/playerRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 app.use(cors());
 app.use(express.json());
@@ -20,6 +21,7 @@ mongoose.connect('mongodb+srv://admin:admin@allin.xq3ezsf.mongodb.net/poker', {
 app.use('/', userRoutes);
 app.use('/', gameRoutes);
 app.use('/', playerRoutes);
+app.use('/', authRoutes);
 
 app.listen(3001, () => {
     console.log('Server is running on port 3001');

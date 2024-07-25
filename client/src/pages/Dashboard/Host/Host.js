@@ -78,9 +78,9 @@ export function Host() {
                         </div>
                     </form>
                 </div>}
-                <div className='tab-headers-container'>
-                    <span className={`tab-header${tab === "Upcoming games" ? "-selected" : ""}`} onClick={() => { setTab('Upcoming games') }}>Upcoming games</span>
-                    <span className={`tab-header${tab === "Past games" ? "-selected" : ""}`} onClick={() => { setTab('Past games') }}>Past games</span>
+                <div className='tab-container'>
+                    <span className={`tab${tab === "Upcoming games" ? "-selected" : ""}`} onClick={() => { setTab('Upcoming games') }}>Upcoming games</span>
+                    <span className={`tab${tab === "Past games" ? "-selected" : ""}`} onClick={() => { setTab('Past games') }}>Past games</span>
                 </div>
                 {tab === 'Upcoming games' && <Table headers={headers} data={tableData} shadow />}
                 {tab === 'Past games' && <Table headers={headers} data={tableData} shadow />}

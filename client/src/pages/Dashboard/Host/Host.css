@@ -51,29 +51,3 @@
     font-weight: 600;
     margin: 0;
 }
-
-.tab-headers-container {
-    margin: 20px;
-    margin-left: 0;
-    display: flex;
-    flex-direction: row;
-    gap: 20px;
-    text-align: center;
-}
-
-.tab-header {
-    cursor: pointer;
-    color: #9f9f9f;
-
-    transition: color 0.5s ease, font-weight 0.5s ease;
-}
-
-.tab-header:hover {
-    color: #343434;
-    font-weight: 500;
-}
-
-.tab-header-selected {
-    color: #343434;
-    font-weight: 500;
-}

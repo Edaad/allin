@@ -41,7 +41,8 @@
     font-weight: 500;
 }
 
-.add-button {
+.profile-button {
+    font-family: 'Outfit';
     color: rgb(160, 160, 160);
     font-size: 18px;
     border: none;
@@ -51,12 +52,12 @@
     /* Hide the button by default */
 }
 
-.add-button:hover {
+.profile-button:hover {
     color: #343434;
     font-weight: 500;
 }
 
-.profile-container:hover .add-button {
+.profile-container:hover .profile-button {
     display: inline-block;
     /* Show the button when hovering over the container */
 }
@@ -100,7 +101,7 @@
     margin-right: 17px;
 }
 
-.add-button-compact {
+.profile-button-compact {
     display: none;
 }
 

@@ -13,11 +13,13 @@ export function Overview() {
     const navigate = useNavigate();
     const [page, setPage] = useState(menuItem || 'overview');
     const [data, setData] = useState([]);
+    const [friends, setFriends] = useState([]);
 
     useEffect(() => {
         const loggedUser = JSON.parse(localStorage.getItem('user'));
         if (loggedUser && loggedUser._id === userId) {
             setUser(loggedUser);
+            setFriends(loggedUser.friends); // Set friends from localStorage
         } else {
             navigate('/signin'); // Redirect to sign-in if no user data found or user ID does not match
         }
@@ -83,8 +85,8 @@ export function Overview() {
                                 <div className='summary-link' onClick={() => navigate(`/dashboard/${userId}/community`)}>Community</div>
                             </div>
                             <div className='all-profiles-container'>
-                                {data.filter(item => item._id !== userId).map((item) => (
-                                    <Profile key={item._id} data={item} size={"compact"} />
+                                {friends.map(friend => (
+                                    <Profile key={friend._id} data={friend} size={"compact"} />
                                 ))}
                             </div>
                         </div>
