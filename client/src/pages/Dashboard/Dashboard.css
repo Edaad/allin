@@ -32,8 +32,8 @@
 }
 
 .tab-container {
+    margin: 20px;
     margin-left: 0;
-    margin-bottom: 20px;
     display: flex;
     flex-direction: row;
     text-align: center;

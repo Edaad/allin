@@ -73,7 +73,6 @@ export function Community() {
                     type='text'
                     placeholder='Search for members in the community by their name or username..'
                     onChange={(e) => setQuery(e.target.value)}
-                    style={{ marginBottom: "20px" }}
                 />
                 <div className="tab-container">
                     <button onClick={() => setActiveTab('All')} className={`tab${activeTab === 'All' ? '-selected' : ''}`}>All</button>
