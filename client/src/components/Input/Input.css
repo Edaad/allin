@@ -20,8 +20,8 @@
     font-size: 16px;
     padding-bottom: 5px;
     padding-left: 4px;
+    padding-right: 4px;
     border-bottom: 1.5px solid rgb(219, 219, 219);
-    font-family: 'Outfit', sans-serif;
     width: 100%;
     background: none;
     /* Ensure input takes full width */
@@ -39,7 +39,6 @@
     font-size: 16px;
     padding-bottom: 5px;
     border-bottom: 1.5px solid rgb(219, 219, 219);
-    font-family: 'Outfit', sans-serif;
     width: 100%;
     /* Ensure select takes full width */
 }
@@ -52,4 +51,8 @@ select:required:invalid {
     font-size: 15px;
     color: red;
     margin-left: 4.5px;
+}
+
+.input::placeholder {
+    color: rgb(186, 186, 186);
 }

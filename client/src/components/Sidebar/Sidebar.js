@@ -23,7 +23,7 @@ const Sidebar = ({ menus, page, username }) => {
     return (
         <div className='sidebar-container'>
             <ul className="menu">
-                <div className="menu-item"><MinidenticonImg className="profile-pic" username={username} /><span>{username}</span></div>
+                <div className="menu-item" onClick={() => navigate(`/dashboard/${userId}/account`)}><MinidenticonImg className="profile-pic" username={username} /><span className={`account-username ${page === "account" ? "bg-highlight" : ""}`}>{username}</span></div>
                 {menus.map((Menu, index) => (
                     <li
                         key={index}

@@ -57,6 +57,7 @@ export function Community() {
                     type='text'
                     placeholder='Search for friends in the community by their name, username, or email..'
                     onChange={(e) => setQuery(e.target.value)}
+                    style={{ marginBottom: "20px" }}
                 />
                 <div className='all-profiles-container'>
                     {data.filter(item => item._id !== userId).map((item) => (

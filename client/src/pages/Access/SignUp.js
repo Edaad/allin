@@ -24,6 +24,7 @@ export function SignUp() {
             setErrorMessage(error.response.data.message); // Set error message from the backend
         }
     };
+
     const { values, errors, touched, handleBlur, handleChange, handleSubmit } = useFormik({
         initialValues: {
             firstName: '',

@@ -4,6 +4,15 @@
   font-family: 'Outfit';
 }
 
+body {
+  font-family: 'Outfit';
+}
+
 button {
+  font-family: 'Outfit';
   cursor: pointer;
+}
+
+input {
+  font-family: 'Outfit';
 }

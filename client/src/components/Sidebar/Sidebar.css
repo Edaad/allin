@@ -45,23 +45,35 @@
 
 .menu-item:hover {
     background-color: rgb(242, 242, 242);
+
+}
+
+.menu-item:hover {
+    transition: font-size 0.1s ease;
 }
 
 .menu-item span.title {
     color: rgb(0, 0, 0);
-    font-size: 16px;
+    font-size: 15px;
     margin-left: 10px;
     opacity: 1;
-    transition: opacity 0.2s ease;
+    transition: font-size 0.1s ease, opacity 0.2s ease;
+}
+
+.menu-item:hover span.title {
+    font-size: 16px;
 }
 
 .menu-item.bg-highlight {
     font-weight: 600;
 }
 
+.account-username.bg-highlight {
+    font-weight: 600;
+}
+
 .signout-button {
-    font-family: 'Outfit';
-    font-size: 16px;
+    font-size: 15px;
     width: 90px;
     margin-top: auto;
     margin-bottom: 40px;
@@ -73,10 +85,10 @@
     /* transition: color 0.2s ease font-weight 0.2 ease; */
     background: none;
     border: none;
+    transition: color 0.2s ease, font-weight 0.2s ease;
 }
 
 .signout-button:hover {
-    transition: color 0.2s ease, font-weight 0.2s ease;
     color: red;
     cursor: pointer;
     font-weight: 700;

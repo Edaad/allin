@@ -2,7 +2,9 @@ import React, { useMemo } from "react";
 import './Profile.css';
 import { minidenticon } from 'minidenticons';
 
-const Profile = ({ data }) => {
+const Profile = ({ data, size }) => {
+
+
     if (!data || !data.username) {
         return null;
     }
@@ -16,17 +18,19 @@ const Profile = ({ data }) => {
     }
 
     return (
-        <div className="profile-container">
-            <MinidenticonImg className="profile-picture" username={data.username} />
-            <div className="profile-details-wrapper">
-                <div className="profile-details-container">
-                    <span className="profile-username">{data.username}</span>
-                    <span className="profile-name">{data.names.firstName} {data.names.lastName}</span>
-                    <span className="profile-email">{data.email}</span>
+        <>
+            <div className={`profile-container${size === "compact" ? "-compact" : ""}`}>
+                <MinidenticonImg className={`profile-picture${size === "compact" ? "-compact" : ""}`} username={data.username} />
+                <div className={`profile-details-wrapper${size === "compact" ? "-compact" : ""}`}>
+                    <div className={`profile-details-container${size === "compact" ? "-compact" : ""}`}>
+                        <span className={`profile-username${size === "compact" ? "-compact" : ""}`}>{data.username}</span>
+                        <span className={`profile-name${size === "compact" ? "-compact" : ""}`}>{data.names.firstName} {data.names.lastName}</span>
+                        <span className={`profile-email${size === "compact" ? "-compact" : ""}`}>{data.email}</span>
+                    </div>
+                    <button className={`add-button${size === "compact" ? "-compact" : ""}`}>+ Add Friend</button>
                 </div>
-                <button className="add-button">+ Add Friend</button>
             </div>
-        </div>
+        </>
     );
 };
 

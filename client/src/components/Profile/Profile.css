@@ -42,21 +42,77 @@
 }
 
 .add-button {
-    font-family: 'Outfit';
     color: rgb(160, 160, 160);
     font-size: 18px;
     border: none;
     background: none;
     display: none;
-    transition: color 0.5s ease;
+    transition: color 0.5s ease, font-weight 0.5s ease;
     /* Hide the button by default */
 }
 
 .add-button:hover {
     color: #343434;
+    font-weight: 500;
 }
 
 .profile-container:hover .add-button {
     display: inline-block;
     /* Show the button when hovering over the container */
+}
+
+/* Compact */
+.profile-container-compact {
+    display: flex;
+    flex-direction: row;
+    gap: 0.1rem;
+    padding-left: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-right: 10px;
+    border-radius: 5px;
+}
+
+.profile-container-compact:hover {
+    background-color: rgb(243, 243, 243);
+}
+
+.profile-details-wrapper-compact {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.profile-details-container-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.profile-picture-compact {
+    display: block;
+    border-radius: 5px;
+    width: 2.5rem;
+    height: 2.5rem;
+    background-color: rgb(247, 247, 247);
+    border: solid 0.001px rgb(191, 191, 191);
+    margin-right: 17px;
+}
+
+.add-button-compact {
+    display: none;
+}
+
+.profile-email-compact {
+    display: none;
+}
+
+.profile-username-compact {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.profile-name-compact {
+    font-size: 0.8rem;
 }

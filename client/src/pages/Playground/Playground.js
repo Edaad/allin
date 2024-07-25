@@ -1,30 +1,35 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import '../Dashboard.css';
-import './Host.css'
-import Sidebar from '../../../components/Sidebar/Sidebar';
-import Table from '../../../components/Table/Table';
-import Input from '../../../components/Input/Input';
+import '../Dashboard/Dashboard.css';
+import Sidebar from '../../components/Sidebar/Sidebar';
+import './Playground.css'
+import Table from '../../components/Table/Table';
+import Input from '../../components/Input/Input'
 
-
-export function Host() {
+export function Playground() {
     const [user, setUser] = useState({ username: 'edaadpoker10' });
-    const { userId } = useParams();
+    const { userId, menuItem } = useParams();
     const navigate = useNavigate();
     const [page, setPage] = useState('host');
     const [hosting, setHosting] = useState(false)
     const [tab, setTab] = useState('Upcoming games')
 
-    useEffect(() => {
-        const loggedUser = JSON.parse(localStorage.getItem('user'));
-        if (loggedUser && loggedUser._id === userId) {
-            setUser(loggedUser);
-        } else {
-            navigate('/signin'); // Redirect to sign-in if no user data found or user ID does not match
-        }
-    }, [userId, navigate]);
+    // useEffect(() => {
+    //     const loggedUser = JSON.parse(localStorage.getItem('user'));
+    //     if (loggedUser && loggedUser._id === userId) {
+    //         setUser(loggedUser);
+    //     } else {
+    //         navigate('/signin'); // Redirect to sign-in if no user data found or user ID does not match
+    //     }
+    // }, [userId, navigate]);
 
-    console.log(user);
+    // console.log(user);
+
+    // useEffect(() => {
+    //     setPage(menuItem || 'overview');
+    // }, [menuItem]);
+
+    // console.log(user);
 
     const menus = [{ title: 'Overview', page: 'overview' }, { title: 'Host', page: 'host' }, { title: 'Community', page: 'community' }, { title: 'Bankroll', page: 'bankroll' }];
 

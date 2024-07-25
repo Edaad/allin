@@ -29,6 +29,7 @@ const HeaderComp = ({ links }) => {
             <div className='login-buttons'>
                 <button onClick={() => { navigate('/signin') }} className='header-signin-button'>Sign in</button>
                 <button onClick={() => { navigate('/signup') }} className='header-signup-button'>Create an account</button>
+                <button onClick={() => { navigate('/playground') }} className='header-signup-button'>Playground</button>
             </div>
         </header>
     );

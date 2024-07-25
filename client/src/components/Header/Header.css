@@ -5,7 +5,6 @@
     position: fixed;
     width: 100%;
     height: 100px;
-    font-family: 'Outfit', sans-serif;
     z-index: 2;
     top: 0;
     background-color: white;
@@ -78,7 +77,6 @@
 
 .header-signup-button,
 .header-signin-button {
-    font-family: 'Outfit', sans-serif;
     font-size: 20px;
     color: #2e2e2e;
     text-align: center;

@@ -10,7 +10,6 @@
     display: flex;
     justify-content: center;
     width: 100%;
-    font-family: 'Outfit';
 }
 
 /* Form styles */
@@ -67,12 +66,10 @@
 }
 
 .submit {
-    font-family: 'Outfit';
     font-weight: 600;
     width: 100px;
     height: 40px;
     font-size: 15px;
-    padding-bottom: 5px;
     text-align: center;
     background: none;
     border: solid 2px;
@@ -94,7 +91,6 @@
     font-size: 15px;
     font-weight: 600;
     margin-left: 15px;
-    font-family: 'Outfit';
     transition: color 0.5s ease;
 }
 
