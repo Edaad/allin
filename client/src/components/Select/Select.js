@@ -1,0 +1,28 @@
+import React from 'react';
+import './Select.css';
+
+const Select = ({ name, value, onChange, label, error, touched, options, ...rest }) => {
+    return (
+        <div className='input-container'>
+            <label htmlFor={name} className='input-label'>{label}</label>
+            <select
+                className='select'
+                name={name}
+                id={name}
+                value={value}
+                onChange={onChange}
+                {...rest}
+            >
+                <option value="" disabled>Select an option</option>
+                {options.map((option, index) => (
+                    <option key={index} value={option.value}>
+                        {option.label}
+                    </option>
+                ))}
+            </select>
+            {error && touched && <span className='error'>{error}</span>}
+        </div>
+    );
+};
+
+export default Select;

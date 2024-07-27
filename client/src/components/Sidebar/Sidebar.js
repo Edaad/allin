@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import './Sidebar.css';
 import { minidenticon } from 'minidenticons';
+import icon from '../../assets/images/games.png'
 
 const Sidebar = ({ menus, page, username }) => {
     const navigate = useNavigate();
@@ -30,6 +31,7 @@ const Sidebar = ({ menus, page, username }) => {
                         className={`menu-item ${page === Menu.page ? "bg-highlight" : ""}`}
                         onClick={() => navigate(`/dashboard/${userId}/${Menu.page}`)}
                     >
+                        {/* <img src={icon} alt="Menu Icon" className="menu-item-icon" /> */}
                         <span className='title' >{Menu.title}</span>
                     </li>
                 ))}

@@ -117,3 +117,9 @@
 .profile-name-compact {
     font-size: 0.8rem;
 }
+
+.request-button-container {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}

@@ -5,7 +5,7 @@ import './Host.css'
 import Sidebar from '../../../components/Sidebar/Sidebar';
 import Table from '../../../components/Table/Table';
 import Input from '../../../components/Input/Input';
-
+import Select from '../../../components/Select/Select'
 
 export function Host() {
     const [user, setUser] = useState({ username: 'edaadpoker10' });
@@ -26,7 +26,7 @@ export function Host() {
 
     console.log(user);
 
-    const menus = [{ title: 'Overview', page: 'overview' }, { title: 'Host', page: 'host' }, { title: 'Community', page: 'community' }, { title: 'Bankroll', page: 'bankroll' }];
+    const menus = [{ title: 'Overview', page: 'overview' }, { title: 'Games', page: 'games' }, { title: 'Host', page: 'host' }, { title: 'Community', page: 'community' }, { title: 'Bankroll', page: 'bankroll' }];
 
     // Sample headers
     // Sample data, (bring this data from games table in db)
@@ -48,7 +48,15 @@ export function Host() {
                             name='name'
                             type='text'
                             label='Name'
-                            placeholder="Give your game a name e.g edaadpoker10's poker night"
+                            placeholder={`Give your game a name e.g ${user.username}'s poker night`}
+                        />
+
+
+                        <Input
+                            name='blinds'
+                            type='select'
+                            label='Blinds'
+                            placeholder='Select the game blinds'
                         />
 
                         <Input
@@ -58,18 +66,36 @@ export function Host() {
                             placeholder='Enter the address of your game'
                         />
 
-                        <Input
-                            name='date'
-                            type='text'
-                            label='Date'
-                            placeholder='Enter the date of your game'
-                        />
+                        <div className='input-double'>
+                            <Input
+                                name='date'
+                                type='text'
+                                label='Date'
+                                placeholder='Enter the date of your game'
+                            />
 
-                        <Input
-                            name='time'
-                            type='text'
-                            label='Time'
-                            placeholder='Enter the time of your game'
+                            <Input
+                                name='time'
+                                type='text'
+                                label='Time'
+                                placeholder='Enter the time of your game'
+                            />
+
+                        </div>
+
+                        <Select
+                            name="selector"
+                            label="Selector"
+                            placeholder="Select blinds"
+                            // value={selectorValue}
+                            // onChange={handleSelectorChange}
+                            // onBlur={handleBlur}
+                            // error={errors.selector}
+                            // touched={touched.selector}
+                            options={[
+                                { value: 'option1', label: 'Option 1' },
+                                { value: 'option2', label: 'Option 2' },
+                            ]}
                         />
 
                         <div className='buttons'>

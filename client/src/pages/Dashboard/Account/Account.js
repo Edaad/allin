@@ -3,11 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import '../Dashboard.css';
 import Sidebar from '../../../components/Sidebar/Sidebar';
 
-export function Bankroll() {
+export function Account() {
     const [user, setUser] = useState(null);
     const { userId } = useParams();
     const navigate = useNavigate();
-    const [page, setPage] = useState('bankroll');
+    const [page, setPage] = useState('account');
 
     useEffect(() => {
         const loggedUser = JSON.parse(localStorage.getItem('user'));
@@ -26,7 +26,7 @@ export function Bankroll() {
         <div className="dashboard">
             {user && <Sidebar menus={menus} setPage={setPage} page={page} username={user.username} />}
             <div className='logged-content-container'>
-                {user ? <div className='dashboard-heading'><h1>Bankroll</h1></div> : <h1>Loading...</h1>}
+                {user ? <div className='dashboard-heading'><h1>Account</h1></div> : <h1>Loading...</h1>}
             </div>
         </div>
     );

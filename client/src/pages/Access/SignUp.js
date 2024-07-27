@@ -6,11 +6,13 @@ import Input from '../../components/Input/Input';
 import { Link, useNavigate } from 'react-router-dom';
 import HeaderComp from '../../components/Header/Header';
 import './Access.css';
+import '../Dashboard/Host/Host.css'
 
 export function SignUp() {
     const navigate = useNavigate();
 
     const [errorMessage, setErrorMessage] = useState('');
+    const [success, setSuccess] = useState(false)
 
     const onSubmit = async (values) => {
         const { confirmPassword, firstName, lastName, ...signupValues } = values;
@@ -18,6 +20,7 @@ export function SignUp() {
         try {
             const response = await axios.post('http://localhost:3001/signup', { ...signupValues, names });
             console.log('User signed up successfully:', response.data);
+            setSuccess(true);
             navigate('/');
         } catch (error) {
             console.error('Error signing up user:', error);
@@ -48,7 +51,7 @@ export function SignUp() {
                             <h1 className='access-heading-1'>Ready to go all in?</h1>
                             <h1 className='access-heading-2'>Create your allin. account</h1>
                         </div>
-                        <div className='form-user-names'>
+                        <div className='input-double'>
                             <Input
                                 label="First Name"
                                 type="text"

@@ -17,7 +17,10 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
-    width: 45%;
+    width: 100%;
+    /* Ensure the form takes full width */
+    max-width: 600px;
+    /* Optionally, set a max-width for larger screens */
     padding: 40px;
     padding-right: 45px;
     border-radius: 8px;
@@ -55,14 +58,14 @@
 }
 
 /* Form user names styles */
-.form-user-names {
+.input-double {
     display: flex;
     gap: 30px;
 }
 
-.form-user-names .input-container {
+.input-double .input-container {
     flex: 1;
-    /* Add this line to make input containers flexible */
+    /* Ensure input containers are flexible */
 }
 
 .submit {
@@ -118,10 +121,11 @@
     .form {
         width: 90%;
         padding: 20px;
-        padding: 25px;
+        padding-right: 25px;
+        /* Fix padding-right typo */
     }
 
-    .form-user-names {
+    .input-double {
         flex-direction: column;
         gap: 20px;
     }

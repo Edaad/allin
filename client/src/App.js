@@ -8,6 +8,8 @@ import { Community } from './pages/Dashboard/Community/Community';
 import ProtectedRoutes from './utils/ProtectedRoutes';
 import { Host } from './pages/Dashboard/Host/Host';
 import { Bankroll } from './pages/Dashboard/Bankroll/Bankroll';
+import { Games } from './pages/Dashboard/Games/Games';
+import { Account } from './pages/Dashboard/Account/Account';
 
 function App() {
   return (
@@ -18,7 +20,9 @@ function App() {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/signin" element={<SignIn />} />
           <Route element={<ProtectedRoutes />}>
+            <Route path="/dashboard/:userId/Account" element={<Account />} />
             <Route path="/dashboard/:userId/overview" element={<Overview />} />
+            <Route path="/dashboard/:userId/games" element={<Games />} />
             <Route path="/dashboard/:userId/host" element={<Host />} />
             <Route path="/dashboard/:userId/community" element={<Community />} />
             <Route path="/dashboard/:userId/bankroll" element={<Bankroll />} />

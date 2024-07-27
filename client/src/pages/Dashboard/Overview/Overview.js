@@ -43,6 +43,7 @@ export function Overview() {
 
     const menus = [
         { title: 'Overview', page: 'overview' },
+        { title: 'Games', page: 'games' },
         { title: 'Host', page: 'host' },
         { title: 'Community', page: 'community' },
         { title: 'Bankroll', page: 'bankroll' }
@@ -74,7 +75,7 @@ export function Overview() {
                             <div className='summary-header'>
                                 <h2>Upcoming Games</h2>
                                 <div className='summary-header-divider'></div>
-                                <div className='summary-link' onClick={() => navigate(`/dashboard/${userId}/host`)}>Games</div>
+                                <div className='summary-link' onClick={() => navigate(`/dashboard/${userId}/games`)}>Games</div>
                             </div>
                             <Table headers={headers} data={tableData} compact />
                         </div>

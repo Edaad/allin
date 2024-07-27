@@ -8,7 +8,6 @@ router.post('/send-friend-request', sendFriendRequest);
 router.post('/accept-friend-request', acceptFriendRequest);
 router.post('/reject-friend-request', rejectFriendRequest);
 router.post('/cancel-friend-request', cancelFriendRequest);
-router.post('/signin', signinUser);
 router.get('/users/:id', getUserById);
 router.post('/remove-friend', removeFriend); // Add this line
 

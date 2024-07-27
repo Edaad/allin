@@ -58,10 +58,41 @@ export function Community() {
 
     const menus = [
         { title: 'Overview', page: 'overview' },
+        { title: 'Games', page: 'games' },
         { title: 'Host', page: 'host' },
         { title: 'Community', page: 'community' },
         { title: 'Bankroll', page: 'bankroll' }
     ];
+
+    const getEmptyMessage = () => {
+        switch (activeTab) {
+            case 'Friends':
+                return 'You currently have no friends';
+            case 'PendingRequests':
+                return 'You currently have no pending requests';
+            case 'Invitations':
+                return 'You currently have no invitations';
+            case 'All':
+                return '';
+            default:
+                return '';
+        }
+    };
+
+    const getNoUserFoundMessage = () => {
+        switch (activeTab) {
+            case 'Friends':
+                return 'There are no friends that match your search';
+            case 'PendingRequests':
+                return 'There are no pending requests that match your search';
+            case 'Invitations':
+                return 'There are no invitations that match your search';
+            case 'All':
+                return 'There are no members in the community that match your search';
+            default:
+                return '';
+        }
+    };
 
     return (
         <div className="dashboard">
@@ -81,9 +112,13 @@ export function Community() {
                     <button onClick={() => setActiveTab('Invitations')} className={`tab${activeTab === 'Invitations' ? '-selected' : ''}`}>Invitations</button>
                 </div>
                 <div className='all-profiles-container'>
-                    {data.filter(item => item._id !== user?._id).map((item) => (
-                        <Profile key={item._id} data={item} currentUser={user} refreshData={fetchData} updateUserState={updateUserState} />
-                    ))}
+                    {data.filter(item => item._id !== user?._id).length > 0 ? (
+                        data.filter(item => item._id !== user?._id).map((item) => (
+                            <Profile key={item._id} data={item} currentUser={user} refreshData={fetchData} updateUserState={updateUserState} />
+                        ))
+                    ) : (
+                        <p>{!query && getEmptyMessage()}{query && getNoUserFoundMessage()}</p>
+                    )}
                 </div>
             </div>
         </div>

@@ -68,7 +68,7 @@ const Profile = ({ data, size, currentUser, refreshData, updateUserState }) => {
         }
         if (isFriendRequest) {
             return (
-                <div>
+                <div className="request-button-container">
                     <button onClick={() => handleFriendRequest('accept')} className={`profile-button${size === "compact" ? "-compact" : ""}`}>Accept</button>
                     <button onClick={() => handleFriendRequest('reject')} className={`profile-button${size === "compact" ? "-compact" : ""}`}>Reject</button>
                 </div>

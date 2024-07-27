@@ -13,21 +13,39 @@
     margin-left: 4.5px;
 }
 
-.input {
+.select {
     border: none;
     outline: none;
-    height: 30px;
+    height: 35px;
     font-size: 16px;
     padding-bottom: 5px;
-    padding-left: 4px;
     padding-right: 4px;
     border-bottom: 1.5px solid rgb(219, 219, 219);
-    /* width: 100%; */
+    width: 100%;
     background: none;
-    /* Ensure input takes full width */
+    /* color: rgb(117, 117, 117); */
+    /* Ensure select takes full width */
 }
 
-.input:focus {
+.select:focus {
     border-bottom: 1.5px solid #585858;
     transition: 0.5s ease;
+}
+
+select:required:invalid {
+    color: rgb(186, 186, 186);
+}
+
+.error {
+    font-size: 15px;
+    color: red;
+    margin-left: 4.5px;
+}
+
+select {
+    font-family: 'Outfit';
+}
+
+select::placeholder {
+    color: rgb(186, 186, 186);
 }

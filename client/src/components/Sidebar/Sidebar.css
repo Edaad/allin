@@ -93,3 +93,8 @@
     cursor: pointer;
     font-weight: 700;
 }
+
+.menu-item-icon {
+    height: 15px;
+    width: 15px;
+}
