@@ -51,3 +51,15 @@
     font-weight: 600;
     margin: 0;
 }
+
+/* Placeholder style for date and time inputs (WebKit browsers) */
+/* .input[type="date"]::placeholder::-webkit-datetime-edit-text,
+.input[type="date"]::placeholder::-webkit-datetime-edit-month-field,
+.input[type="date"]::placeholder::-webkit-datetime-edit-day-field,
+.input[type="date"]::placeholder::-webkit-datetime-edit-year-field,
+.input[type="time"]::placeholder::-webkit-datetime-edit-text,
+.input[type="time"]::placeholder::-webkit-datetime-edit-hour-field,
+.input[type="time"]::placeholder::-webkit-datetime-edit-minute-field,
+.input[type="time"]::placeholder::-webkit-datetime-edit-ampm-field {
+    color: rgb(186, 186, 186);
+} */

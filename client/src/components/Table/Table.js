@@ -1,6 +1,6 @@
 import './Table.css';
 
-const Table = ({ headers, data, excludeUserId, style, shadow, compact }) => {
+const Table = ({ headers, data, onRowClick, excludeUserId, style, shadow, compact }) => {
     return (
         <div
             style={{
@@ -23,7 +23,7 @@ const Table = ({ headers, data, excludeUserId, style, shadow, compact }) => {
                     {data && data
                         // .filter(item => item._id !== excludeUserId) // Exclude the logged-in user if excludeUserId is provided
                         .map((item, rowIndex) => (
-                            <tr key={rowIndex}>
+                            <tr key={rowIndex} onClick={() => onRowClick(item._id)}>
                                 {headers.map((header, colIndex) => (
                                     <td key={colIndex} className={compact ? "td-compact" : ""}>
                                         {item[header.toLowerCase()]} {/* Assuming data keys are lowercased header names */}

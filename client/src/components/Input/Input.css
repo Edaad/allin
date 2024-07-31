@@ -22,12 +22,22 @@
     padding-left: 4px;
     padding-right: 4px;
     border-bottom: 1.5px solid rgb(219, 219, 219);
-    /* width: 100%; */
     background: none;
+    /* width: 100%; */
     /* Ensure input takes full width */
 }
 
 .input:focus {
     border-bottom: 1.5px solid #585858;
     transition: 0.5s ease;
+}
+
+input::placeholder {
+    color: rgb(186, 186, 186);
+}
+
+/* Specific placeholder styling for date and time inputs */
+.input[type="date"]::placeholder,
+.input[type="time"]::placeholder {
+    color: rgb(186, 186, 186);
 }

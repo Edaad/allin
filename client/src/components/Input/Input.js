@@ -1,5 +1,5 @@
 import React from 'react';
-import './Input.css'
+import './Input.css';
 
 const Input = ({ name, type, placeholder, onChange, value, label, error, touched, ...rest }) => {
     return (
@@ -17,9 +17,7 @@ const Input = ({ name, type, placeholder, onChange, value, label, error, touched
                 {...rest}
             />
             {error && touched && <span className='error'>{error}</span>}
-
         </div>
-
     );
 };
 

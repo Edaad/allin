@@ -1,19 +1,19 @@
 import React from 'react';
 import './Select.css';
 
-const Select = ({ name, value, onChange, label, error, touched, options, ...rest }) => {
+const Select = ({ name, placeholder, value, onChange, label, error, touched, options, ...rest }) => {
     return (
         <div className='input-container'>
             <label htmlFor={name} className='input-label'>{label}</label>
             <select
-                className='select'
+                className={`select ${value ? 'has-value' : ''}`}
                 name={name}
                 id={name}
                 value={value}
                 onChange={onChange}
                 {...rest}
             >
-                <option value="" disabled>Select an option</option>
+                <option className="select-placeholder" value="" disabled>{placeholder}</option>
                 {options.map((option, index) => (
                     <option key={index} value={option.value}>
                         {option.label}

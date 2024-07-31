@@ -17,19 +17,24 @@
     border: none;
     outline: none;
     height: 35px;
-    font-size: 16px;
+    font-size: 17px;
     padding-bottom: 5px;
     padding-right: 4px;
     border-bottom: 1.5px solid rgb(219, 219, 219);
     width: 100%;
     background: none;
-    /* color: rgb(117, 117, 117); */
-    /* Ensure select takes full width */
+    color: rgb(186, 186, 186);
+    /* Default color for placeholder */
 }
 
 .select:focus {
     border-bottom: 1.5px solid #585858;
-    transition: 0.5s ease;
+    transition: border-bottom 0.5s ease;
+}
+
+.select.has-value {
+    color: #343434;
+    /* Color for selected options */
 }
 
 select:required:invalid {
@@ -46,6 +51,6 @@ select {
     font-family: 'Outfit';
 }
 
-select::placeholder {
+.select-placeholder {
     color: rgb(186, 186, 186);
 }
