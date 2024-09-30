@@ -128,7 +128,6 @@
     border-radius: 2px;
     padding: 11px;
     transition: background-color 0.5s ease, color 0.5s ease;
-    /* width: 90px; */
 }
 
 .game-dashboard .buttons .edit:hover {

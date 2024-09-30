@@ -134,7 +134,7 @@ export function Games() {
                 </div>
                 {tab === 'Invitations' ? (
                     invitations.length > 0 ? (
-                        <table className="invitations-table">
+                        <table className="table-container">
                             <thead>
                                 <tr>
                                     {headers.map((header, index) => (
@@ -153,7 +153,7 @@ export function Games() {
                                             <td>{invitation.location}</td>
                                             <td>{new Date(invitation.game_date).toLocaleString()}</td>
                                             <td>{invitation.blinds}</td>
-                                            <td>
+                                            <td className='ad-buttons-container'>
                                                 <button
                                                     className="accept-button"
                                                     onClick={() => handleAcceptInvitation(invitation._id)}
