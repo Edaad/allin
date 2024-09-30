@@ -26,6 +26,7 @@ export function GameDashboard() {
         time: ''
     });
     const [players, setPlayers] = useState([]);
+    const [isHost, setIsHost] = useState(false);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -49,6 +50,13 @@ export function GameDashboard() {
     useEffect(() => {
         fetchGame();
     }, [gameId]);
+
+    useEffect(() => {
+        if (user && game) {
+            // Compare user ID with game's host ID
+            setIsHost(user._id === game.host_id._id);
+        }
+    }, [user, game]);
 
     const fetchGame = async () => {
         try {
@@ -132,6 +140,35 @@ export function GameDashboard() {
             console.error('Error deleting game:', error);
         }
     };
+    const handleRemovePlayer = async (inviteeId) => {
+        try {
+            const data = {
+                gameId: gameId,
+                inviterId: user._id,
+                inviteeId: inviteeId,
+            };
+            await axios.post('http://localhost:3001/players/remove-player', data);
+            fetchPlayers();
+        } catch (error) {
+            console.error('Error removing player:', error);
+        }
+    };
+
+    const handleEdit = () => {
+        if (isHost) {
+            setEditing(true);
+        } else {
+            alert("Only the host can edit this game.");
+        }
+    };
+
+    useEffect(() => {
+        if (editing && !isHost) {
+            setEditing(false);
+            alert("Only the host can edit this game.");
+        }
+    }, [editing, isHost]);
+
 
     const menus = [
         { title: 'Overview', page: 'overview' },
@@ -158,13 +195,13 @@ export function GameDashboard() {
                     <div className='buttons'>
                         {editing ? (
                             <>
-                                <button className="save" onClick={handleUpdate}>Save</button>
-                                <button className="cancel" onClick={() => setEditing(false)}>Cancel</button>
+                                {isHost && <button className="save" onClick={handleUpdate}>Save</button>}
+                                {isHost && <button className="cancel" onClick={() => setEditing(false)}>Cancel</button>}
                             </>
                         ) : (
                             <>
-                                <button className="edit" onClick={() => setEditing(true)}>Edit</button>
-                                <button className="delete" onClick={handleDelete}>Delete</button>
+                                {isHost && <button className="edit" onClick={handleEdit}>Edit</button>}
+                                {isHost && <button className="delete" onClick={handleDelete}>Delete</button>}
                                 <button className="back" onClick={() => navigate(-1)}>Back</button>
                             </>
                         )}

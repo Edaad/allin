@@ -55,6 +55,21 @@ export default function InvitePlayers({ user, gameId, players, fetchPlayers }) {
         }
     };
 
+    const handleRemovePlayer = async (inviteeId) => {
+        try {
+            const data = {
+                gameId: gameId,
+                inviterId: user._id,
+                inviteeId: inviteeId,
+            };
+            await axios.post('http://localhost:3001/players/remove-player', data);
+            fetchPlayers();
+        } catch (error) {
+            console.error('Error removing player:', error);
+            setError('Failed to remove player.');
+        }
+    };
+
     return (
         <div className="invite-players-container">
             {error && <p className="error-message">{error}</p>}
@@ -105,7 +120,12 @@ export default function InvitePlayers({ user, gameId, players, fetchPlayers }) {
                     .filter(player => player.invitation_status === 'accepted')
                     .map(player => (
                         <li key={player._id} className="accepted-item">
-                            <Profile data={player.user_id} size="compact" />
+                            <Profile
+                                data={player.user_id}
+                                size="compact"
+                                action="removePlayer"
+                                onAction={() => handleRemovePlayer(player.user_id._id)}
+                            />
                         </li>
                     ))}
             </ul>

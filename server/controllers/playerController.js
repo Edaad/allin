@@ -186,6 +186,36 @@ const getInvitationsForPlayer = async (req, res) => {
     }
 };
 
+const removePlayer = async (req, res) => {
+    const { gameId, inviterId, inviteeId } = req.body;
+    try {
+        // Verify that the inviter is the host of the game
+        const game = await Game.findById(gameId);
+        if (!game) {
+            return res.status(404).json({ message: 'Game not found.' });
+        }
+        if (game.host_id.toString() !== inviterId) {
+            return res.status(403).json({ message: 'You are not authorized to remove players from this game.' });
+        }
+
+        // Remove the player from the game
+        const result = await Player.findOneAndDelete({
+            game_id: gameId,
+            user_id: inviteeId,
+            invitation_status: 'accepted',
+        });
+
+        if (!result) {
+            return res.status(404).json({ message: 'Player not found in the game.' });
+        }
+
+        res.status(200).json({ message: 'Player removed from the game.' });
+    } catch (error) {
+        console.error('Error removing player:', error);
+        res.status(500).json({ message: 'Server error.' });
+    }
+};
+
 // Export all controller functions
 module.exports = {
     getPlayers,
@@ -196,4 +226,5 @@ module.exports = {
     acceptInvitation,
     declineInvitation,
     getInvitationsForPlayer,
+    removePlayer,
 };

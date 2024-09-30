@@ -48,18 +48,19 @@ const Profile = ({ data, size, currentUser, refreshData, updateUserState, action
     };
 
     const getButton = () => {
-        // Add back the missing condition
-        if (action === 'cancelInvitation') {
+        // Handle 'cancelInvitation' and 'removePlayer' actions
+        if (action === 'cancelInvitation' || action === 'removePlayer') {
             return (
                 <button
                     onClick={onAction}
                     className={`profile-button${size === "compact" ? "-compact" : ""}`}
                 >
-                    Cancel
+                    {action === 'cancelInvitation' ? 'Cancel' : 'Remove'}
                 </button>
             );
         }
 
+        // Proceed with friend request buttons only if 'currentUser' is provided
         if (!currentUser || !Array.isArray(currentUser.friends) || !Array.isArray(currentUser.pendingRequests) || !Array.isArray(currentUser.friendRequests)) {
             console.log('User data missing or malformed:', currentUser);
             return null;  // Avoid errors if properties are undefined
