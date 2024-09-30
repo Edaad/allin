@@ -101,7 +101,8 @@ export function Games() {
         { title: 'Bankroll', page: 'bankroll' }
     ];
 
-    const headers = ["Name", "Host", "Location", "Date/Time", "Blinds"];
+    const headers = ["Name", "Host", "Location", "Date", "Time", "Blinds"];
+    const invitationHeaders = ["Name", "Host", "Date", "Time", "Blinds"];
 
     if (!user) {
         return <div>Loading...</div>;
@@ -137,7 +138,7 @@ export function Games() {
                         <table className="table-container">
                             <thead>
                                 <tr>
-                                    {headers.map((header, index) => (
+                                    {invitationHeaders.map((header, index) => (
                                         <th key={index}>{header}</th>
                                     ))}
                                     <th>Actions</th>
@@ -146,31 +147,38 @@ export function Games() {
                             <tbody>
                                 {invitations
                                     .filter(invitation => invitation != null && invitation.host_id != null)
-                                    .map((invitation, rowIndex) => (
-                                        <tr key={rowIndex}>
-                                            <td>{invitation.game_name}</td>
-                                            <td>{invitation.host_id.username}</td>
-                                            <td>{invitation.location}</td>
-                                            <td>{new Date(invitation.game_date).toLocaleString()}</td>
-                                            <td>{invitation.blinds}</td>
-                                            <td className='ad-buttons-container'>
-                                                <button
-                                                    className="accept-button"
-                                                    onClick={() => handleAcceptInvitation(invitation._id)}
-                                                >
-                                                    Accept
-                                                </button>
-                                                <button
-                                                    className="decline-button"
-                                                    onClick={() => handleDeclineInvitation(invitation._id)}
-                                                >
-                                                    Decline
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    .map((invitation, rowIndex) => {
+                                        const gameDate = new Date(invitation.game_date);
+                                        const formattedDate = gameDate.toLocaleDateString();
+                                        const formattedTime = gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                                        return (
+                                            <tr key={rowIndex}>
+                                                <td>{invitation.game_name}</td>
+                                                <td>{invitation.host_id.username}</td>
+                                                <td>{formattedDate}</td>
+                                                <td>{formattedTime}</td>
+                                                <td>{invitation.blinds}</td>
+                                                <td className='ad-buttons-container'>
+                                                    <button
+                                                        className="accept-button"
+                                                        onClick={() => handleAcceptInvitation(invitation._id)}
+                                                    >
+                                                        Accept
+                                                    </button>
+                                                    <button
+                                                        className="decline-button"
+                                                        onClick={() => handleDeclineInvitation(invitation._id)}
+                                                    >
+                                                        Decline
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                             </tbody>
                         </table>
+
                     ) : (
                         <div className="no-games-message">
                             You currently have no game invitations.
@@ -180,17 +188,25 @@ export function Games() {
                     games.length > 0 ? (
                         <Table
                             headers={headers}
-                            data={games.map(game => ({
-                                'name': game.game_name,
-                                'host': game.host_id.username,
-                                'location': game.location,
-                                'date/time': new Date(game.game_date).toLocaleString(),
-                                'blinds': game.blinds,
-                                '_id': game._id
-                            }))}
+                            data={games.map(game => {
+                                const gameDate = new Date(game.game_date);
+                                const formattedDate = gameDate.toLocaleDateString();
+                                const formattedTime = gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                                return {
+                                    'name': game.game_name,
+                                    'host': game.host_id.username,
+                                    'location': game.location,
+                                    'date': formattedDate,
+                                    'time': formattedTime,
+                                    'blinds': game.blinds,
+                                    '_id': game._id
+                                };
+                            })}
                             onRowClick={handleRowClick}
                             shadow
                         />
+
                     ) : (
                         <div className="no-games-message">
                             You currently have no {tab.toLowerCase()}.

@@ -94,7 +94,7 @@ export function Host() {
         { title: 'Bankroll', page: 'bankroll' }
     ];
 
-    const headers = ["Name", "Host", "Location", "Date/Time", "Blinds"];
+    const headers = ["Name", "Host", "Location", "Date", "Time", "Blinds"];
 
     if (!user) {
         return <div>Loading...</div>;
@@ -181,17 +181,25 @@ export function Host() {
                 {games.length > 0 ? (
                     <Table
                         headers={headers}
-                        data={games.map(game => ({
-                            'name': game.game_name,
-                            'host': game.host_id.username,
-                            'location': game.location,
-                            'date/time': new Date(game.game_date).toLocaleString(),
-                            'blinds': game.blinds,
-                            '_id': game._id
-                        }))}
+                        data={games.map(game => {
+                            const gameDate = new Date(game.game_date);
+                            const formattedDate = gameDate.toLocaleDateString();
+                            const formattedTime = gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                            return {
+                                'name': game.game_name,
+                                'host': game.host_id.username,
+                                'location': game.location,
+                                'date': formattedDate,
+                                'time': formattedTime,
+                                'blinds': game.blinds,
+                                '_id': game._id
+                            };
+                        })}
                         onRowClick={handleRowClick}
                         shadow
                     />
+
                 ) : (
                     <div className="no-games-message">
                         You currently have no {tab.toLowerCase()}

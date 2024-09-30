@@ -5,7 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../Dashboard.css';
 import './GameDashboard.css';
-import '../Host/Host.css'; // Import Host.css to apply the styles
+import '../Host/Host.css';
 import Sidebar from '../../../components/Sidebar/Sidebar';
 import Input from '../../../components/Input/Input';
 import Select from '../../../components/Select/Select';
@@ -18,6 +18,8 @@ export function GameDashboard() {
     const navigate = useNavigate();
     const [game, setGame] = useState(null);
     const [editing, setEditing] = useState(false);
+    const [isHost, setIsHost] = useState(false);
+    const [isPlayer, setIsPlayer] = useState(false);
     const [gameForm, setGameForm] = useState({
         name: '',
         blinds: '',
@@ -26,14 +28,12 @@ export function GameDashboard() {
         time: ''
     });
     const [players, setPlayers] = useState([]);
-    const [isHost, setIsHost] = useState(false);
 
     useEffect(() => {
         const fetchUser = async () => {
             try {
                 const loggedUser = JSON.parse(localStorage.getItem('user'));
                 if (loggedUser && loggedUser._id === userId) {
-                    // Fetch user data with friends populated
                     const res = await axios.get(`http://localhost:3001/users/${userId}`);
                     setUser(res.data);
                 } else {
@@ -49,14 +49,8 @@ export function GameDashboard() {
 
     useEffect(() => {
         fetchGame();
-    }, [gameId]);
 
-    useEffect(() => {
-        if (user && game) {
-            // Compare user ID with game's host ID
-            setIsHost(user._id === game.host_id._id);
-        }
-    }, [user, game]);
+    }, [gameId]);
 
     const fetchGame = async () => {
         try {
@@ -92,6 +86,17 @@ export function GameDashboard() {
             console.error('Error fetching game:', error);
         }
     };
+    useEffect(() => {
+        if (user && game) {
+            setIsHost(user._id === game.host_id._id);
+            const isUserPlayer = players.some(
+                (player) =>
+                    player.user_id._id === user._id &&
+                    player.invitation_status === 'accepted'
+            );
+            setIsPlayer(isUserPlayer);
+        }
+    }, [user, game, players]);
 
     const fetchPlayers = async () => {
         try {
@@ -108,19 +113,15 @@ export function GameDashboard() {
     };
 
     const handleUpdate = async (e) => {
-        e.preventDefault(); // Prevent the default form submission behavior
+        e.preventDefault();
         try {
-            // Combine date and time into a single string
             const gameDateTimeString = `${gameForm.date}T${gameForm.time}:00`;
-
-            // Create a Date object from the string
             const gameDateTime = new Date(gameDateTimeString);
 
-            // Prepare the updated game object
             const updatedGame = {
                 game_name: gameForm.name,
                 location: gameForm.location,
-                game_date: gameDateTime, // Send the Date object directly
+                game_date: gameDateTime,
                 blinds: gameForm.blinds
             };
 
@@ -133,24 +134,13 @@ export function GameDashboard() {
     };
 
     const handleDelete = async () => {
+        const confirmDelete = window.confirm("Are you sure you want to delete this game?");
+        if (!confirmDelete) return;
         try {
             await axios.delete(`http://localhost:3001/games/${gameId}`);
             navigate(`/dashboard/${userId}/host`);
         } catch (error) {
             console.error('Error deleting game:', error);
-        }
-    };
-    const handleRemovePlayer = async (inviteeId) => {
-        try {
-            const data = {
-                gameId: gameId,
-                inviterId: user._id,
-                inviteeId: inviteeId,
-            };
-            await axios.post('http://localhost:3001/players/remove-player', data);
-            fetchPlayers();
-        } catch (error) {
-            console.error('Error removing player:', error);
         }
     };
 
@@ -162,13 +152,22 @@ export function GameDashboard() {
         }
     };
 
-    useEffect(() => {
-        if (editing && !isHost) {
-            setEditing(false);
-            alert("Only the host can edit this game.");
-        }
-    }, [editing, isHost]);
+    const handleLeaveGame = async () => {
+        const confirmLeave = window.confirm("Are you sure you want to leave this game?");
+        if (!confirmLeave) return;
 
+        try {
+            const data = {
+                gameId: gameId,
+                inviterId: user._id,
+                inviteeId: user._id,
+            };
+            await axios.post('http://localhost:3001/players/remove-player', data);
+            navigate(`/dashboard/${userId}/games`);
+        } catch (error) {
+            console.error('Error leaving game:', error);
+        }
+    };
 
     const menus = [
         { title: 'Overview', page: 'overview' },
@@ -182,6 +181,10 @@ export function GameDashboard() {
         return <div>Loading...</div>;
     }
 
+
+    const gameDate = new Date(game.game_date);
+    const formattedDate = gameDate.toLocaleDateString();
+    const formattedTime = gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     // Separate players into accepted and pending
     const acceptedPlayers = players.filter(player => player.invitation_status === 'accepted');
     const pendingPlayers = players.filter(player => player.invitation_status === 'pending');
@@ -202,6 +205,9 @@ export function GameDashboard() {
                             <>
                                 {isHost && <button className="edit" onClick={handleEdit}>Edit</button>}
                                 {isHost && <button className="delete" onClick={handleDelete}>Delete</button>}
+                                {!isHost && isPlayer && (
+                                    <button className="leave-game" onClick={handleLeaveGame}>Leave Game</button>
+                                )}
                                 <button className="back" onClick={() => navigate(-1)}>Back</button>
                             </>
                         )}
@@ -262,10 +268,22 @@ export function GameDashboard() {
                             </form>
                         ) : (
                             <div className='game-details'>
-                                <div><strong>Name:</strong> {game.game_name}</div>
-                                <div><strong>Blinds:</strong> {game.blinds}</div>
-                                <div><strong>Location:</strong> {game.location}</div>
-                                <div><strong>Date/Time:</strong> {new Date(game.game_date).toLocaleString()}</div>
+                                <div className='detail-item'>
+                                    <span className='detail-label'>Blinds: </span>
+                                    <span className='detail-value'>{game.blinds}</span>
+                                </div>
+                                <div className='detail-item'>
+                                    <span className='detail-label'>Location: </span>
+                                    <span className='detail-value'>{game.location}</span>
+                                </div>
+                                <div className='detail-item'>
+                                    <span className='detail-label'>Date: </span>
+                                    <span className='detail-value'>{formattedDate}</span>
+                                </div>
+                                <div className='detail-item'>
+                                    <span className='detail-label'>Time: </span>
+                                    <span className='detail-value'>{formattedTime}</span>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -274,12 +292,16 @@ export function GameDashboard() {
                             <h2>Players</h2>
                         </div>
                         {editing ? (
-                            <InvitePlayers
-                                user={user}
-                                gameId={gameId}
-                                players={players}
-                                fetchPlayers={fetchPlayers}
-                            />
+                            isHost ? (
+                                <InvitePlayers
+                                    user={user}
+                                    gameId={gameId}
+                                    players={players}
+                                    fetchPlayers={fetchPlayers}
+                                />
+                            ) : (
+                                <div>You are not authorized to edit players.</div>
+                            )
                         ) : (
                             <div className='players-list'>
                                 {acceptedPlayers.length > 0 ? (
@@ -312,3 +334,5 @@ export function GameDashboard() {
         </div>
     );
 }
+
+export default GameDashboard;

@@ -165,6 +165,24 @@
     /* width: 90px; */
 }
 
+.game-dashboard .buttons .leave-game {
+    background: none;
+    font-size: 15px;
+    font-weight: 600;
+    color: rgb(255, 0, 0);
+    border: solid 2px;
+    border-color: rgb(255, 0, 0);
+    border-radius: 2px;
+    padding: 11px;
+    transition: background-color 0.5s ease, color 0.5s ease;
+    /* width: 90px; */
+}
+
+.game-dashboard .buttons .leave-game:hover {
+    background-color: rgb(255, 0, 0);
+    color: white;
+}
+
 .game-dashboard .buttons .back:hover {
     /* background-color: rgb(255, 0, 0); */
     /* color: white; */
@@ -185,4 +203,8 @@
     .game-dashboard-container .summary-item:nth-child(2) {
         width: unset;
     }
+}
+
+.detail-label {
+    font-weight: 700;
 }
