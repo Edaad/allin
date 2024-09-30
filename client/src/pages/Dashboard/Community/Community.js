@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+// Community.js
+
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Input from '../../../components/Input/Input';
@@ -16,21 +18,31 @@ export function Community() {
     const [data, setData] = useState([]);
     const [activeTab, setActiveTab] = useState('All');
 
+    const latestQuery = useRef('');
+
     const fetchData = async () => {
         if (!user) return; // Ensure user is loaded before fetching data
+
+        const currentQuery = query.length >= 3 ? query : '';
+        latestQuery.current = currentQuery; // Update the latest query
+
         try {
             const res = await axios.get(`http://localhost:3001/users`, {
                 params: {
-                    query: query,
+                    query: currentQuery,
                     tab: activeTab,
                     userId: user._id
                 }
             });
-            setData(res.data);
+            // Only update state if the latest query hasn't changed
+            if (latestQuery.current === currentQuery) {
+                setData(res.data);
+            }
         } catch (error) {
             console.error('Error fetching data:', error);
         }
     };
+
 
     useEffect(() => {
         fetchData();
@@ -44,12 +56,6 @@ export function Community() {
             navigate('/signin');
         }
     }, [userId, navigate]);
-
-    useEffect(() => {
-        if (user) {
-            console.log('User loaded:', user);
-        }
-    }, [user]);
 
     const updateUserState = (updatedUser) => {
         setUser(updatedUser);
@@ -120,7 +126,10 @@ export function Community() {
                         <p>{!query && getEmptyMessage()}{query && getNoUserFoundMessage()}</p>
                     )}
                 </div>
+
             </div>
         </div>
     );
 }
+
+export default Community;

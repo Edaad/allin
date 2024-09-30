@@ -28,37 +28,78 @@ const getUserById = async (req, res) => {
     }
 };
 
+// controllers/userController.js
+
 const getUsers = async (req, res) => {
     const { query, tab, userId } = req.query;
     try {
         let users;
-        const searchRegex = query ? new RegExp(query, 'i') : null;
         const user = await getUserWithFriends(userId);
 
         console.log(`Fetching users for tab: ${tab}, query: ${query}, userId: ${userId}`);
-        console.log('User:', user);
+
+        // Only proceed with searchTerms if query length is at least 3 characters
+        const searchTerms = query && query.length >= 3 ? query.trim().split(/\s+/) : [];
+        const searchRegexes = searchTerms.map(term => new RegExp(term, 'i'));
+
+        // Build the search condition
+        let searchCondition = {};
+
+        if (searchRegexes.length > 0) {
+            searchCondition = {
+                $and: searchRegexes.map(regex => ({
+                    $or: [
+                        { username: regex },
+                        { 'names.firstName': regex },
+                        { 'names.lastName': regex }
+                    ]
+                }))
+            };
+        }
 
         switch (tab) {
             case 'Friends':
-                users = user.friends.filter(u => searchRegex ? u.username.match(searchRegex) || u.names.firstName.match(searchRegex) || u.names.lastName.match(searchRegex) : true);
+                users = user.friends.filter(u => {
+                    if (searchRegexes.length === 0) return true;
+                    return searchRegexes.every(regex =>
+                        regex.test(u.username) ||
+                        regex.test(u.names.firstName) ||
+                        regex.test(u.names.lastName)
+                    );
+                });
                 break;
             case 'PendingRequests':
-                users = user.pendingRequests.filter(u => searchRegex ? u.username.match(searchRegex) || u.names.firstName.match(searchRegex) || u.names.lastName.match(searchRegex) : true);
+                users = user.pendingRequests.filter(u => {
+                    if (searchRegexes.length === 0) return true;
+                    return searchRegexes.every(regex =>
+                        regex.test(u.username) ||
+                        regex.test(u.names.firstName) ||
+                        regex.test(u.names.lastName)
+                    );
+                });
                 break;
             case 'Invitations':
-                users = user.friendRequests.filter(u => searchRegex ? u.username.match(searchRegex) || u.names.firstName.match(searchRegex) || u.names.lastName.match(searchRegex) : true);
+                users = user.friendRequests.filter(u => {
+                    if (searchRegexes.length === 0) return true;
+                    return searchRegexes.every(regex =>
+                        regex.test(u.username) ||
+                        regex.test(u.names.firstName) ||
+                        regex.test(u.names.lastName)
+                    );
+                });
                 break;
             default:
-                users = await User.find({
-                    _id: { $ne: userId },
-                    ...(searchRegex && {
-                        $or: [
-                            { username: searchRegex },
-                            { 'names.firstName': searchRegex },
-                            { 'names.lastName': searchRegex }
-                        ]
-                    })
-                });
+                if (searchRegexes.length > 0) {
+                    users = await User.find({
+                        _id: { $ne: userId },
+                        ...searchCondition
+                    });
+                } else {
+                    // If no search terms, fetch all users except the current user
+                    users = await User.find({
+                        _id: { $ne: userId }
+                    });
+                }
                 break;
         }
 
@@ -69,6 +110,7 @@ const getUsers = async (req, res) => {
         res.status(500).send(err);
     }
 };
+
 
 const createUser = async (req, res) => {
     const { email, username, names, password } = req.body;
