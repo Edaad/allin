@@ -1,11 +1,20 @@
+// controllers/userController.js
+
 const User = require('../models/user');
 const { hashPassword, comparePassword } = require('../utils/hashing');
 
+/**
+ * Fetches a user by ID and populates friends, pendingRequests, and friendRequests.
+ * @param {String} userId - The ID of the user to fetch.
+ * @returns {Object} - The populated user object.
+ */
 const getUserWithFriends = async (userId) => {
     try {
         const user = await User.findById(userId)
-            .populate('friends', '_id')
-            .lean(); // Use lean to get plain JavaScript objects
+            .populate('friends', 'username names email') // Populate friends with necessary fields
+            .populate('pendingRequests', 'username names email') // Populate pendingRequests
+            .populate('friendRequests', 'username names email') // Populate friendRequests
+            .lean(); // Convert to plain JavaScript object for performance
         return user;
     } catch (err) {
         console.error('Error in getUserWithFriends:', err);
@@ -13,7 +22,9 @@ const getUserWithFriends = async (userId) => {
     }
 };
 
-
+/**
+ * Retrieves a user by their ID.
+ */
 const getUserById = async (req, res) => {
     try {
         const user = await getUserWithFriends(req.params.id);
@@ -27,6 +38,9 @@ const getUserById = async (req, res) => {
     }
 };
 
+/**
+ * Fetches users based on query parameters, handling different tabs.
+ */
 const getUsers = async (req, res) => {
     const { query, tab, userId } = req.query;
     try {
@@ -35,9 +49,11 @@ const getUsers = async (req, res) => {
 
         console.log(`Fetching users for tab: ${tab}, query: ${query}, userId: ${userId}`);
 
+        // Parse and create search regexes if query is valid
         const searchTerms = query && query.length >= 3 ? query.trim().split(/\s+/) : [];
         const searchRegexes = searchTerms.map(term => new RegExp(term, 'i'));
 
+        // Build the search condition
         let searchCondition = {};
 
         if (searchRegexes.length > 0) {
@@ -52,7 +68,7 @@ const getUsers = async (req, res) => {
             };
         }
 
-        // Ensure currentUserFriendIds is an array of strings
+        // Convert ObjectIds to strings for comparison
         const currentUserFriendIds = user.friends.map(friend => friend._id.toString());
 
         switch (tab) {
@@ -75,7 +91,7 @@ const getUsers = async (req, res) => {
                 break;
 
             case 'PendingRequests':
-                const pendingRequestIds = user.pendingRequests.map(id => id.toString());
+                const pendingRequestIds = user.pendingRequests.map(id => id._id.toString());
                 users = await User.find({
                     _id: { $in: pendingRequestIds },
                     ...searchCondition
@@ -85,7 +101,7 @@ const getUsers = async (req, res) => {
                 break;
 
             case 'Invitations':
-                const friendRequestIds = user.friendRequests.map(id => id.toString());
+                const friendRequestIds = user.friendRequests.map(id => id._id.toString());
                 users = await User.find({
                     _id: { $in: friendRequestIds },
                     ...searchCondition
@@ -123,9 +139,9 @@ const getUsers = async (req, res) => {
     }
 };
 
-
-
-
+/**
+ * Creates a new user.
+ */
 const createUser = async (req, res) => {
     const { email, username, names, password } = req.body;
     try {
@@ -148,9 +164,28 @@ const createUser = async (req, res) => {
     }
 };
 
+/**
+ * Sends a friend request from userId to friendId.
+ */
 const sendFriendRequest = async (req, res) => {
     const { userId, friendId } = req.body;
     try {
+        // Prevent sending a friend request to oneself
+        if (userId === friendId) {
+            return res.status(400).send({ message: 'Cannot send friend request to yourself.' });
+        }
+
+        // Check if already friends
+        const user = await User.findById(userId).lean();
+        if (user.friends.includes(friendId)) {
+            return res.status(400).send({ message: 'You are already friends with this user.' });
+        }
+
+        // Check if a friend request is already pending
+        if (user.pendingRequests.includes(friendId)) {
+            return res.status(400).send({ message: 'Friend request already sent.' });
+        }
+
         await User.findByIdAndUpdate(friendId, { $addToSet: { friendRequests: userId } });
         await User.findByIdAndUpdate(userId, { $addToSet: { pendingRequests: friendId } });
         res.status(200).send({ message: 'Friend request sent' });
@@ -160,11 +195,21 @@ const sendFriendRequest = async (req, res) => {
     }
 };
 
+/**
+ * Accepts a friend request.
+ */
 const acceptFriendRequest = async (req, res) => {
     const { userId, friendId } = req.body;
     try {
-        await User.findByIdAndUpdate(userId, { $addToSet: { friends: friendId }, $pull: { friendRequests: friendId } });
-        await User.findByIdAndUpdate(friendId, { $addToSet: { friends: userId }, $pull: { pendingRequests: userId } });
+        // Update both users' friends lists
+        await User.findByIdAndUpdate(userId, {
+            $addToSet: { friends: friendId },
+            $pull: { friendRequests: friendId }
+        });
+        await User.findByIdAndUpdate(friendId, {
+            $addToSet: { friends: userId },
+            $pull: { pendingRequests: userId }
+        });
         res.status(200).send({ message: 'Friend request accepted' });
     } catch (err) {
         console.error('Error accepting friend request:', err);
@@ -172,9 +217,13 @@ const acceptFriendRequest = async (req, res) => {
     }
 };
 
+/**
+ * Rejects a friend request.
+ */
 const rejectFriendRequest = async (req, res) => {
     const { userId, friendId } = req.body;
     try {
+        // Remove the friend request from both users
         await User.findByIdAndUpdate(userId, { $pull: { friendRequests: friendId } });
         await User.findByIdAndUpdate(friendId, { $pull: { pendingRequests: userId } });
         res.status(200).send({ message: 'Friend request rejected' });
@@ -184,9 +233,13 @@ const rejectFriendRequest = async (req, res) => {
     }
 };
 
+/**
+ * Cancels a sent friend request.
+ */
 const cancelFriendRequest = async (req, res) => {
     const { userId, friendId } = req.body;
     try {
+        // Remove the pending request from both users
         await User.findByIdAndUpdate(userId, { $pull: { pendingRequests: friendId } });
         await User.findByIdAndUpdate(friendId, { $pull: { friendRequests: userId } });
         res.status(200).send({ message: 'Friend request canceled' });
@@ -196,6 +249,9 @@ const cancelFriendRequest = async (req, res) => {
     }
 };
 
+/**
+ * Signs in a user.
+ */
 const signinUser = async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -214,7 +270,9 @@ const signinUser = async (req, res) => {
     }
 };
 
-
+/**
+ * Removes a friend from both users' friends lists.
+ */
 const removeFriend = async (req, res) => {
     const { userId, friendId } = req.body;
     try {
@@ -236,5 +294,5 @@ module.exports = {
     cancelFriendRequest,
     signinUser,
     getUserById,
-    removeFriend // Add this line
+    removeFriend
 };

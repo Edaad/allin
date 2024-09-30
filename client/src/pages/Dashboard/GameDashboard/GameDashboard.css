@@ -44,7 +44,7 @@
     align-items: center;
 }
 
-.summary-header h2 {
+.game-dashboard-container .summary-header h2 {
     margin: 0;
     font-size: 1.5rem;
 }
