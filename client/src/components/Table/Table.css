@@ -44,3 +44,16 @@ tr:hover {
 .table-container.compact th {
     padding: 8px;
 }
+
+/* src/components/Table/Table.css */
+
+/* Existing styles... */
+
+/* Disable cursor and hover effect on disabled rows */
+.row-disabled {
+    cursor: default;
+}
+
+.row-disabled:hover {
+    background-color: inherit;
+}

@@ -1,3 +1,5 @@
+// models/user.js
+
 const mongoose = require('mongoose');
 const { hashPassword } = require('../utils/hashing');
 

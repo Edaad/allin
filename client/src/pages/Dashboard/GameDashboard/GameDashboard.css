@@ -1,35 +1,189 @@
-.host-form {
-    width: 100%;
+/* GameDashboard.css */
+
+/* Existing styles */
+
+/* Container for the game dashboard content */
+.game-dashboard-container {
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    padding: 30px;
-    padding-right: 35px;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    box-shadow: 0px 4px 7px rgba(0, 0, 0, 0.1);
+    gap: 30px;
 }
 
-.host-form-container {
+/* Adjust layout for non-editing mode */
+.game-dashboard-container {
     display: flex;
-    justify-content: center;
+    flex-direction: row;
+    gap: 30px;
     width: 100%;
 }
 
-.host-form .input-container {
-    gap: 2px;
+/* Summary item styles (similar to Overview page) */
+.summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 30px;
+    box-shadow: 0px 2px 7px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    height: fit-content;
+    overflow: hidden;
 }
 
-.host-form .input {
-    font-size: 17px;
+/* Adjust widths for the summary items */
+.game-dashboard-container .summary-item:nth-child(1) {
+    width: 70%;
 }
 
-.host-form .input-label {
-    font-size: 13px;
+.game-dashboard-container .summary-item:nth-child(2) {
+    width: 30%;
 }
 
-.host-form h1 {
-    font-size: 20px;
-    font-weight: 600;
+/* Summary header styles */
+.summary-header {
+    display: flex;
+    align-items: center;
+}
+
+.summary-header h2 {
     margin: 0;
+    font-size: 1.5rem;
+}
+
+/* Style for the game details */
+.game-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Players item specific styles */
+.players-item .all-profiles-container {
+    margin: 0;
+}
+
+/* Adjust the profile component within the players list */
+.all-profiles-container .profile {
+    margin-bottom: 10px;
+}
+
+/* Adjust the dashboard heading to position buttons to the right */
+.game-dashboard .dashboard-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Buttons at the top right */
+.dashboard-heading .buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.dashboard-heading .buttons button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.dashboard-heading .buttons .delete {
+    background-color: #f44336;
+    color: white;
+}
+
+.dashboard-heading .buttons .back {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+.game-dashboard .dashboard-heading .save {
+    background: none;
+    font-size: 15px;
+    font-weight: 600;
+    color: rgb(53, 115, 55);
+    border: solid 2px;
+    border-color: rgb(53, 115, 55);
+    border-radius: 2px;
+    padding: 11px;
+    transition: background-color 0.5s ease, color 0.5s ease;
+    width: 90px;
+}
+
+.game-dashboard .dashboard-heading .save:hover {
+    background-color: rgb(53, 115, 55);
+    color: white;
+}
+
+.game-dashboard .dashboard-heading .cancel {
+    margin: 0;
+}
+
+.game-dashboard .buttons .edit {
+    background: none;
+    font-size: 15px;
+    font-weight: 600;
+    color: rgb(53, 115, 55);
+    border: solid 2px;
+    border-color: rgb(53, 115, 55);
+    border-radius: 2px;
+    padding: 11px;
+    transition: background-color 0.5s ease, color 0.5s ease;
+    /* width: 90px; */
+}
+
+.game-dashboard .buttons .edit:hover {
+    background-color: rgb(53, 115, 55);
+    color: white;
+}
+
+.game-dashboard .buttons .delete {
+    background: none;
+    font-size: 15px;
+    font-weight: 600;
+    color: rgb(255, 0, 0);
+    border: solid 2px;
+    border-color: rgb(255, 0, 0);
+    border-radius: 2px;
+    padding: 11px;
+    transition: background-color 0.5s ease, color 0.5s ease;
+    /* width: 90px; */
+}
+
+.game-dashboard .buttons .delete:hover {
+    background-color: rgb(255, 0, 0);
+    color: white;
+}
+
+.game-dashboard .buttons .back {
+    background: none;
+    font-size: 15px;
+    font-weight: 500;
+    color: #343434;
+    border: none;
+    border-radius: 2px;
+    padding: 11px;
+    transition: font-weight 0.5s ease;
+    /* width: 90px; */
+}
+
+.game-dashboard .buttons .back:hover {
+    /* background-color: rgb(255, 0, 0); */
+    /* color: white; */
+    font-weight: 700;
+}
+
+.invite-players-list {
+    margin-bottom: 10px;
+}
+
+/* Responsive styles */
+@media (max-width: 1100px) {
+    .game-dashboard-container {
+        flex-direction: column;
+    }
+
+    .game-dashboard-container .summary-item:nth-child(1),
+    .game-dashboard-container .summary-item:nth-child(2) {
+        width: unset;
+    }
 }

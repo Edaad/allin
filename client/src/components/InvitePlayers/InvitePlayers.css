@@ -1,0 +1,114 @@
+/* InvitePlayers.css */
+
+/* Container for the invite players section */
+.invite-players-container {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Style for the headings */
+.invite-players-container h2 {
+    margin-bottom: 10px;
+    font-size: 1.5rem;
+}
+
+/* Error message styling */
+.error-message {
+    color: red;
+    font-weight: bold;
+}
+
+/* List of friends to invite */
+.invite-players-list {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Individual friend item */
+.invite-player-item {
+    display: flex;
+    width: 100%;
+}
+
+.invite-player-item .player-label {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    cursor: pointer;
+    padding: 0;
+    /* Remove padding */
+    margin: 0;
+    /* Remove margin */
+}
+
+.invite-player-item .player-label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    margin-right: 10px;
+    accent-color: rgb(53, 115, 55);
+}
+
+.invite-player-item .player-label .profile-container-compact {
+    flex: 1;
+    width: 100%;
+}
+
+/* Remove spacing between profiles */
+.invite-player-item+.invite-player-item {
+    margin-top: 0;
+}
+
+/* Style for the Send Invitations button */
+.invite-button {
+    background: none;
+    font-size: 15px;
+    font-weight: 600;
+    color: rgb(53, 115, 55);
+    border: solid 2px;
+    border-color: rgb(53, 115, 55);
+    border-radius: 2px;
+    padding: 10px 15px;
+    transition: background-color 0.5s ease, color 0.5s ease;
+    margin-bottom: 10px;
+}
+
+.invite-button:disabled {
+    background-color: #9E9E9E;
+    cursor: not-allowed;
+    padding: 10px 15px;
+    color: rgb(240, 240, 240);
+    border-color: #9E9E9E;
+    /* border: none; */
+    border-radius: 4px;
+}
+
+.invite-button:hover:not(:disabled) {
+    background-color: rgb(53, 115, 55);
+    color: white;
+}
+
+/* Style for the invitation and accepted lists */
+.invitation-list,
+.accepted-list {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 10px;
+    margin-top: 0;
+}
+
+.invitation-item,
+.accepted-item {
+    /* Remove margin to eliminate padding between profiles */
+}
+
+.invitation-item .profile-container-compact,
+.accepted-item .profile-container-compact {
+    width: 100%;
+}
+
+/* Remove spacing between list items */
+.invitation-item+.invitation-item,
+.accepted-item+.accepted-item {
+    margin-top: 0;
+}

@@ -1,9 +1,11 @@
+// Profile.js
+
 import React, { useMemo } from "react";
 import './Profile.css';
 import { minidenticon } from 'minidenticons';
 import axios from 'axios';
 
-const Profile = ({ data, size, currentUser, refreshData, updateUserState }) => {
+const Profile = ({ data, size, currentUser, refreshData, updateUserState, action, onAction }) => {
     if (!data || !data.username) {
         return null;
     }
@@ -26,31 +28,38 @@ const Profile = ({ data, size, currentUser, refreshData, updateUserState }) => {
         }
     };
 
-    const handleFriendRequest = async (action) => {
+    const handleFriendRequest = async (actionType) => {
         try {
-            await axios.post(`http://localhost:3001/${action}-friend-request`, {
+            let endpoint = '';
+            if (actionType === 'remove') {
+                endpoint = 'remove-friend';
+            } else {
+                endpoint = `${actionType}-friend-request`;
+            }
+            await axios.post(`http://localhost:3001/${endpoint}`, {
                 userId: currentUser._id,
                 friendId: data._id
             });
             await updateLocalStorage();
+            if (refreshData) refreshData();
         } catch (error) {
-            console.error(`Error ${action} friend request:`, error);
-        }
-    };
-
-    const handleRemoveFriend = async () => {
-        try {
-            await axios.post(`http://localhost:3001/remove-friend`, {
-                userId: currentUser._id,
-                friendId: data._id
-            });
-            await updateLocalStorage();
-        } catch (error) {
-            console.error('Error removing friend:', error);
+            console.error(`Error ${actionType} friend request:`, error);
         }
     };
 
     const getButton = () => {
+        // Add back the missing condition
+        if (action === 'cancelInvitation') {
+            return (
+                <button
+                    onClick={onAction}
+                    className={`profile-button${size === "compact" ? "-compact" : ""}`}
+                >
+                    Cancel
+                </button>
+            );
+        }
+
         if (!currentUser || !Array.isArray(currentUser.friends) || !Array.isArray(currentUser.pendingRequests) || !Array.isArray(currentUser.friendRequests)) {
             console.log('User data missing or malformed:', currentUser);
             return null;  // Avoid errors if properties are undefined
@@ -61,36 +70,65 @@ const Profile = ({ data, size, currentUser, refreshData, updateUserState }) => {
         const isFriend = currentUser.friends.some(friend => friend._id === data._id);
 
         if (isFriend) {
-            return <button onClick={handleRemoveFriend} className={`profile-button${size === "compact" ? "-compact" : ""}`}>- Remove Friend</button>;
+            return (
+                <button
+                    onClick={() => handleFriendRequest('remove')}
+                    className={`profile-button${size === "compact" ? "-compact" : ""}`}
+                >
+                    - Remove Friend
+                </button>
+            );
         }
         if (isPendingRequest) {
-            return <button onClick={() => handleFriendRequest('cancel')} className={`profile-button${size === "compact" ? "-compact" : ""}`}>Cancel Request</button>;
+            return (
+                <button
+                    onClick={() => handleFriendRequest('cancel')}
+                    className={`profile-button${size === "compact" ? "-compact" : ""}`}
+                >
+                    Cancel Request
+                </button>
+            );
         }
         if (isFriendRequest) {
             return (
                 <div className="request-button-container">
-                    <button onClick={() => handleFriendRequest('accept')} className={`profile-button${size === "compact" ? "-compact" : ""}`}>Accept</button>
-                    <button onClick={() => handleFriendRequest('reject')} className={`profile-button${size === "compact" ? "-compact" : ""}`}>Reject</button>
+                    <button
+                        onClick={() => handleFriendRequest('accept')}
+                        className={`profile-button${size === "compact" ? "-compact" : ""}`}
+                    >
+                        Accept
+                    </button>
+                    <button
+                        onClick={() => handleFriendRequest('reject')}
+                        className={`profile-button${size === "compact" ? "-compact" : ""}`}
+                    >
+                        Reject
+                    </button>
                 </div>
             );
         }
-        return <button onClick={() => handleFriendRequest('send')} className={`profile-button${size === "compact" ? "-compact" : ""}`}>+ Add Friend</button>;
+        return (
+            <button
+                onClick={() => handleFriendRequest('send')}
+                className={`profile-button${size === "compact" ? "-compact" : ""}`}
+            >
+                + Add Friend
+            </button>
+        );
     };
 
     return (
-        <>
-            <div className={`profile-container${size === "compact" ? "-compact" : ""}`}>
-                <MinidenticonImg className={`profile-picture${size === "compact" ? "-compact" : ""}`} username={data.username} />
-                <div className={`profile-details-wrapper${size === "compact" ? "-compact" : ""}`}>
-                    <div className={`profile-details-container${size === "compact" ? "-compact" : ""}`}>
-                        <span className={`profile-username${size === "compact" ? "-compact" : ""}`}>{data.username}</span>
-                        <span className={`profile-name${size === "compact" ? "-compact" : ""}`}>{data.names.firstName} {data.names.lastName}</span>
-                        <span className={`profile-email${size === "compact" ? "-compact" : ""}`}>{data.email}</span>
-                    </div>
-                    {getButton()}
+        <div className={`profile-container${size === "compact" ? "-compact" : ""}`}>
+            <MinidenticonImg className={`profile-picture${size === "compact" ? "-compact" : ""}`} username={data.username} />
+            <div className={`profile-details-wrapper${size === "compact" ? "-compact" : ""}`}>
+                <div className={`profile-details-container${size === "compact" ? "-compact" : ""}`}>
+                    <span className={`profile-username${size === "compact" ? "-compact" : ""}`}>{data.username}</span>
+                    <span className={`profile-name${size === "compact" ? "-compact" : ""}`}>{data.names.firstName} {data.names.lastName}</span>
+                    {size !== "compact" && <span className={`profile-email${size === "compact" ? "-compact" : ""}`}>{data.email}</span>}
                 </div>
+                {getButton()}
             </div>
-        </>
+        </div>
     );
 };
 

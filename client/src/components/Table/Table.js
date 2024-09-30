@@ -1,6 +1,8 @@
+// src/components/Table/Table.js
+
 import './Table.css';
 
-const Table = ({ headers, data, onRowClick, excludeUserId, style, shadow, compact }) => {
+const Table = ({ headers, data, onRowClick, style, shadow, compact, disableRowClick }) => {
     return (
         <div
             style={{
@@ -20,17 +22,21 @@ const Table = ({ headers, data, onRowClick, excludeUserId, style, shadow, compac
                     </tr>
                 </thead>
                 <tbody>
-                    {data && data
-                        // .filter(item => item._id !== excludeUserId) // Exclude the logged-in user if excludeUserId is provided
-                        .map((item, rowIndex) => (
-                            <tr key={rowIndex} onClick={() => onRowClick(item._id)}>
-                                {headers.map((header, colIndex) => (
-                                    <td key={colIndex} className={compact ? "td-compact" : ""}>
-                                        {item[header.toLowerCase()]} {/* Assuming data keys are lowercased header names */}
-                                    </td>
-                                ))}
-                            </tr>
-                        ))}
+                    {data && data.map((item, rowIndex) => (
+                        <tr
+                            key={rowIndex}
+                            onClick={() => {
+                                if (!disableRowClick) onRowClick(item._id);
+                            }}
+                            className={disableRowClick ? 'row-disabled' : ''}
+                        >
+                            {headers.map((header, colIndex) => (
+                                <td key={colIndex} className={compact ? "td-compact" : ""}>
+                                    {item[header.toLowerCase()]}
+                                </td>
+                            ))}
+                        </tr>
+                    ))}
                 </tbody>
             </table>
         </div>

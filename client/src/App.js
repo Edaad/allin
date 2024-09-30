@@ -17,18 +17,24 @@ function App() {
     <div className="App">
       <BrowserRouter>
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/signin" element={<SignIn />} />
+
+          {/* Protected Routes */}
           <Route element={<ProtectedRoutes />}>
-            <Route path="/dashboard/:userId/Account" element={<Account />} />
+            {/* User Dashboard Routes */}
+            <Route path="/dashboard/:userId/account" element={<Account />} />
             <Route path="/dashboard/:userId/overview" element={<Overview />} />
             <Route path="/dashboard/:userId/games" element={<Games />} />
+            <Route path="/dashboard/:userId/games/game/:gameId" element={<GameDashboard />} />
             <Route path="/dashboard/:userId/host" element={<Host />} />
             <Route path="/dashboard/:userId/host/game/:gameId" element={<GameDashboard />} />
+            <Route path="/dashboard/:userId/host/game/:gameId/edit" element={<GameDashboard />} />
             <Route path="/dashboard/:userId/community" element={<Community />} />
             <Route path="/dashboard/:userId/bankroll" element={<Bankroll />} />
-            {/* You can add other specific routes here if needed */}
+            {/* Add other specific routes here if needed */}
           </Route>
         </Routes>
       </BrowserRouter>

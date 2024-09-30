@@ -1,31 +1,22 @@
+/* Profile.css */
+
+/* Regular Profile Container */
 .profile-container {
     display: flex;
     flex-direction: row;
+    align-items: center;
     gap: 0.2rem;
-    padding-left: 20px;
-    padding-top: 20px;
-    padding-bottom: 20px;
-    padding-right: 20px;
+    padding: 20px;
     border-radius: 10px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .profile-container:hover {
     background-color: rgb(243, 243, 243);
 }
 
-.profile-details-wrapper {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-}
-
-.profile-details-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-}
-
+/* Regular Profile Picture */
 .profile-picture {
     display: block;
     border-radius: 10px;
@@ -34,22 +25,71 @@
     background-color: rgb(247, 247, 247);
     border: solid 0.001px rgb(191, 191, 191);
     margin-right: 17px;
+    flex-shrink: 0;
 }
 
+/* Regular Profile Details Wrapper */
+.profile-details-wrapper {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    position: relative;
+}
+
+/* Regular Profile Details Container */
+.profile-details-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    flex: 1;
+    min-width: 0;
+    margin-right: 80px;
+    /* Adjust as needed for button space */
+}
+
+/* Regular Username and Name Styling */
 .profile-username {
     font-size: 1.3rem;
     font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
+.profile-name {
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.profile-email {
+    font-size: 0.9rem;
+    color: gray;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Regular Profile Button */
 .profile-button {
     font-family: 'Outfit';
     color: rgb(160, 160, 160);
-    font-size: 18px;
+    font-size: 1.13rem;
+    /* Set desired font size for regular profiles */
     border: none;
     background: none;
     display: none;
-    transition: color 0.5s ease, font-weight 0.5s ease;
-    /* Hide the button by default */
+    transition: color 0.3s ease, font-weight 0.3s ease;
+    cursor: pointer;
+    position: absolute;
+    right: 0;
+    white-space: nowrap;
+}
+
+/* Show the button when hovering over the regular profile */
+.profile-container:hover .profile-button {
+    display: inline-block;
 }
 
 .profile-button:hover {
@@ -57,40 +97,22 @@
     font-weight: 500;
 }
 
-.profile-container:hover .profile-button {
-    display: inline-block;
-    /* Show the button when hovering over the container */
-}
-
-/* Compact */
+/* Compact Profile Container */
 .profile-container-compact {
     display: flex;
     flex-direction: row;
-    gap: 0.1rem;
-    padding-left: 10px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    padding-right: 10px;
+    align-items: center;
+    padding: 10px;
     border-radius: 5px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .profile-container-compact:hover {
     background-color: rgb(243, 243, 243);
 }
 
-.profile-details-wrapper-compact {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-}
-
-.profile-details-container-compact {
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
-}
-
+/* Compact Profile Picture */
 .profile-picture-compact {
     display: block;
     border-radius: 5px;
@@ -98,28 +120,110 @@
     height: 2.5rem;
     background-color: rgb(247, 247, 247);
     border: solid 0.001px rgb(191, 191, 191);
-    margin-right: 17px;
+    margin-right: 10px;
+    flex-shrink: 0;
 }
 
-.profile-button-compact {
-    display: none;
+/* Compact Profile Details Wrapper */
+.profile-details-wrapper-compact {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    position: relative;
+}
+
+/* Compact Profile Details Container */
+.profile-details-container-compact {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    margin-right: 60px;
+    /* Adjust as needed for button space */
+}
+
+/* Compact Username and Name Styling */
+.profile-username-compact {
+    font-size: 1rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.profile-name-compact {
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .profile-email-compact {
     display: none;
 }
 
-.profile-username-compact {
-    font-size: 1rem;
+/* Compact Profile Button */
+.profile-button-compact {
+    font-family: 'Outfit';
+    color: rgb(160, 160, 160);
+    font-size: 0.8rem;
+    /* Smaller font size for compact profiles */
+    border: none;
+    background: none;
+    display: none;
+    transition: color 0.3s ease, font-weight 0.3s ease;
+    cursor: pointer;
+    position: absolute;
+    right: 0;
+    white-space: nowrap;
+}
+
+/* Show the button when hovering over the compact profile */
+.profile-container-compact:hover .profile-button-compact {
+    display: inline-block;
+}
+
+.profile-button-compact:hover {
+    color: #343434;
     font-weight: 500;
 }
 
-.profile-name-compact {
-    font-size: 0.8rem;
-}
-
+/* Request Button Container */
 .request-button-container {
     display: flex;
     flex-direction: column;
     gap: 5px;
+}
+
+/* Adjustments for action buttons within request-button-container */
+.request-button-container .profile-button,
+.request-button-container .profile-button-compact {
+    position: static;
+    margin-right: 0;
+}
+
+/* Handle Text Overflow */
+.profile-username,
+.profile-username-compact,
+.profile-name,
+.profile-name-compact,
+.profile-email {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 600px) {
+
+    .profile-details-container,
+    .profile-details-container-compact {
+        margin-right: 0;
+    }
+
+    .profile-button,
+    .profile-button-compact {
+        position: static;
+        margin-top: 5px;
+    }
 }

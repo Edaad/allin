@@ -1,3 +1,56 @@
+/* Host.css */
+
+/* Existing styles for the host form */
+.host-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 30px;
+    padding-right: 35px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    box-shadow: 0px 4px 7px rgba(0, 0, 0, 0.1);
+}
+
+/* Styles for the host form when inside the summary-item container */
+.host-form.compact {
+    /* Remove extra padding */
+    box-shadow: none;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    padding: 0;
+}
+
+/* Adjust input fields inside the compact form */
+.host-form.compact .input-label {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.host-form.compact .input {
+    font-size: 16px;
+}
+
+/* Remove the container-specific styles */
+.host-form-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+/* If needed, adjust the styling for buttons inside the form */
+.host-form.compact .buttons {
+    display: none;
+    /* Hide buttons inside the form */
+}
+
 .host-button {
     background: none;
     font-size: 15px;
@@ -15,51 +68,3 @@
     background-color: rgb(53, 115, 55);
     color: white;
 }
-
-.host-form {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    padding: 30px;
-    padding-right: 35px;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    box-shadow: 0px 4px 7px rgba(0, 0, 0, 0.1);
-}
-
-.host-form-container {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-}
-
-.host-form .input-container {
-    gap: 2px;
-}
-
-.host-form .input {
-    font-size: 17px;
-}
-
-.host-form .input-label {
-    font-size: 13px;
-}
-
-.host-form h1 {
-    font-size: 20px;
-    font-weight: 600;
-    margin: 0;
-}
-
-/* Placeholder style for date and time inputs (WebKit browsers) */
-/* .input[type="date"]::placeholder::-webkit-datetime-edit-text,
-.input[type="date"]::placeholder::-webkit-datetime-edit-month-field,
-.input[type="date"]::placeholder::-webkit-datetime-edit-day-field,
-.input[type="date"]::placeholder::-webkit-datetime-edit-year-field,
-.input[type="time"]::placeholder::-webkit-datetime-edit-text,
-.input[type="time"]::placeholder::-webkit-datetime-edit-hour-field,
-.input[type="time"]::placeholder::-webkit-datetime-edit-minute-field,
-.input[type="time"]::placeholder::-webkit-datetime-edit-ampm-field {
-    color: rgb(186, 186, 186);
-} */
