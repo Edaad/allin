@@ -1,6 +1,7 @@
 // Community.js
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { debounce } from 'lodash';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Input from '../../../components/Input/Input';
@@ -18,35 +19,36 @@ export function Community() {
     const [data, setData] = useState([]);
     const [activeTab, setActiveTab] = useState('All');
 
-    const latestQuery = useRef('');
+    const fetchData = useCallback(
+        debounce(async (searchQuery) => {
+            if (!user) return;
 
-    const fetchData = async () => {
-        if (!user) return; // Ensure user is loaded before fetching data
-
-        const currentQuery = query.length >= 3 ? query : '';
-        latestQuery.current = currentQuery; // Update the latest query
-
-        try {
-            const res = await axios.get(`http://localhost:3001/users`, {
-                params: {
-                    query: currentQuery,
-                    tab: activeTab,
-                    userId: user._id
-                }
-            });
-            // Only update state if the latest query hasn't changed
-            if (latestQuery.current === currentQuery) {
+            try {
+                const res = await axios.get(`http://localhost:3001/users`, {
+                    params: {
+                        query: searchQuery.length >= 3 ? searchQuery : '',
+                        tab: activeTab,
+                        userId: user._id,
+                    },
+                });
                 setData(res.data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
             }
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    };
+        }, 200), // Adjust the debounce delay as needed (e.g., 300ms)
+        [user, activeTab]
+    );
 
 
     useEffect(() => {
-        fetchData();
-    }, [query, activeTab, user]);
+        fetchData(query);
+    }, [query, activeTab, user, fetchData]);
+
+    useEffect(() => {
+        return () => {
+            fetchData.cancel();
+        };
+    }, [fetchData]);
 
     useEffect(() => {
         const loggedUser = JSON.parse(localStorage.getItem('user'));

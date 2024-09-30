@@ -118,6 +118,8 @@ const Profile = ({ data, size, currentUser, refreshData, updateUserState, action
         );
     };
 
+    const mutualFriendsCount = data.mutualFriendsCount || 0;
+
     return (
         <div className={`profile-container${size === "compact" ? "-compact" : ""}`}>
             <MinidenticonImg className={`profile-picture${size === "compact" ? "-compact" : ""}`} username={data.username} />
@@ -125,12 +127,18 @@ const Profile = ({ data, size, currentUser, refreshData, updateUserState, action
                 <div className={`profile-details-container${size === "compact" ? "-compact" : ""}`}>
                     <span className={`profile-username${size === "compact" ? "-compact" : ""}`}>{data.username}</span>
                     <span className={`profile-name${size === "compact" ? "-compact" : ""}`}>{data.names.firstName} {data.names.lastName}</span>
-                    {size !== "compact" && <span className={`profile-email${size === "compact" ? "-compact" : ""}`}>{data.email}</span>}
+                    {/* Display the mutual friends count */}
+                    <span className={`profile-mutual-friends${size === "compact" ? "-compact" : ""}`}>
+                        {mutualFriendsCount} Mutual Friend{mutualFriendsCount !== 1 ? 's' : ''}
+                    </span>
                 </div>
                 {getButton()}
             </div>
         </div>
     );
 };
+
+
+
 
 export default Profile;

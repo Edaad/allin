@@ -4,16 +4,15 @@ const { hashPassword, comparePassword } = require('../utils/hashing');
 const getUserWithFriends = async (userId) => {
     try {
         const user = await User.findById(userId)
-            .populate('friends', 'username names email')
-            .populate('pendingRequests', 'username names email')
-            .populate('friendRequests', 'username names email');
-        console.log('getUserWithFriends - user:', user);
+            .populate('friends', '_id')
+            .lean(); // Use lean to get plain JavaScript objects
         return user;
     } catch (err) {
         console.error('Error in getUserWithFriends:', err);
         throw err;
     }
 };
+
 
 const getUserById = async (req, res) => {
     try {
@@ -28,21 +27,17 @@ const getUserById = async (req, res) => {
     }
 };
 
-// controllers/userController.js
-
 const getUsers = async (req, res) => {
     const { query, tab, userId } = req.query;
     try {
-        let users;
+        let users = [];
         const user = await getUserWithFriends(userId);
 
         console.log(`Fetching users for tab: ${tab}, query: ${query}, userId: ${userId}`);
 
-        // Only proceed with searchTerms if query length is at least 3 characters
         const searchTerms = query && query.length >= 3 ? query.trim().split(/\s+/) : [];
         const searchRegexes = searchTerms.map(term => new RegExp(term, 'i'));
 
-        // Build the search condition
         let searchCondition = {};
 
         if (searchRegexes.length > 0) {
@@ -57,59 +52,78 @@ const getUsers = async (req, res) => {
             };
         }
 
+        // Ensure currentUserFriendIds is an array of strings
+        const currentUserFriendIds = user.friends.map(friend => friend._id.toString());
+
         switch (tab) {
+            case 'All':
+                users = await User.find({
+                    _id: { $ne: userId },
+                    ...searchCondition
+                })
+                    .populate('friends', '_id')
+                    .lean();
+                break;
+
             case 'Friends':
-                users = user.friends.filter(u => {
-                    if (searchRegexes.length === 0) return true;
-                    return searchRegexes.every(regex =>
-                        regex.test(u.username) ||
-                        regex.test(u.names.firstName) ||
-                        regex.test(u.names.lastName)
-                    );
-                });
+                users = await User.find({
+                    _id: { $in: currentUserFriendIds },
+                    ...searchCondition
+                })
+                    .populate('friends', '_id')
+                    .lean();
                 break;
+
             case 'PendingRequests':
-                users = user.pendingRequests.filter(u => {
-                    if (searchRegexes.length === 0) return true;
-                    return searchRegexes.every(regex =>
-                        regex.test(u.username) ||
-                        regex.test(u.names.firstName) ||
-                        regex.test(u.names.lastName)
-                    );
-                });
+                const pendingRequestIds = user.pendingRequests.map(id => id.toString());
+                users = await User.find({
+                    _id: { $in: pendingRequestIds },
+                    ...searchCondition
+                })
+                    .populate('friends', '_id')
+                    .lean();
                 break;
+
             case 'Invitations':
-                users = user.friendRequests.filter(u => {
-                    if (searchRegexes.length === 0) return true;
-                    return searchRegexes.every(regex =>
-                        regex.test(u.username) ||
-                        regex.test(u.names.firstName) ||
-                        regex.test(u.names.lastName)
-                    );
-                });
+                const friendRequestIds = user.friendRequests.map(id => id.toString());
+                users = await User.find({
+                    _id: { $in: friendRequestIds },
+                    ...searchCondition
+                })
+                    .populate('friends', '_id')
+                    .lean();
                 break;
+
             default:
-                if (searchRegexes.length > 0) {
-                    users = await User.find({
-                        _id: { $ne: userId },
-                        ...searchCondition
-                    });
-                } else {
-                    // If no search terms, fetch all users except the current user
-                    users = await User.find({
-                        _id: { $ne: userId }
-                    });
-                }
+                users = [];
                 break;
         }
 
-        console.log('Users fetched:', users);
-        res.json(users);
+        console.log('Current User Friend IDs:', currentUserFriendIds);
+
+        // Compute mutual friends
+        const usersWithMutualFriends = users.map(userItem => {
+            const userItemFriendIds = userItem.friends.map(friend => friend._id.toString());
+            const mutualFriends = currentUserFriendIds.filter(id => userItemFriendIds.includes(id));
+            const mutualFriendsCount = mutualFriends.length;
+
+            console.log(`User: ${userItem.username}, Mutual Friends Count: ${mutualFriendsCount}`);
+
+            return {
+                ...userItem,
+                mutualFriendsCount
+            };
+        });
+
+        res.json(usersWithMutualFriends);
+
     } catch (err) {
         console.error('Error fetching users:', err);
         res.status(500).send(err);
     }
 };
+
+
 
 
 const createUser = async (req, res) => {
