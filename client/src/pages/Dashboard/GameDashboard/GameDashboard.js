@@ -25,7 +25,8 @@ export function GameDashboard() {
         blinds: '',
         location: '',
         date: '',
-        time: ''
+        time: '',
+        handed: ''
     });
     const [players, setPlayers] = useState([]);
 
@@ -79,7 +80,9 @@ export function GameDashboard() {
                 blinds: gameData.blinds,
                 location: gameData.location,
                 date: formattedDate,
-                time: formattedTime
+                time: formattedTime,
+                notes: gameData.notes || '',
+                handed: gameData.handed
             });
             fetchPlayers();
         } catch (error) {
@@ -122,7 +125,9 @@ export function GameDashboard() {
                 game_name: gameForm.name,
                 location: gameForm.location,
                 game_date: gameDateTime,
-                blinds: gameForm.blinds
+                blinds: gameForm.blinds,
+                notes: gameForm.notes,
+                handed: gameForm.handed
             };
 
             await axios.put(`http://localhost:3001/games/${gameId}`, updatedGame);
@@ -203,7 +208,7 @@ export function GameDashboard() {
                             </>
                         ) : (
                             <>
-                                {isHost && <button className="edit" onClick={handleEdit}>Edit</button>}
+                                {isHost && <button className="edit" onClick={handleEdit}>Edit & Invite</button>}
                                 {isHost && <button className="delete" onClick={handleDelete}>Delete</button>}
                                 {!isHost && isPlayer && (
                                     <button className="leave-game" onClick={handleLeaveGame}>Leave Game</button>
@@ -228,18 +233,39 @@ export function GameDashboard() {
                                     value={gameForm.name}
                                     onChange={handleInputChange}
                                 />
-                                <Select
-                                    name="blinds"
-                                    label="Blinds"
-                                    placeholder="Select your game blinds"
-                                    value={gameForm.blinds}
-                                    onChange={handleInputChange}
-                                    options={[
-                                        { value: '1/2', label: '$1/$2' },
-                                        { value: '2/5', label: '$2/$5' },
-                                        { value: '5/10', label: '$5/$10' },
-                                    ]}
-                                />
+                                <div className='input-double'>
+                                    <Select
+                                        name="blinds"
+                                        label="Blinds"
+                                        placeholder="Select your game blinds"
+                                        value={gameForm.blinds}
+                                        onChange={handleInputChange}
+                                        options={[
+                                            { value: '1/2', label: '$1/$2' },
+                                            { value: '2/5', label: '$2/$5' },
+                                            { value: '5/10', label: '$5/$10' },
+                                        ]}
+                                    />
+                                    <Select
+                                        name="handed"
+                                        label="Handed"
+                                        placeholder="Select the player max"
+                                        value={gameForm.handed}
+                                        onChange={handleInputChange}
+                                        options={[
+                                            { value: '2', label: '2 max' },
+                                            { value: '3', label: '3 max' },
+                                            { value: '4', label: '4 max' },
+                                            { value: '5', label: '5 max' },
+                                            { value: '6', label: '6 max' },
+                                            { value: '7', label: '7 max' },
+                                            { value: '8', label: '8 max' },
+                                            { value: '9', label: '9 max' },
+                                            { value: '10', label: '10 max' },
+                                        ]}
+                                    />
+                                </div>
+
                                 <Input
                                     name='location'
                                     type='text'
@@ -264,10 +290,25 @@ export function GameDashboard() {
                                         onChange={handleInputChange}
                                     />
                                 </div>
+                                <div className='textarea-container'>
+                                    <label htmlFor='notes' className='input-label'>Notes</label>
+                                    <textarea
+                                        name='notes'
+                                        id='notes'
+                                        rows='5'  // Adjust the rows to control height
+                                        value={gameForm.notes}
+                                        onChange={handleInputChange}
+                                        placeholder='Enter any additional notes about the game...'
+                                    />
+                                </div>
                                 {/* Buttons are now at the top right, so we don't include them here */}
                             </form>
                         ) : (
                             <div className='game-details'>
+                                {isHost && <div className='detail-item'>
+                                    <span className='detail-label'>Handed: </span>
+                                    <span className='detail-value'>{game.handed} max</span>
+                                </div>}
                                 <div className='detail-item'>
                                     <span className='detail-label'>Blinds: </span>
                                     <span className='detail-value'>{game.blinds}</span>
@@ -283,6 +324,10 @@ export function GameDashboard() {
                                 <div className='detail-item'>
                                     <span className='detail-label'>Time: </span>
                                     <span className='detail-value'>{formattedTime}</span>
+                                </div>
+                                <div className='detail-item'>
+                                    <span className='detail-label'>Notes: </span> <br /><br />
+                                    <span className='detail-value notes-value'>{game.notes || 'No notes provided'}</span>
                                 </div>
                             </div>
                         )}
@@ -306,7 +351,6 @@ export function GameDashboard() {
                             <div className='players-list'>
                                 {acceptedPlayers.length > 0 ? (
                                     <>
-                                        <h3>Players</h3>
                                         <div className='all-profiles-container'>
                                             {acceptedPlayers.map(player => (
                                                 <Profile key={player._id} data={player.user_id} size={"compact"} />

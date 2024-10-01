@@ -1,5 +1,5 @@
 .dashboard {
-    height: 100vh;
+    display: flex;
     background-color: rgb(253, 253, 253);
 }
 
@@ -26,6 +26,7 @@
 }
 
 .logged-content-container {
+    flex-grow: 1;
     margin-left: 280px;
     margin-right: 45px;
     padding-bottom: 20px;

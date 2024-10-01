@@ -96,7 +96,7 @@
     color: #333;
 }
 
-.game-dashboard .dashboard-heading .save {
+/* .game-dashboard .dashboard-heading .save {
     background: none;
     font-size: 15px;
     font-weight: 600;
@@ -112,13 +112,14 @@
 .game-dashboard .dashboard-heading .save:hover {
     background-color: rgb(53, 115, 55);
     color: white;
-}
+} */
 
 .game-dashboard .dashboard-heading .cancel {
     margin: 0;
 }
 
-.game-dashboard .buttons .edit {
+.game-dashboard .buttons .edit,
+.game-dashboard .buttons .save {
     background: none;
     font-size: 15px;
     font-weight: 600;
@@ -130,7 +131,8 @@
     transition: background-color 0.5s ease, color 0.5s ease;
 }
 
-.game-dashboard .buttons .edit:hover {
+.game-dashboard .buttons .edit:hover,
+.game-dashboard .buttons .save:hover {
     background-color: rgb(53, 115, 55);
     color: white;
 }
@@ -207,4 +209,11 @@
 
 .detail-label {
     font-weight: 700;
+}
+
+.notes-value {
+    white-space: pre-wrap;
+    /* Preserves line breaks and spaces */
+    word-wrap: break-word;
+    /* Prevents long words from overflowing */
 }

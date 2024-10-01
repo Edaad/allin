@@ -9,6 +9,8 @@ const gameSchema = new mongoose.Schema({
     game_date: { type: Date, required: true },
     game_status: { type: String, enum: ['upcoming', 'completed'], required: true },
     blinds: { type: String, required: true },
+    handed: { type: Number, required: true },
+    notes: { type: String, default: '' },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
 });

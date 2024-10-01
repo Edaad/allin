@@ -41,3 +41,50 @@ input::placeholder {
 .input[type="time"]::placeholder {
     color: rgb(186, 186, 186);
 }
+
+/* Container for the textarea */
+.textarea-container {
+    display: flex;
+    flex-direction: column;
+    gap: 3.5px;
+    width: 100%;
+}
+
+/* Styling for textarea label */
+.textarea-container label {
+    font-size: 12px;
+    font-weight: bold;
+    color: #585858;
+    margin-left: 4.5px;
+}
+
+/* Styling for the textarea itself */
+.textarea-container textarea {
+    border: none;
+    outline: none;
+    font-size: 16px;
+    padding: 5px 4px;
+    border-bottom: 1.5px solid rgb(219, 219, 219);
+    background: none;
+    resize: vertical;
+    /* Allows the user to resize the height but not the width */
+    height: auto;
+    /* Automatic height adjustment based on content */
+    overflow-y: auto;
+    /* Allow scrolling for long content */
+}
+
+.textarea-container textarea:focus {
+    border-bottom: 1.5px solid #585858;
+    transition: 0.5s ease;
+}
+
+.textarea-container textarea::placeholder {
+    color: rgb(186, 186, 186);
+}
+
+textarea,
+textarea::placeholder {
+    font-size: 16px;
+    font-family: 'Outfit';
+}

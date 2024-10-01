@@ -21,7 +21,8 @@ export function Host() {
         blinds: '',
         location: '',
         date: '',
-        time: ''
+        time: '',
+        handed: '',
     };
     const [gameForm, setGameForm] = useState(initialGameFormState);
 
@@ -66,7 +67,8 @@ export function Host() {
                 location: gameForm.location,
                 game_date: `${gameForm.date}T${gameForm.time}:00`,
                 game_status: 'upcoming',
-                blinds: gameForm.blinds
+                blinds: gameForm.blinds,
+                handed: gameForm.handed
             };
             await axios.post('http://localhost:3001/games', newGame);
             setHosting(false);
@@ -121,18 +123,39 @@ export function Host() {
                                 value={gameForm.name}
                                 onChange={handleInputChange}
                             />
-                            <Select
-                                name="blinds"
-                                label="Blinds"
-                                placeholder="Select your game blinds"
-                                value={gameForm.blinds}
-                                onChange={handleInputChange}
-                                options={[
-                                    { value: '1/2', label: '$1/$2' },
-                                    { value: '2/5', label: '$2/$5' },
-                                    { value: '5/10', label: '$5/$10' },
-                                ]}
-                            />
+                            <div className='input-double'>
+                                <Select
+                                    name="blinds"
+                                    label="Blinds"
+                                    placeholder="Select your game blinds"
+                                    value={gameForm.blinds}
+                                    onChange={handleInputChange}
+                                    options={[
+                                        { value: '1/2', label: '$1/$2' },
+                                        { value: '2/5', label: '$2/$5' },
+                                        { value: '5/10', label: '$5/$10' },
+                                    ]}
+                                />
+                                <Select
+                                    name="handed"
+                                    label="Handed"
+                                    placeholder="Select the player max"
+                                    value={gameForm.handed}
+                                    onChange={handleInputChange}
+                                    options={[
+                                        { value: '2', label: '2 max' },
+                                        { value: '3', label: '3 max' },
+                                        { value: '4', label: '4 max' },
+                                        { value: '5', label: '5 max' },
+                                        { value: '6', label: '6 max' },
+                                        { value: '7', label: '7 max' },
+                                        { value: '8', label: '8 max' },
+                                        { value: '9', label: '9 max' },
+                                        { value: '10', label: '10 max' },
+                                    ]}
+                                />
+                            </div>
+
                             <Input
                                 name='location'
                                 type='text'
