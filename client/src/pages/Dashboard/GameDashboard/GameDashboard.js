@@ -173,7 +173,7 @@ export function GameDashboard() {
                 inviteeId: user._id,
             };
             await axios.post(`${process.env.REACT_APP_API_URL}/players/remove-player`, data);
-            navigate(`/ dashboard / ${userId} / games`);
+            navigate(`/dashboard/${userId}/games`);
         } catch (error) {
             console.error('Error leaving game:', error);
         }
