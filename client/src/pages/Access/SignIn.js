@@ -16,7 +16,7 @@ export function SignIn() {
         event.preventDefault();
 
         try {
-            const response = await axios.post('http://localhost:3001/signin', user);
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/signin`, user);
             setSuccess(response.data.message);
             setError('');
             localStorage.removeItem('user'); // Clear any existing user data
@@ -26,7 +26,7 @@ export function SignIn() {
             const userData = { _id, names, username, email, friends, pendingRequests, friendRequests };
             localStorage.setItem('user', JSON.stringify(userData)); // Store the filtered user data
 
-            navigate(`/dashboard/${_id}/overview`);
+            navigate(`/ dashboard / ${_id} / overview`);
         } catch (error) {
             setError(error.response ? error.response.data.message : 'Error signing in');
             setSuccess('');

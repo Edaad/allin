@@ -31,7 +31,7 @@ export default function InvitePlayers({ user, gameId, players, fetchPlayers }) {
                 inviterId: user._id,
                 inviteeIds: inviteeIds,
             };
-            await axios.post('http://localhost:3001/players/send-invitations', data);
+            await axios.post(`${process.env.REACT_APP_API_URL}/players/send-invitations`, data);
             setSelectedFriends([]);
             fetchPlayers();
         } catch (error) {
@@ -47,7 +47,7 @@ export default function InvitePlayers({ user, gameId, players, fetchPlayers }) {
                 inviterId: user._id,
                 inviteeId: inviteeId,
             };
-            await axios.post('http://localhost:3001/players/cancel-invitation', data);
+            await axios.post(`${process.env.REACT_APP_API_URL}/players/cancel-invitation`, data);
             fetchPlayers();
         } catch (error) {
             console.error('Error canceling invitation:', error);
@@ -62,7 +62,7 @@ export default function InvitePlayers({ user, gameId, players, fetchPlayers }) {
                 inviterId: user._id,
                 inviteeId: inviteeId,
             };
-            await axios.post('http://localhost:3001/players/remove-player', data);
+            await axios.post(`${process.env.REACT_APP_API_URL}/players/remove-player`, data);
             fetchPlayers();
         } catch (error) {
             console.error('Error removing player:', error);

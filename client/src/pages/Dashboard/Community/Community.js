@@ -25,7 +25,7 @@ export function Community() {
                 if (!user) return;
 
                 try {
-                    const res = await axios.get(`http://localhost:3001/users`, {
+                    const res = await axios.get(`${process.env.REACT_APP_API_URL}/users`, {
                         params: {
                             query: searchQuery.length >= 3 ? searchQuery : '',
                             tab: activeTab,
