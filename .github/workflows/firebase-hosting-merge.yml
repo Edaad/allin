@@ -26,3 +26,4 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ALL_IN_4CE60 }}
           channelId: live
           projectId: all-in-4ce60
+          entryPoint: client
