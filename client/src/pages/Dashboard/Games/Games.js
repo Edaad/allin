@@ -1,6 +1,6 @@
 // src/pages/Dashboard/Games/Games.js
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../Dashboard.css';
@@ -35,13 +35,9 @@ export function Games() {
         fetchUser();
     }, [userId, navigate]);
 
-    useEffect(() => {
-        if (user) {
-            fetchGames();
-        }
-    }, [tab, user]);
-
-    const fetchGames = async () => {
+    // Wrap fetchGames in useCallback so that its identity is stable and dependencies are explicit.
+    const fetchGames = useCallback(async () => {
+        if (!user) return;
         try {
             if (tab === 'Upcoming Games' || tab === 'Past Games') {
                 const status = tab === 'Upcoming Games' ? 'upcoming' : 'completed';
@@ -56,7 +52,13 @@ export function Games() {
         } catch (error) {
             console.error('Error fetching games:', error);
         }
-    };
+    }, [tab, user]);
+
+    useEffect(() => {
+        if (user) {
+            fetchGames();
+        }
+    }, [user, fetchGames]);
 
     const handleAcceptInvitation = async (gameId) => {
         try {
@@ -178,7 +180,6 @@ export function Games() {
                                     })}
                             </tbody>
                         </table>
-
                     ) : (
                         <div className="no-games-message">
                             You currently have no game invitations.
@@ -206,7 +207,6 @@ export function Games() {
                             onRowClick={handleRowClick}
                             shadow
                         />
-
                     ) : (
                         <div className="no-games-message">
                             You currently have no {tab.toLowerCase()}.

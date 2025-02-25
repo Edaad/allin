@@ -1,6 +1,6 @@
 // Community.js
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { debounce } from 'lodash';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -19,25 +19,27 @@ export function Community() {
     const [data, setData] = useState([]);
     const [activeTab, setActiveTab] = useState('All');
 
-    const fetchData = useCallback(
-        debounce(async (searchQuery) => {
-            if (!user) return;
+    const fetchData = useMemo(
+        () =>
+            debounce(async (searchQuery) => {
+                if (!user) return;
 
-            try {
-                const res = await axios.get(`http://localhost:3001/users`, {
-                    params: {
-                        query: searchQuery.length >= 3 ? searchQuery : '',
-                        tab: activeTab,
-                        userId: user._id,
-                    },
-                });
-                setData(res.data);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        }, 200), // Adjust the debounce delay as needed (e.g., 300ms)
+                try {
+                    const res = await axios.get(`http://localhost:3001/users`, {
+                        params: {
+                            query: searchQuery.length >= 3 ? searchQuery : '',
+                            tab: activeTab,
+                            userId: user._id,
+                        },
+                    });
+                    setData(res.data);
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                }
+            }, 200),
         [user, activeTab]
     );
+
 
 
     useEffect(() => {

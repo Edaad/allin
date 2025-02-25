@@ -14,7 +14,7 @@ export function Overview() {
     const { userId, menuItem } = useParams();
     const navigate = useNavigate();
     const [page, setPage] = useState(menuItem || 'overview');
-    const [data, setData] = useState([]);
+    // const [data, setData] = useState([]);
     const [friends, setFriends] = useState([]);
 
     useEffect(() => {

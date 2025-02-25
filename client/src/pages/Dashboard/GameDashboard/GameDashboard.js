@@ -1,6 +1,4 @@
-// GameDashboard.js
-
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../Dashboard.css';
@@ -26,10 +24,12 @@ export function GameDashboard() {
         location: '',
         date: '',
         time: '',
-        handed: ''
+        handed: '',
+        notes: ''
     });
     const [players, setPlayers] = useState([]);
 
+    // Fetch the user data
     useEffect(() => {
         const fetchUser = async () => {
             try {
@@ -48,12 +48,18 @@ export function GameDashboard() {
         fetchUser();
     }, [userId, navigate]);
 
-    useEffect(() => {
-        fetchGame();
-
+    // Wrap fetchPlayers in useCallback so its dependencies are explicit.
+    const fetchPlayers = useCallback(async () => {
+        try {
+            const res = await axios.get(`http://localhost:3001/players/game/${gameId}`);
+            setPlayers(res.data);
+        } catch (error) {
+            console.error('Error fetching players:', error);
+        }
     }, [gameId]);
 
-    const fetchGame = async () => {
+    // Wrap fetchGame in useCallback. It depends on gameId and fetchPlayers.
+    const fetchGame = useCallback(async () => {
         try {
             const res = await axios.get(`http://localhost:3001/games/${gameId}`);
             const gameData = res.data;
@@ -64,7 +70,7 @@ export function GameDashboard() {
 
             // Extract date components
             const year = gameDate.getFullYear();
-            const month = String(gameDate.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+            const month = String(gameDate.getMonth() + 1).padStart(2, '0');
             const day = String(gameDate.getDate()).padStart(2, '0');
 
             // Extract time components
@@ -84,11 +90,19 @@ export function GameDashboard() {
                 notes: gameData.notes || '',
                 handed: gameData.handed
             });
+            // Fetch players after fetching the game details
             fetchPlayers();
         } catch (error) {
             console.error('Error fetching game:', error);
         }
-    };
+    }, [gameId, fetchPlayers]);
+
+    // Fetch game details when gameId changes
+    useEffect(() => {
+        fetchGame();
+    }, [fetchGame]);
+
+    // Update host/player status when user, game, or players change
     useEffect(() => {
         if (user && game) {
             setIsHost(user._id === game.host_id._id);
@@ -100,15 +114,6 @@ export function GameDashboard() {
             setIsPlayer(isUserPlayer);
         }
     }, [user, game, players]);
-
-    const fetchPlayers = async () => {
-        try {
-            const res = await axios.get(`http://localhost:3001/players/game/${gameId}`);
-            setPlayers(res.data);
-        } catch (error) {
-            console.error('Error fetching players:', error);
-        }
-    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -186,10 +191,10 @@ export function GameDashboard() {
         return <div>Loading...</div>;
     }
 
-
     const gameDate = new Date(game.game_date);
     const formattedDate = gameDate.toLocaleDateString();
     const formattedTime = gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
     // Separate players into accepted and pending
     const acceptedPlayers = players.filter(player => player.invitation_status === 'accepted');
     const pendingPlayers = players.filter(player => player.invitation_status === 'pending');
@@ -229,7 +234,7 @@ export function GameDashboard() {
                                     name='name'
                                     type='text'
                                     label='Name'
-                                    placeholder={`Give your game a name e.g ${user.username}'s poker night`}
+                                    placeholder={`Give your game a name e.g. ${user.username}'s poker night`}
                                     value={gameForm.name}
                                     onChange={handleInputChange}
                                 />
@@ -265,7 +270,6 @@ export function GameDashboard() {
                                         ]}
                                     />
                                 </div>
-
                                 <Input
                                     name='location'
                                     type='text'
@@ -295,20 +299,21 @@ export function GameDashboard() {
                                     <textarea
                                         name='notes'
                                         id='notes'
-                                        rows='5'  // Adjust the rows to control height
+                                        rows='5'
                                         value={gameForm.notes}
                                         onChange={handleInputChange}
                                         placeholder='Enter any additional notes about the game...'
                                     />
                                 </div>
-                                {/* Buttons are now at the top right, so we don't include them here */}
                             </form>
                         ) : (
                             <div className='game-details'>
-                                {isHost && <div className='detail-item'>
-                                    <span className='detail-label'>Handed: </span>
-                                    <span className='detail-value'>{game.handed} max</span>
-                                </div>}
+                                {isHost && (
+                                    <div className='detail-item'>
+                                        <span className='detail-label'>Handed: </span>
+                                        <span className='detail-value'>{game.handed} max</span>
+                                    </div>
+                                )}
                                 <div className='detail-item'>
                                     <span className='detail-label'>Blinds: </span>
                                     <span className='detail-value'>{game.blinds}</span>
@@ -326,7 +331,8 @@ export function GameDashboard() {
                                     <span className='detail-value'>{formattedTime}</span>
                                 </div>
                                 <div className='detail-item'>
-                                    <span className='detail-label'>Notes: </span> <br /><br />
+                                    <span className='detail-label'>Notes: </span>
+                                    <br /><br />
                                     <span className='detail-value notes-value'>{game.notes || 'No notes provided'}</span>
                                 </div>
                             </div>
@@ -350,13 +356,11 @@ export function GameDashboard() {
                         ) : (
                             <div className='players-list'>
                                 {acceptedPlayers.length > 0 ? (
-                                    <>
-                                        <div className='all-profiles-container'>
-                                            {acceptedPlayers.map(player => (
-                                                <Profile key={player._id} data={player.user_id} size={"compact"} />
-                                            ))}
-                                        </div>
-                                    </>
+                                    <div className='all-profiles-container'>
+                                        {acceptedPlayers.map(player => (
+                                            <Profile key={player._id} data={player.user_id} size={"compact"} />
+                                        ))}
+                                    </div>
                                 ) : (
                                     <div>No accepted players</div>
                                 )}

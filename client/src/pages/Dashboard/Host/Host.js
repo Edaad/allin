@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../Dashboard.css';
@@ -35,13 +35,9 @@ export function Host() {
         }
     }, [userId, navigate]);
 
-    useEffect(() => {
-        if (user) {
-            fetchGames();
-        }
-    }, [tab, user]);
-
-    const fetchGames = async () => {
+    // Wrap fetchGames with useCallback so its dependencies are explicit
+    const fetchGames = useCallback(async () => {
+        if (!user) return;
         try {
             const status = tab === 'Upcoming games' ? 'upcoming' : 'completed';
             const res = await axios.get(`http://localhost:3001/games`, {
@@ -51,7 +47,14 @@ export function Host() {
         } catch (error) {
             console.error('Error fetching games:', error);
         }
-    };
+    }, [tab, user]);
+
+    // Call fetchGames whenever the user or tab changes
+    useEffect(() => {
+        if (user) {
+            fetchGames();
+        }
+    }, [user, fetchGames]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -119,7 +122,7 @@ export function Host() {
                                 name='name'
                                 type='text'
                                 label='Name'
-                                placeholder={`Give your game a name e.g ${user.username}'s poker night`}
+                                placeholder={`Give your game a name e.g. ${user.username}'s poker night`}
                                 value={gameForm.name}
                                 onChange={handleInputChange}
                             />
@@ -222,7 +225,6 @@ export function Host() {
                         onRowClick={handleRowClick}
                         shadow
                     />
-
                 ) : (
                     <div className="no-games-message">
                         You currently have no {tab.toLowerCase()}
@@ -232,3 +234,5 @@ export function Host() {
         </div>
     );
 }
+
+export default Host;

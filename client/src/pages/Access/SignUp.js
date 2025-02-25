@@ -19,7 +19,7 @@ export function SignUp() {
         const names = { firstName, lastName };
         try {
             const response = await axios.post('http://localhost:3001/signup', { ...signupValues, names });
-            console.log('User signed up successfully:', response.data);
+            console.log('User signed up successfully:', response.data, success);
             setSuccess(true);
             navigate('/');
         } catch (error) {
