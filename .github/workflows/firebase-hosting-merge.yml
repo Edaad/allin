@@ -15,6 +15,9 @@ jobs:
 
       - name: Install Dependencies and Build
         working-directory: ./client
+        # Inject environment variable(s) for the build
+        env:
+          REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
         run: |
           npm install
           npm run build
