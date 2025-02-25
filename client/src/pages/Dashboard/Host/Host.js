@@ -88,7 +88,7 @@ export function Host() {
     };
 
     const handleRowClick = (gameId) => {
-        navigate(`/ dashboard / ${user._id} / host / game / ${gameId}`);
+        navigate(`/dashboard/${user._id}/host/game/${gameId}`);
     };
 
     const menus = [
