@@ -35,7 +35,7 @@ export function GameDashboard() {
             try {
                 const loggedUser = JSON.parse(localStorage.getItem('user'));
                 if (loggedUser && loggedUser._id === userId) {
-                    const res = await axios.get(`http://localhost:3001/users/${userId}`);
+                    const res = await axios.get(`${process.env.REACT_APP_API_URL}/users/${userId}`);
                     setUser(res.data);
                 } else {
                     navigate('/signin');
@@ -51,7 +51,7 @@ export function GameDashboard() {
     // Wrap fetchPlayers in useCallback so its dependencies are explicit.
     const fetchPlayers = useCallback(async () => {
         try {
-            const res = await axios.get(`http://localhost:3001/players/game/${gameId}`);
+            const res = await axios.get(`${process.env.REACT_APP_API_URL}/players/game/${gameId}`);
             setPlayers(res.data);
         } catch (error) {
             console.error('Error fetching players:', error);
@@ -61,7 +61,7 @@ export function GameDashboard() {
     // Wrap fetchGame in useCallback. It depends on gameId and fetchPlayers.
     const fetchGame = useCallback(async () => {
         try {
-            const res = await axios.get(`http://localhost:3001/games/${gameId}`);
+            const res = await axios.get(`${process.env.REACT_APP_API_URL}/games/${gameId}`);
             const gameData = res.data;
             setGame(gameData);
 
@@ -135,7 +135,7 @@ export function GameDashboard() {
                 handed: gameForm.handed
             };
 
-            await axios.put(`http://localhost:3001/games/${gameId}`, updatedGame);
+            await axios.put(`${process.env.REACT_APP_API_URL}/games/${gameId}`, updatedGame);
             setEditing(false);
             fetchGame();
         } catch (error) {
@@ -147,7 +147,7 @@ export function GameDashboard() {
         const confirmDelete = window.confirm("Are you sure you want to delete this game?");
         if (!confirmDelete) return;
         try {
-            await axios.delete(`http://localhost:3001/games/${gameId}`);
+            await axios.delete(`${process.env.REACT_APP_API_URL}/games/${gameId}`);
             navigate(`/dashboard/${userId}/host`);
         } catch (error) {
             console.error('Error deleting game:', error);
@@ -172,8 +172,8 @@ export function GameDashboard() {
                 inviterId: user._id,
                 inviteeId: user._id,
             };
-            await axios.post('http://localhost:3001/players/remove-player', data);
-            navigate(`/dashboard/${userId}/games`);
+            await axios.post(`${process.env.REACT_APP_API_URL}/players/remove-player`, data);
+            navigate(`/ dashboard / ${userId} / games`);
         } catch (error) {
             console.error('Error leaving game:', error);
         }
@@ -234,7 +234,7 @@ export function GameDashboard() {
                                     name='name'
                                     type='text'
                                     label='Name'
-                                    placeholder={`Give your game a name e.g. ${user.username}'s poker night`}
+                                    placeholder={`Give your game a name e.g.${user.username}'s poker night`}
                                     value={gameForm.name}
                                     onChange={handleInputChange}
                                 />
@@ -305,7 +305,7 @@ export function GameDashboard() {
                                         placeholder='Enter any additional notes about the game...'
                                     />
                                 </div>
-                            </form>
+                            </form >
                         ) : (
                             <div className='game-details'>
                                 {isHost && (
@@ -336,8 +336,9 @@ export function GameDashboard() {
                                     <span className='detail-value notes-value'>{game.notes || 'No notes provided'}</span>
                                 </div>
                             </div>
-                        )}
-                    </div>
+                        )
+                        }
+                    </div >
                     <div className='summary-item players-item'>
                         <div className='summary-header'>
                             <h2>Players</h2>
@@ -377,9 +378,9 @@ export function GameDashboard() {
                             </div>
                         )}
                     </div>
-                </div>
-            </div>
-        </div>
+                </div >
+            </div >
+        </div >
     );
 }
 

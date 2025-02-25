@@ -22,7 +22,7 @@ export function Games() {
             try {
                 const loggedUser = JSON.parse(localStorage.getItem('user'));
                 if (loggedUser && loggedUser._id === userId) {
-                    const res = await axios.get(`http://localhost:3001/users/${userId}`);
+                    const res = await axios.get(`${process.env.REACT_APP_API_URL}/users/${userId}`);
                     setUser(res.data);
                 } else {
                     navigate('/signin');
@@ -41,12 +41,12 @@ export function Games() {
         try {
             if (tab === 'Upcoming Games' || tab === 'Past Games') {
                 const status = tab === 'Upcoming Games' ? 'upcoming' : 'completed';
-                const res = await axios.get(`http://localhost:3001/games/player/${user._id}`, {
+                const res = await axios.get(`${process.env.REACT_APP_API_URL}/games/player/${user._id}`, {
                     params: { status }
                 });
                 setGames(res.data);
             } else if (tab === 'Invitations') {
-                const res = await axios.get(`http://localhost:3001/players/invitations/${user._id}`);
+                const res = await axios.get(`${process.env.REACT_APP_API_URL}/players/invitations/${user._id}`);
                 setInvitations(res.data);
             }
         } catch (error) {
@@ -62,7 +62,7 @@ export function Games() {
 
     const handleAcceptInvitation = async (gameId) => {
         try {
-            await axios.post(`http://localhost:3001/players/accept-invitation`, {
+            await axios.post(`${process.env.REACT_APP_API_URL}/players/accept-invitation`, {
                 userId: user._id,
                 gameId: gameId
             });
@@ -77,7 +77,7 @@ export function Games() {
         if (!confirmDecline) return;
 
         try {
-            await axios.post(`http://localhost:3001/players/decline-invitation`, {
+            await axios.post(`${process.env.REACT_APP_API_URL}/players/decline-invitation`, {
                 userId: user._id,
                 gameId: gameId
             });

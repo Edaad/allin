@@ -35,7 +35,7 @@ export function Overview() {
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const res = await axios.get(`http://localhost:3001/users/${userId}`);
+                const res = await axios.get(`${process.env.REACT_APP_API_URL}/users/${userId}`);
                 const fetchedUser = res.data;
                 setUser(fetchedUser);
                 setFriends(fetchedUser.friends); // Set friends from fetched data

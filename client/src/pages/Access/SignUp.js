@@ -18,7 +18,7 @@ export function SignUp() {
         const { confirmPassword, firstName, lastName, ...signupValues } = values;
         const names = { firstName, lastName };
         try {
-            const response = await axios.post('http://localhost:3001/signup', { ...signupValues, names });
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/signup`, { ...signupValues, names });
             console.log('User signed up successfully:', response.data, success);
             setSuccess(true);
             navigate('/');
