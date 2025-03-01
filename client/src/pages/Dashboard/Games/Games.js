@@ -1,6 +1,6 @@
 // src/pages/Dashboard/Games/Games.js
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../Dashboard.css';
@@ -22,7 +22,7 @@ export function Games() {
             try {
                 const loggedUser = JSON.parse(localStorage.getItem('user'));
                 if (loggedUser && loggedUser._id === userId) {
-                    const res = await axios.get(`http://localhost:3001/users/${userId}`);
+                    const res = await axios.get(`${process.env.REACT_APP_API_URL}/users/${userId}`);
                     setUser(res.data);
                 } else {
                     navigate('/signin');
@@ -35,32 +35,34 @@ export function Games() {
         fetchUser();
     }, [userId, navigate]);
 
-    useEffect(() => {
-        if (user) {
-            fetchGames();
-        }
-    }, [tab, user]);
-
-    const fetchGames = async () => {
+    // Wrap fetchGames in useCallback so that its identity is stable and dependencies are explicit.
+    const fetchGames = useCallback(async () => {
+        if (!user) return;
         try {
             if (tab === 'Upcoming Games' || tab === 'Past Games') {
                 const status = tab === 'Upcoming Games' ? 'upcoming' : 'completed';
-                const res = await axios.get(`http://localhost:3001/games/player/${user._id}`, {
+                const res = await axios.get(`${process.env.REACT_APP_API_URL}/games/player/${user._id}`, {
                     params: { status }
                 });
                 setGames(res.data);
             } else if (tab === 'Invitations') {
-                const res = await axios.get(`http://localhost:3001/players/invitations/${user._id}`);
+                const res = await axios.get(`${process.env.REACT_APP_API_URL}/players/invitations/${user._id}`);
                 setInvitations(res.data);
             }
         } catch (error) {
             console.error('Error fetching games:', error);
         }
-    };
+    }, [tab, user]);
+
+    useEffect(() => {
+        if (user) {
+            fetchGames();
+        }
+    }, [user, fetchGames]);
 
     const handleAcceptInvitation = async (gameId) => {
         try {
-            await axios.post(`http://localhost:3001/players/accept-invitation`, {
+            await axios.post(`${process.env.REACT_APP_API_URL}/players/accept-invitation`, {
                 userId: user._id,
                 gameId: gameId
             });
@@ -75,7 +77,7 @@ export function Games() {
         if (!confirmDecline) return;
 
         try {
-            await axios.post(`http://localhost:3001/players/decline-invitation`, {
+            await axios.post(`${process.env.REACT_APP_API_URL}/players/decline-invitation`, {
                 userId: user._id,
                 gameId: gameId
             });
@@ -178,7 +180,6 @@ export function Games() {
                                     })}
                             </tbody>
                         </table>
-
                     ) : (
                         <div className="no-games-message">
                             You currently have no game invitations.
@@ -206,7 +207,6 @@ export function Games() {
                             onRowClick={handleRowClick}
                             shadow
                         />
-
                     ) : (
                         <div className="no-games-message">
                             You currently have no {tab.toLowerCase()}.

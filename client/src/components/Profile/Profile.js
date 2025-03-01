@@ -20,7 +20,7 @@ const Profile = ({ data, size, currentUser, refreshData, updateUserState, action
 
     const updateLocalStorage = async () => {
         try {
-            const response = await axios.get(`http://localhost:3001/users/${currentUser._id}`);
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/users/${currentUser._id}`);
             const updatedUser = response.data;
             updateUserState(updatedUser);
         } catch (error) {
@@ -36,7 +36,7 @@ const Profile = ({ data, size, currentUser, refreshData, updateUserState, action
             } else {
                 endpoint = `${actionType}-friend-request`;
             }
-            await axios.post(`http://localhost:3001/${endpoint}`, {
+            await axios.post(`${process.env.REACT_APP_API_URL}/${endpoint}`, {
                 userId: currentUser._id,
                 friendId: data._id
             });

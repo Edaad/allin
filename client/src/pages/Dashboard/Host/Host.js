@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../Dashboard.css';
@@ -35,23 +35,26 @@ export function Host() {
         }
     }, [userId, navigate]);
 
-    useEffect(() => {
-        if (user) {
-            fetchGames();
-        }
-    }, [tab, user]);
-
-    const fetchGames = async () => {
+    // Wrap fetchGames with useCallback so its dependencies are explicit
+    const fetchGames = useCallback(async () => {
+        if (!user) return;
         try {
             const status = tab === 'Upcoming games' ? 'upcoming' : 'completed';
-            const res = await axios.get(`http://localhost:3001/games`, {
+            const res = await axios.get(`${process.env.REACT_APP_API_URL}/games`, {
                 params: { status, host_id: user._id }
             });
             setGames(res.data);
         } catch (error) {
             console.error('Error fetching games:', error);
         }
-    };
+    }, [tab, user]);
+
+    // Call fetchGames whenever the user or tab changes
+    useEffect(() => {
+        if (user) {
+            fetchGames();
+        }
+    }, [user, fetchGames]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -70,7 +73,7 @@ export function Host() {
                 blinds: gameForm.blinds,
                 handed: gameForm.handed
             };
-            await axios.post('http://localhost:3001/games', newGame);
+            await axios.post(`${process.env.REACT_APP_API_URL}/games`, newGame);
             setHosting(false);
             setGameForm(initialGameFormState);
             fetchGames();
@@ -119,7 +122,7 @@ export function Host() {
                                 name='name'
                                 type='text'
                                 label='Name'
-                                placeholder={`Give your game a name e.g ${user.username}'s poker night`}
+                                placeholder={`Give your game a name e.g.${user.username}'s poker night`}
                                 value={gameForm.name}
                                 onChange={handleInputChange}
                             />
@@ -184,9 +187,10 @@ export function Host() {
                                 <button className="submit" type='submit'>Save</button>
                                 <button className="cancel" type='button' onClick={handleCancel}>Cancel</button>
                             </div>
-                        </form>
-                    </div>
-                )}
+                        </form >
+                    </div >
+                )
+                }
                 <div className='tab-container'>
                     <button
                         className={`tab${tab === "Upcoming games" ? "-selected" : ""}`}
@@ -201,34 +205,37 @@ export function Host() {
                         Past games
                     </button>
                 </div>
-                {games.length > 0 ? (
-                    <Table
-                        headers={headers}
-                        data={games.map(game => {
-                            const gameDate = new Date(game.game_date);
-                            const formattedDate = gameDate.toLocaleDateString();
-                            const formattedTime = gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                {
+                    games.length > 0 ? (
+                        <Table
+                            headers={headers}
+                            data={games.map(game => {
+                                const gameDate = new Date(game.game_date);
+                                const formattedDate = gameDate.toLocaleDateString();
+                                const formattedTime = gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-                            return {
-                                'name': game.game_name,
-                                'host': game.host_id.username,
-                                'location': game.location,
-                                'date': formattedDate,
-                                'time': formattedTime,
-                                'blinds': game.blinds,
-                                '_id': game._id
-                            };
-                        })}
-                        onRowClick={handleRowClick}
-                        shadow
-                    />
-
-                ) : (
-                    <div className="no-games-message">
-                        You currently have no {tab.toLowerCase()}
-                    </div>
-                )}
-            </div>
-        </div>
+                                return {
+                                    'name': game.game_name,
+                                    'host': game.host_id.username,
+                                    'location': game.location,
+                                    'date': formattedDate,
+                                    'time': formattedTime,
+                                    'blinds': game.blinds,
+                                    '_id': game._id
+                                };
+                            })}
+                            onRowClick={handleRowClick}
+                            shadow
+                        />
+                    ) : (
+                        <div className="no-games-message">
+                            You currently have no {tab.toLowerCase()}
+                        </div>
+                    )
+                }
+            </div >
+        </div >
     );
 }
+
+export default Host;

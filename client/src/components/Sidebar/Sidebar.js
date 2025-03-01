@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import './Sidebar.css';
 import { minidenticon } from 'minidenticons';
-import icon from '../../assets/images/games.png'
+// import icon from '../../assets/images/games.png'
 
 const Sidebar = ({ menus, page, username }) => {
     const navigate = useNavigate();

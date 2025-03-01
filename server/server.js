@@ -1,6 +1,7 @@
 // server.js
 
 const express = require('express');
+require('dotenv').config();
 const mongoose = require('mongoose');
 const cors = require('cors');
 const app = express();
@@ -16,7 +17,7 @@ app.use(cors());
 app.use(express.json());
 
 // Database connection
-mongoose.connect('mongodb+srv://admin:admin@allin.xq3ezsf.mongodb.net/poker', {
+mongoose.connect(process.env.MONGO_URI, {
     // Additional options if needed
 }).then(() => {
     console.log('Connected to MongoDB');
