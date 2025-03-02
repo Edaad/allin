@@ -39,8 +39,10 @@ const getGameById = async (req, res) => {
 
 const createGame = async (req, res) => {
     try {
+        console.log("Creating game with data:", req.body); // Add this line
         const newGame = new Game(req.body);
         await newGame.save();
+        console.log("Game created:", newGame); // Add this line
         res.status(201).send(newGame);
     } catch (err) {
         console.error('Error creating game:', err);
@@ -92,27 +94,75 @@ const getGamesForPlayer = async (req, res) => {
         const { status } = req.query;
 
         // Find all games where the user is a player and invitation_status is 'accepted'
-        const playerFilter = {
+        const playerGames = await Player.find({
             user_id: userId,
             invitation_status: 'accepted',
+        }).select('game_id');
+
+        const acceptedGameIds = playerGames.map(pg => pg.game_id);
+
+        // Find all games the user has requested to join
+        const requestedGames = await Player.find({
+            user_id: userId,
+            invitation_status: 'requested',
+        }).select('game_id');
+
+        const requestedGameIds = requestedGames.map(rg => rg.game_id);
+
+        // Find all games the user has pending invitations for
+        const pendingGames = await Player.find({
+            user_id: userId,
+            invitation_status: 'pending',
+        }).select('game_id');
+
+        const pendingGameIds = pendingGames.map(pg => pg.game_id);
+
+        // Base query for games
+        const query = {
+            $or: [
+                { _id: { $in: acceptedGameIds } }, // Games user is accepted to
+                {
+                    is_public: true,
+                    _id: { $nin: [...acceptedGameIds, ...requestedGameIds, ...pendingGameIds] }
+                } // Public games user hasn't joined or requested
+            ]
         };
-
-        const playerGames = await Player.find(playerFilter).select('game_id');
-
-        const gameIds = playerGames.map(pg => pg.game_id);
-
-        const query = { _id: { $in: gameIds } };
 
         if (status) {
             query.game_status = status;
         }
 
+        // Get all matching games
         const games = await Game.find(query).populate('host_id', 'username');
 
-        res.status(200).json(games);
+        // Add player status to each game
+        const gamesWithStatus = await Promise.all(games.map(async (game) => {
+            const gameObject = game.toObject();
+
+            // Check if user is accepted
+            if (acceptedGameIds.some(id => id.equals(game._id))) {
+                gameObject.playerStatus = 'accepted';
+            }
+            // Check if user has requested to join
+            else if (requestedGameIds.some(id => id.equals(game._id))) {
+                gameObject.playerStatus = 'requested';
+            }
+            // Check if user has pending invitation
+            else if (pendingGameIds.some(id => id.equals(game._id))) {
+                gameObject.playerStatus = 'pending';
+            }
+            // Otherwise user has no relation to this game yet
+            else {
+                gameObject.playerStatus = 'none';
+            }
+
+            return gameObject;
+        }));
+
+        res.status(200).json(gamesWithStatus);
     } catch (err) {
         console.error('Error fetching games for player:', err);
-        res.status(500).send(err);
+        res.status(500).json({ message: 'Server error' });
     }
 };
 
