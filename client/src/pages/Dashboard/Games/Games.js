@@ -153,7 +153,7 @@ export function Games() {
                 </div>
                 {tab === 'Invitations' ? (
                     invitations.length > 0 ? (
-                        <table className="table-container">
+                        <Table className="table-container">
                             <thead>
                                 <tr>
                                     {invitationHeaders.map((header, index) => (
@@ -195,7 +195,7 @@ export function Games() {
                                         );
                                     })}
                             </tbody>
-                        </table>
+                        </Table>
                     ) : (
                         <div className="no-games-message">
                             You currently have no game invitations.
@@ -203,7 +203,7 @@ export function Games() {
                     )
                 ) : (
                     games.length > 0 ? (
-                        <table className="table-container">
+                        <Table className="table-container">
                             <thead>
                                 <tr>
                                     {headers.map((header, index) => (
@@ -260,7 +260,7 @@ export function Games() {
                                     );
                                 })}
                             </tbody>
-                        </table>
+                        </Table>
                     ) : (
                         <div className="no-games-message">
                             You currently have no {tab.toLowerCase()}.
