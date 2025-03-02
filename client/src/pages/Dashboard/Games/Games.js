@@ -6,7 +6,7 @@ import axios from 'axios';
 import '../Dashboard.css';
 import './Games.css';
 import Sidebar from '../../../components/Sidebar/Sidebar';
-import Table from '../../../components/Table/Table';
+// import Table from '../../../components/Table/Table';
 
 export function Games() {
     const [user, setUser] = useState(null);
