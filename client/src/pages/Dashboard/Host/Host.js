@@ -23,6 +23,7 @@ export function Host() {
         date: '',
         time: '',
         handed: '',
+        isPublic: false, // New field for public/private games
     };
     const [gameForm, setGameForm] = useState(initialGameFormState);
 
@@ -61,18 +62,26 @@ export function Host() {
         setGameForm({ ...gameForm, [name]: value });
     };
 
+    // In Host.js, modify the handleSubmit function
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            const gameDateTimeString = `${gameForm.date}T${gameForm.time}:00`;
+            const gameDateTime = new Date(gameDateTimeString);
+
             const newGame = {
                 host_id: user._id,
                 game_name: gameForm.name,
                 location: gameForm.location,
-                game_date: `${gameForm.date}T${gameForm.time}:00`,
+                game_date: gameDateTime,
                 game_status: 'upcoming',
                 blinds: gameForm.blinds,
-                handed: gameForm.handed
+                handed: gameForm.handed,
+                is_public: gameForm.isPublic // Added isPublic field
             };
+
+            console.log("Submitting game with data:", newGame); // Add this line
+
             await axios.post(`${process.env.REACT_APP_API_URL}/games`, newGame);
             setHosting(false);
             setGameForm(initialGameFormState);
@@ -157,6 +166,36 @@ export function Host() {
                                         { value: '10', label: '10 max' },
                                     ]}
                                 />
+                            </div>
+
+                            <div className="game-privacy-option">
+                                <label className="input-label">Game Privacy</label>
+                                <div className="radio-group">
+                                    <label className="radio-label">
+                                        <input
+                                            type="radio"
+                                            name="isPublic"
+                                            checked={!gameForm.isPublic}
+                                            onChange={() => {
+                                                console.log("Setting isPublic to false");
+                                                setGameForm({ ...gameForm, isPublic: false });
+                                            }}
+                                        />
+                                        Private (invite only)
+                                    </label>
+                                    <label className="radio-label">
+                                        <input
+                                            type="radio"
+                                            name="isPublic"
+                                            checked={gameForm.isPublic}
+                                            onChange={() => {
+                                                console.log("Setting isPublic to true");
+                                                setGameForm({ ...gameForm, isPublic: true });
+                                            }}
+                                        />
+                                        Public (open to join requests)
+                                    </label>
+                                </div>
                             </div>
 
                             <Input
