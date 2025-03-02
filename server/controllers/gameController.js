@@ -5,24 +5,49 @@ const Player = require('../models/player');
 
 const getGames = async (req, res) => {
     try {
-        const { status, host_id } = req.query;
-        const query = {};
-
-        if (status) {
-            query.game_status = status;
+      const { status, host_id, is_public, blinds, handed } = req.query;
+      const query = {};
+  
+      // Filter by game_status if provided
+      if (status) {
+        query.game_status = status;
+      }
+  
+      // Filter by host_id if provided
+      if (host_id) {
+        query.host_id = host_id;
+      }
+  
+      // Filter by is_public if provided
+      if (is_public !== undefined) {
+        // Convert the string to a boolean
+        query.is_public = (is_public === 'true');
+      }
+  
+      // Filter by blinds if provided.
+      // This expects blinds to be either an array or a comma-separated string.
+      if (blinds) {
+        if (Array.isArray(blinds)) {
+          query.blinds = { $in: blinds };
+        } else {
+          query.blinds = { $in: blinds.split(',') };
         }
-
-        if (host_id) {
-            query.host_id = host_id;
-        }
-
-        const games = await Game.find(query).populate('host_id', 'username');
-        res.json(games);
+      }
+  
+      // Filter by handed if provided.
+      if (handed) {
+        query.handed = Number(handed);
+      }
+  
+      const games = await Game.find(query).populate('host_id', 'username');
+      res.json(games);
     } catch (err) {
-        console.error('Error fetching games:', err);
-        res.status(500).send(err);
+      console.error('Error fetching games:', err);
+      res.status(500).send(err);
     }
 };
+  
+  
 
 const getGameById = async (req, res) => {
     try {
