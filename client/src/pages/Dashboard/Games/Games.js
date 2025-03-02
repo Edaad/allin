@@ -6,7 +6,7 @@ import axios from 'axios';
 import '../Dashboard.css';
 import './Games.css';
 import Sidebar from '../../../components/Sidebar/Sidebar';
-import Table from '../../../components/Table/Table';
+// import Table from '../../../components/Table/Table';
 
 export function Games() {
     const [user, setUser] = useState(null);
@@ -153,7 +153,7 @@ export function Games() {
                 </div>
                 {tab === 'Invitations' ? (
                     invitations.length > 0 ? (
-                        <Table className="table-container">
+                        <table className="table-container">
                             <thead>
                                 <tr>
                                     {invitationHeaders.map((header, index) => (
@@ -195,7 +195,7 @@ export function Games() {
                                         );
                                     })}
                             </tbody>
-                        </Table>
+                        </table>
                     ) : (
                         <div className="no-games-message">
                             You currently have no game invitations.
@@ -203,7 +203,7 @@ export function Games() {
                     )
                 ) : (
                     games.length > 0 ? (
-                        <Table className="table-container">
+                        <table className="table-container">
                             <thead>
                                 <tr>
                                     {headers.map((header, index) => (
@@ -260,7 +260,7 @@ export function Games() {
                                     );
                                 })}
                             </tbody>
-                        </Table>
+                        </table>
                     ) : (
                         <div className="no-games-message">
                             You currently have no {tab.toLowerCase()}.
