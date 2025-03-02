@@ -16,6 +16,7 @@ export function Games() {
     const [tab, setTab] = useState('Upcoming Games');
     const [games, setGames] = useState([]);
     const [invitations, setInvitations] = useState([]);
+    const [isRequesting, setIsRequesting] = useState(false);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -93,6 +94,21 @@ export function Games() {
             return;
         }
         navigate(`/dashboard/${user._id}/games/game/${gameId}`);
+    };
+
+    const handleRequestToJoin = async (gameId) => {
+        try {
+            setIsRequesting(true);
+            await axios.post(`${process.env.REACT_APP_API_URL}/players/request-to-join`, {
+                userId: user._id,
+                gameId: gameId
+            });
+            fetchGames();
+            setIsRequesting(false);
+        } catch (error) {
+            console.error('Error requesting to join game:', error);
+            setIsRequesting(false);
+        }
     };
 
     const menus = [
@@ -187,26 +203,64 @@ export function Games() {
                     )
                 ) : (
                     games.length > 0 ? (
-                        <Table
-                            headers={headers}
-                            data={games.map(game => {
-                                const gameDate = new Date(game.game_date);
-                                const formattedDate = gameDate.toLocaleDateString();
-                                const formattedTime = gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        <table className="table-container">
+                            <thead>
+                                <tr>
+                                    {headers.map((header, index) => (
+                                        <th key={index}>{header}</th>
+                                    ))}
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {games.map((game, rowIndex) => {
+                                    const gameDate = new Date(game.game_date);
+                                    const formattedDate = gameDate.toLocaleDateString();
+                                    const formattedTime = gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-                                return {
-                                    'name': game.game_name,
-                                    'host': game.host_id.username,
-                                    'location': game.location,
-                                    'date': formattedDate,
-                                    'time': formattedTime,
-                                    'blinds': game.blinds,
-                                    '_id': game._id
-                                };
-                            })}
-                            onRowClick={handleRowClick}
-                            shadow
-                        />
+                                    return (
+                                        <tr
+                                            key={rowIndex}
+                                            onClick={() => game.playerStatus === 'accepted' ? handleRowClick(game._id) : null}
+                                            className={game.playerStatus === 'accepted' ? '' : 'row-disabled'}
+                                        >
+                                            <td>
+                                                {game.game_name}
+                                                {game.is_public && <span className="public-tag">Public</span>}
+                                            </td>
+                                            <td>{game.host_id.username}</td>
+                                            <td>{game.location}</td>
+                                            <td>{formattedDate}</td>
+                                            <td>{formattedTime}</td>
+                                            <td>{game.blinds}</td>
+                                            <td>
+                                                {game.playerStatus === 'none' && game.is_public && (
+                                                    <button
+                                                        className="request-button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleRequestToJoin(game._id);
+                                                        }}
+                                                        disabled={isRequesting}
+                                                    >
+                                                        Request to Join
+                                                    </button>
+                                                )}
+                                                {game.playerStatus === 'requested' && (
+                                                    <span className="status-tag requested">Request Pending</span>
+                                                )}
+                                                {game.playerStatus === 'accepted' && (
+                                                    <span className="status-tag accepted">Joined</span>
+                                                )}
+                                                {game.playerStatus === 'pending' && (
+                                                    <span className="status-tag pending">Invitation Pending</span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
                     ) : (
                         <div className="no-games-message">
                             You currently have no {tab.toLowerCase()}.

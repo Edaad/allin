@@ -68,3 +68,25 @@
     background-color: rgb(53, 115, 55);
     color: white;
 }
+
+/* Host.css - for public/privacy features */
+.game-privacy-option {
+    margin-bottom: 15px;
+}
+
+.radio-group {
+    display: flex;
+    gap: 20px;
+    margin-top: 8px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+}
+
+.radio-label input {
+    cursor: pointer;
+}

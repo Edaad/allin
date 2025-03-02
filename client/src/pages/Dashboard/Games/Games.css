@@ -42,3 +42,66 @@
 table {
     box-shadow: 0px 4px 7px rgba(0, 0, 0, 0.1);
 }
+
+/* Games.css - request features */
+.public-tag {
+    font-size: 12px;
+    background-color: #3498db;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 8px;
+}
+
+.status-tag {
+    font-size: 14px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.status-tag.requested {
+    background-color: #f39c12;
+    color: white;
+}
+
+.status-tag.accepted {
+    background-color: #2ecc71;
+    color: white;
+}
+
+.status-tag.pending {
+    background-color: #95a5a6;
+    color: white;
+}
+
+.request-button {
+    background: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgb(53, 115, 55);
+    border: solid 2px;
+    border-color: rgb(53, 115, 55);
+    border-radius: 2px;
+    padding: 5px 10px;
+    transition: background-color 0.5s ease, color 0.5s ease;
+    cursor: pointer;
+}
+
+.request-button:hover:not(:disabled) {
+    background-color: rgb(53, 115, 55);
+    color: white;
+}
+
+.request-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.row-disabled {
+    cursor: default;
+}
+
+.row-disabled:hover {
+    background-color: inherit;
+}
