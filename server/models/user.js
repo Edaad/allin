@@ -2,6 +2,7 @@
 
 const mongoose = require('mongoose');
 const { hashPassword } = require('../utils/hashing');
+const Group = require('./group');
 
 const userSchema = new mongoose.Schema({
     names: {
@@ -14,6 +15,7 @@ const userSchema = new mongoose.Schema({
     friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     pendingRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     friendRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    groups: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Group' }],
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
 });

@@ -4,8 +4,7 @@ const User = require('../models/user');
 
 // Create a new group
 exports.createGroup = async (req, res) => {
-    const { name, description} = req.body; 
-    const userId = req.user._id;
+    const { name, description, userId} = req.body; 
     try {
         // Check if the group name already exists
         const existingGroup = await Group.findOne({ name });
@@ -37,10 +36,9 @@ exports.createGroup = async (req, res) => {
     }
 };
 
-// Join a group
 exports.joinGroup = async (req, res) => {
     const groupId = req.params.groupId;
-    const userId = req.user._id;
+    const { userId } = req.body; // Get userId from the request body
 
     try {
         const group = await Group.findById(groupId);
