@@ -14,7 +14,7 @@ export function Home() {
                 <div className='hero'>
                     <div className='hero-text'>
                         <p className='hero-main'>Host, manage, and track all your IRL poker games</p>
-                        <p className='hero-secondary'>Manage your real-life poker games with ease. Designed by Edaad Azman.</p>
+                        <p className='hero-secondary'>Manage your real-life poker games with ease. Designed by Team All In.</p>
                         <button className='cta' onClick={() => { navigate('/signup') }}>Get Started</button>
                     </div>
                     <img src={heroImage} alt='Friends playing poker' className='hero-img' />
