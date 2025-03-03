@@ -5,18 +5,64 @@ const Player = require('../models/player');
 
 const getGames = async (req, res) => {
     try {
-        const { status, host_id } = req.query;
+        const { status, host_id, is_public, blinds, handed, userId } = req.query;
         const query = {};
 
+        // Filter by game_status if provided
         if (status) {
             query.game_status = status;
         }
 
+        // Filter by host_id if provided
         if (host_id) {
             query.host_id = host_id;
         }
 
+        // Filter by is_public if provided
+        if (is_public !== undefined) {
+            // Convert the string to a boolean
+            query.is_public = (is_public === 'true');
+        }
+
+        // Filter by blinds if provided
+        if (blinds) {
+            if (Array.isArray(blinds)) {
+                query.blinds = { $in: blinds };
+            } else {
+                query.blinds = { $in: blinds.split(',') };
+            }
+        }
+
+        // Filter by handed if provided
+        if (handed) {
+            query.handed = Number(handed);
+        }
+
         const games = await Game.find(query).populate('host_id', 'username');
+
+        // If userId is provided, add player status to each game
+        if (userId) {
+            const playerGames = await Promise.all(games.map(async (game) => {
+                const gameObj = game.toObject();
+
+                // Check if the user has a relationship with this game
+                const player = await Player.findOne({
+                    user_id: userId,
+                    game_id: game._id
+                });
+
+                if (player) {
+                    gameObj.playerStatus = player.invitation_status;
+                } else {
+                    gameObj.playerStatus = 'none';
+                }
+
+                return gameObj;
+            }));
+
+            return res.json(playerGames);
+        }
+
         res.json(games);
     } catch (err) {
         console.error('Error fetching games:', err);
@@ -39,10 +85,17 @@ const getGameById = async (req, res) => {
 
 const createGame = async (req, res) => {
     try {
-        console.log("Creating game with data:", req.body); // Add this line
-        const newGame = new Game(req.body);
+        // Create a new object with explicit boolean conversion for is_public
+        const gameData = {
+            ...req.body,
+            is_public: req.body.is_public === true
+        };
+
+        console.log("Creating game with data:", gameData);
+
+        const newGame = new Game(gameData);
         await newGame.save();
-        console.log("Game created:", newGame); // Add this line
+        console.log("Game created:", newGame);
         res.status(201).send(newGame);
     } catch (err) {
         console.error('Error creating game:', err);
@@ -52,7 +105,16 @@ const createGame = async (req, res) => {
 
 const updateGame = async (req, res) => {
     try {
-        const updatedGame = await Game.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        // Ensure boolean conversion for is_public field
+        const updateData = {
+            ...req.body
+        };
+
+        if (updateData.is_public !== undefined) {
+            updateData.is_public = updateData.is_public === true;
+        }
+
+        const updatedGame = await Game.findByIdAndUpdate(req.params.id, updateData, { new: true });
         if (!updatedGame) {
             return res.status(404).send({ message: 'Game not found' });
         }
@@ -62,8 +124,6 @@ const updateGame = async (req, res) => {
         res.status(400).send(err);
     }
 };
-
-// controllers/gameController.js
 
 const deleteGame = async (req, res) => {
     try {
@@ -84,8 +144,6 @@ const deleteGame = async (req, res) => {
         res.status(500).send({ message: 'Server error.' });
     }
 };
-
-
 
 // Get games for a player with optional status filter
 const getGamesForPlayer = async (req, res) => {
