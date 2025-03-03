@@ -120,7 +120,16 @@ export function Games() {
                 userId: user._id,
                 gameId: gameId
             });
-            fetchGames();
+
+            // Update the local games state to reflect the status change
+            setGames(prevGames =>
+                prevGames.map(game =>
+                    game._id === gameId
+                        ? { ...game, playerStatus: 'requested' }
+                        : game
+                )
+            );
+
             setIsRequesting(false);
         } catch (error) {
             console.error('Error requesting to join game:', error);
@@ -128,6 +137,7 @@ export function Games() {
         }
     };
 
+    // Render function for status column in game tables
     // Render function for status column in game tables
     const renderGameStatus = (game) => {
         if (game.playerStatus === 'none' && game.is_public) {
