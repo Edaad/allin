@@ -146,6 +146,7 @@ const deleteGame = async (req, res) => {
 };
 
 // Get games for a player with optional status filter
+// Get games for a player with optional status filter
 const getGamesForPlayer = async (req, res) => {
     try {
         const { userId } = req.params;
@@ -175,15 +176,9 @@ const getGamesForPlayer = async (req, res) => {
 
         const pendingGameIds = pendingGames.map(pg => pg.game_id);
 
-        // Base query for games
+        // Updated query to only show games the user has joined (accepted invitations)
         const query = {
-            $or: [
-                { _id: { $in: acceptedGameIds } }, // Games user is accepted to
-                {
-                    is_public: true,
-                    _id: { $nin: [...acceptedGameIds, ...requestedGameIds, ...pendingGameIds] }
-                } // Public games user hasn't joined or requested
-            ]
+            _id: { $in: acceptedGameIds }
         };
 
         if (status) {
@@ -193,29 +188,12 @@ const getGamesForPlayer = async (req, res) => {
         // Get all matching games
         const games = await Game.find(query).populate('host_id', 'username');
 
-        // Add player status to each game
-        const gamesWithStatus = await Promise.all(games.map(async (game) => {
+        // Add player status to each game (all should be 'accepted' in this case)
+        const gamesWithStatus = games.map(game => {
             const gameObject = game.toObject();
-
-            // Check if user is accepted
-            if (acceptedGameIds.some(id => id.equals(game._id))) {
-                gameObject.playerStatus = 'accepted';
-            }
-            // Check if user has requested to join
-            else if (requestedGameIds.some(id => id.equals(game._id))) {
-                gameObject.playerStatus = 'requested';
-            }
-            // Check if user has pending invitation
-            else if (pendingGameIds.some(id => id.equals(game._id))) {
-                gameObject.playerStatus = 'pending';
-            }
-            // Otherwise user has no relation to this game yet
-            else {
-                gameObject.playerStatus = 'none';
-            }
-
+            gameObject.playerStatus = 'accepted';
             return gameObject;
-        }));
+        });
 
         res.status(200).json(gamesWithStatus);
     } catch (err) {
