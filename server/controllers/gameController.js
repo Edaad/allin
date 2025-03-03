@@ -42,23 +42,27 @@ const getGames = async (req, res) => {
 
         // If userId is provided, add player status to each game
         if (userId) {
-            const playerGames = await Promise.all(games.map(async (game) => {
+            // Find all games where the user has any relationship
+            const playerRecords = await Player.find({
+                user_id: userId,
+                game_id: { $in: games.map(g => g._id) }
+            });
+
+            // Create a map of gameId to player status for quick lookup
+            const playerStatusMap = {};
+            playerRecords.forEach(record => {
+                playerStatusMap[record.game_id.toString()] = record.invitation_status;
+            });
+
+            const playerGames = games.map(game => {
                 const gameObj = game.toObject();
+                const gameId = game._id.toString();
 
-                // Check if the user has a relationship with this game
-                const player = await Player.findOne({
-                    user_id: userId,
-                    game_id: game._id
-                });
-
-                if (player) {
-                    gameObj.playerStatus = player.invitation_status;
-                } else {
-                    gameObj.playerStatus = 'none';
-                }
+                // Set player status from the map or 'none' if not found
+                gameObj.playerStatus = playerStatusMap[gameId] || 'none';
 
                 return gameObj;
-            }));
+            });
 
             return res.json(playerGames);
         }
