@@ -252,10 +252,10 @@ export function Games() {
                                             <td>{gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
                                             <td>{inv.blinds}</td>
                                             <td className="ad-buttons-container">
-                                                <button className="accept-button" onClick={() => handleAcceptInvitation(inv._id)}>
+                                                <button className="accept-button small" onClick={() => handleAcceptInvitation(inv._id)}>
                                                     Accept
                                                 </button>
-                                                <button className="decline-button" onClick={() => handleDeclineInvitation(inv._id)}>
+                                                <button className="decline-button small" onClick={() => handleDeclineInvitation(inv._id)}>
                                                     Decline
                                                 </button>
                                             </td>
