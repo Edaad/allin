@@ -53,6 +53,7 @@ export function Games() {
                 const params = {
                     status: 'upcoming',
                     is_public: true,
+                    userId: user._id,
                     ...filterParams
                 };
                 const res = await axios.get(`${process.env.REACT_APP_API_URL}/games`, { params });
