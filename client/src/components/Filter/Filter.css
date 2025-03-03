@@ -1,0 +1,59 @@
+.filter-sidebar {
+    width: 10rem;
+    margin-right: 2rem;
+    box-shadow: 0px 4px 7px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+}
+
+.filter-sidebar h4 {
+    margin: 0;
+}
+
+.filter-group {
+    margin: 1rem 0;
+}
+
+.filter-blinds {
+    margin-left: 0.25rem;
+}
+
+.filter-checkbox {
+    margin-left: 0.25rem;
+    accent-color: rgb(53, 115, 55);
+
+}
+
+.filter-slider {
+    width: 90%;
+    accent-color: rgb(53, 115, 55);
+}
+
+.filter-applyButton {
+    font-size: 1rem;
+    text-align: center;
+    background: none;
+    border: solid 2px;
+    color: rgb(53, 115, 55);
+    transition: background-color 0.2s ease, color 0.2s ease;
+    border-radius: 2px;
+    padding: 0.25rem 0.5rem;
+}
+
+.filter-applyButton:hover {
+    background-color: rgb(53, 115, 55);
+    color: white;
+}
+
+.filter-resetButton {
+    font-size: 1rem;
+    text-align: center;
+    background: none;
+    border: none;
+    color: gray;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    padding: 0.5rem calc(0.5rem + 2px);
+}
+
+.filter-resetButton:hover {
+    color: rgb(53, 115, 55);
+}

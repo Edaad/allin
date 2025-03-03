@@ -140,7 +140,8 @@ export function GameDashboard() {
                 date: formattedDate,
                 time: formattedTime,
                 notes: gameData.notes || '',
-                handed: gameData.handed
+                handed: gameData.handed,
+                isPublic: gameData.is_public // This is the key change
             });
             // Fetch players after fetching the game details
             fetchPlayers();
@@ -148,6 +149,7 @@ export function GameDashboard() {
             console.error('Error fetching game:', error);
         }
     }, [gameId, fetchPlayers]);
+
 
     // Fetch game details when gameId changes
     useEffect(() => {
