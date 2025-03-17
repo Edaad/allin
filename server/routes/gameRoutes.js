@@ -9,6 +9,9 @@ const {
     updateGame,
     deleteGame,
     getGamesForPlayer,
+    addToWaitlist,
+    removeFromWaitlist,
+    getWaitlist
 } = require('../controllers/gameController');
 
 // Route for fetching games with optional filters
@@ -28,5 +31,10 @@ router.delete('/games/:id', deleteGame);
 
 // Route for fetching games for a player
 router.get('/games/player/:userId', getGamesForPlayer);
+
+// Waitlist Routes
+router.post('/games/:gameId/waitlist', addToWaitlist);
+router.delete('/games/:gameId/waitlist/:userId', removeFromWaitlist);
+router.get('/games/:gameId/waitlist', getWaitlist);
 
 module.exports = router;

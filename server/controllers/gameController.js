@@ -149,7 +149,7 @@ const deleteGame = async (req, res) => {
     }
 };
 
-// Get games for a player with optional status filter
+
 // Get games for a player with optional status filter
 const getGamesForPlayer = async (req, res) => {
     try {
@@ -206,6 +206,71 @@ const getGamesForPlayer = async (req, res) => {
     }
 };
 
+// Add to Waitlist
+const addToWaitlist = async (req, res) => {
+    const { gameId } = req.params;
+    const { userId } = req.body;
+
+    try {
+        const game = await Game.findById(gameId);
+        if (!game) {
+            return res.status(404).json({ error: 'Game not found' });
+        }
+
+        // Check if the user is already on the waitlist
+        if (game.waitlist.includes(userId)) {
+            return res.status(400).json({ error: 'User is already on the waitlist' });
+        }
+
+        // Add the user to the waitlist
+        game.waitlist.push(userId);
+        await game.save();
+
+        res.status(200).json({ message: 'Added to waitlist', position: game.waitlist.length });
+    } catch (error) {
+        console.error('Error adding to waitlist:', error);
+        res.status(500).json({ error: 'Failed to add to waitlist' });
+    }
+};
+
+// Remove from Waitlist
+const removeFromWaitlist = async (req, res) => {
+    const { gameId, userId } = req.params;
+
+    try {
+        const game = await Game.findById(gameId);
+        if (!game) {
+            return res.status(404).json({ error: 'Game not found' });
+        }
+
+        // Remove the user from the waitlist
+        game.waitlist = game.waitlist.filter(id => id.toString() !== userId);
+        await game.save();
+
+        res.status(200).json({ message: 'Removed from waitlist' });
+    } catch (error) {
+        console.error('Error removing from waitlist:', error);
+        res.status(500).json({ error: 'Failed to remove from waitlist' });
+    }
+};
+
+const getWaitlist = async (req, res) => {
+    const { gameId } = req.params;
+
+    try {
+        const game = await Game.findById(gameId).populate('waitlist', 'username email');
+        if (!game) {
+            return res.status(404).json({ error: 'Game not found' });
+        }
+
+        res.status(200).json({ waitlist: game.waitlist });
+    } catch (error) {
+        console.error('Error fetching waitlist:', error);
+        res.status(500).json({ error: 'Failed to fetch waitlist' });
+    }
+};
+
+
 module.exports = {
     getGames,
     getGameById,
@@ -213,4 +278,7 @@ module.exports = {
     updateGame,
     deleteGame,
     getGamesForPlayer,
+    addToWaitlist,
+    removeFromWaitlist,
+    getWaitlist
 };
