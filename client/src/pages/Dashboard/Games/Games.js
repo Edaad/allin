@@ -41,7 +41,22 @@ export function Games() {
         fetchUser();
     }, [userId, navigate]);
 
-    // Wrap fetchGames in useCallback so that its identity is stable
+    // Define fetchWaitlistPosition with useCallback
+    const fetchWaitlistPosition = useCallback(async (gameId) => {
+        try {
+            const res = await axios.get(
+                `${process.env.REACT_APP_API_URL}/players/waitlist/${gameId}/${user._id}`
+            );
+            setWaitlistPositions(prev => ({
+                ...prev,
+                [gameId]: res.data.position
+            }));
+        } catch (error) {
+            console.error('Error fetching waitlist position:', error);
+        }
+    }, [user._id]);
+
+    // Update fetchGames to include fetchWaitlistPosition in its dependency array
     const fetchGames = useCallback(async () => {
         if (!user) return;
         try {
@@ -60,26 +75,28 @@ export function Games() {
                 };
                 const res = await axios.get(`${process.env.REACT_APP_API_URL}/games`, { params });
 
-                // For each game, fetch player count
-                const gamesWithPlayerCount = await Promise.all(res.data.map(async (game) => {
-                    try {
-                    const playersRes = await axios.get(`${process.env.REACT_APP_API_URL}/players/game/${game._id}`);
-                    const acceptedPlayers = playersRes.data.filter(p => p.invitation_status === 'accepted');
-                    
-                    // If player is on waitlist, fetch their position
-                    if (game.playerStatus === 'waitlist') {
-                        await fetchWaitlistPosition(game._id);
-                    }
-                    
-                    return {
-                        ...game,
-                        acceptedPlayersCount: acceptedPlayers.length
-                    };
-                    } catch (err) {
-                    console.error(`Error fetching players for game ${game._id}:`, err);
-                    return game;
-                    }
-                }));
+                // For each game, fetch player count and waitlist position if needed
+                const gamesWithPlayerCount = await Promise.all(
+                    res.data.map(async (game) => {
+                        try {
+                            const playersRes = await axios.get(`${process.env.REACT_APP_API_URL}/players/game/${game._id}`);
+                            const acceptedPlayers = playersRes.data.filter(p => p.invitation_status === 'accepted');
+
+                            // If player is on waitlist, fetch their position
+                            if (game.playerStatus === 'waitlist') {
+                                await fetchWaitlistPosition(game._id);
+                            }
+
+                            return {
+                                ...game,
+                                acceptedPlayersCount: acceptedPlayers.length
+                            };
+                        } catch (err) {
+                            console.error(`Error fetching players for game ${game._id}:`, err);
+                            return game;
+                        }
+                    })
+                );
                 setGames(gamesWithPlayerCount);
             } else if (tab === 'Invitations') {
                 const res = await axios.get(`${process.env.REACT_APP_API_URL}/players/invitations/${user._id}`);
@@ -92,7 +109,7 @@ export function Games() {
         } catch (error) {
             console.error('Error fetching games:', error);
         }
-    }, [tab, user, filterParams]);
+    }, [tab, user, filterParams, fetchWaitlistPosition]);
 
     // Apply filters when they change in Public Games tab
     useEffect(() => {
@@ -168,7 +185,7 @@ export function Games() {
                     ...prev,
                     [gameId]: position
                 }));
-            }    
+            }
 
             // Update the local games state to reflect the status change
             setGames(prevGames =>
@@ -186,18 +203,6 @@ export function Games() {
         }
     };
 
-    // fetch waitlist position when needed
-    const fetchWaitlistPosition = async (gameId) => {
-        try {
-          const res = await axios.get(`${process.env.REACT_APP_API_URL}/players/waitlist/${gameId}/${user._id}`);
-          setWaitlistPositions(prev => ({
-            ...prev,
-            [gameId]: res.data.position
-          }));
-        } catch (error) {
-          console.error('Error fetching waitlist position:', error);
-        }
-      };
 
     // Render function for status column in game tables
     // Render function for status column in game tables
