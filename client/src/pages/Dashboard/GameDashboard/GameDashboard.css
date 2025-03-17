@@ -273,24 +273,32 @@
 }
 
 .join-request-item {
+    display: flex;
     margin-bottom: 5px;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .join-request-profile {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    width: 75%;
 }
 
 .join-request-actions {
     display: flex;
+    flex-direction: column;
     gap: 8px;
+    justify-content: flex-end;
+    align-items: flex-end;
 }
 
 .accept-button.small,
 .decline-button.small {
     font-size: 12px;
     padding: 5px 10px;
+    min-width: 64px;
 }
 
 .loading-indicator {

@@ -8,6 +8,7 @@ const playerSchema = new mongoose.Schema({
         enum: ['pending', 'accepted', 'rejected', 'requested', 'waitlist'], // Added 'waitlist' status
         default: 'pending'
     },
+    rejection_reason: { type: String, default: null }, // New field for rejection reason
     buy_in_amount: { type: Number, default: 0.00 },
     cash_out_amount: { type: Number, default: 0.00 },
     created_at: { type: Date, default: Date.now },

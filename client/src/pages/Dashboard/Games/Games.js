@@ -8,14 +8,16 @@ import './Games.css';
 import Sidebar from '../../../components/Sidebar/Sidebar';
 import Table from '../../../components/Table/Table';
 import Filter from '../../../components/Filter/Filter';
+import GameCard from '../../../components/GameCard/GameCard';
 
 export function Games() {
     const [user, setUser] = useState(null);
     const { userId } = useParams();
     const navigate = useNavigate();
     const [page, setPage] = useState('games');
-    const [tab, setTab] = useState('Upcoming Games');
+    const [tab, setTab] = useState('Public Games');
     const [games, setGames] = useState([]);
+    const [requestedGames, setRequestedGames] = useState([]);
     const [invitations, setInvitations] = useState([]);
     const [isRequesting, setIsRequesting] = useState(false);
     const [filterParams, setFilterParams] = useState({});
@@ -50,7 +52,6 @@ export function Games() {
                 });
                 setGames(res.data);
             } else if (tab === 'Public Games') {
-                // For Public Games tab, use the filter parameters
                 const params = {
                     status: 'upcoming',
                     is_public: true,
@@ -83,6 +84,10 @@ export function Games() {
             } else if (tab === 'Invitations') {
                 const res = await axios.get(`${process.env.REACT_APP_API_URL}/players/invitations/${user._id}`);
                 setInvitations(res.data);
+            } else if (tab === 'Requested Games') {
+                // Fetch games where the user has requested to join or was rejected
+                const res = await axios.get(`${process.env.REACT_APP_API_URL}/requested/${user._id}`);
+                setRequestedGames(res.data);
             }
         } catch (error) {
             console.error('Error fetching games:', error);
@@ -215,7 +220,7 @@ export function Games() {
                 </button>
             );
         } else if (game.playerStatus === 'requested') {
-            return <span className="status-tag requested">Request Pending</span>;
+            return <span className="status-tag requested">Pending</span>;
         } else if (game.playerStatus === 'accepted') {
             return <span className="status-tag accepted">Joined</span>;
         } else if (game.playerStatus === 'pending') {
@@ -227,6 +232,8 @@ export function Games() {
                     Waitlist {position ? `(#${position})` : ''}
                 </span>
             );
+        } else if (game.playerStatus === 'rejected') {
+            return <span className="status-tag rejected">Rejected</span>;
         }
         return null;
     };
@@ -252,17 +259,20 @@ export function Games() {
             <div className="logged-content-container">
                 <div className="dashboard-heading"><h1>Games</h1></div>
                 <div className="tab-container">
+                    <button className={`tab${tab === "Public Games" ? "-selected" : ""}`} onClick={() => { setTab('Public Games') }}>
+                        Public Games
+                    </button>
+                    <button className={`tab${tab === "Requested Games" ? "-selected" : ""}`} onClick={() => { setTab('Requested Games') }}>
+                        Requested Games
+                    </button>
+                    <button className={`tab${tab === "Invitations" ? "-selected" : ""}`} onClick={() => { setTab('Invitations') }}>
+                        Invitations
+                    </button>
                     <button className={`tab${tab === "Upcoming Games" ? "-selected" : ""}`} onClick={() => { setTab('Upcoming Games') }}>
                         Upcoming Games
                     </button>
                     <button className={`tab${tab === "Past Games" ? "-selected" : ""}`} onClick={() => { setTab('Past Games') }}>
                         Past Games
-                    </button>
-                    <button className={`tab${tab === "Public Games" ? "-selected" : ""}`} onClick={() => { setTab('Public Games') }}>
-                        Public Games
-                    </button>
-                    <button className={`tab${tab === "Invitations" ? "-selected" : ""}`} onClick={() => { setTab('Invitations') }}>
-                        Invitations
                     </button>
                 </div>
 
@@ -334,6 +344,25 @@ export function Games() {
                     ) : (
                         <div className="no-games-message">You currently have no game invitations.</div>
                     )
+                ) : tab === 'Requested Games' ? (
+                    // New Requested Games tab content with GameCard components
+                    <div className="requested-games-container">
+                        {requestedGames.length > 0 ? (
+                            <div className="game-cards-grid">
+                                {requestedGames.map(game => (
+                                    <GameCard
+                                        key={game._id}
+                                        game={game}
+                                        user={user}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="no-games-message">
+                                You haven't requested to join any games yet.
+                            </div>
+                        )}
+                    </div>
                 ) : (
                     games.length > 0 ? (
                         <Table

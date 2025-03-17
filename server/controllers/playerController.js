@@ -386,9 +386,9 @@ const getGameJoinRequests = async (req, res) => {
 // Reject a join request
 const rejectJoinRequest = async (req, res) => {
     try {
-        const { gameId, hostId, requesterId } = req.body;
+        const { gameId, hostId, requesterId, reason } = req.body;
 
-        // Verify the host is the one rejecting
+        // Verify that the host is the one rejecting the request
         const game = await Game.findById(gameId);
         if (!game) {
             return res.status(404).json({ message: 'Game not found.' });
@@ -398,18 +398,18 @@ const rejectJoinRequest = async (req, res) => {
             return res.status(403).json({ message: 'Only the host can reject join requests.' });
         }
 
-        // Delete the player record
-        const result = await Player.deleteOne({
-            game_id: gameId,
-            user_id: requesterId,
-            invitation_status: 'requested'
-        });
+        // Update the player's status to 'rejected' and store the reason
+        const result = await Player.findOneAndUpdate(
+            { game_id: gameId, user_id: requesterId, invitation_status: 'requested' },
+            { invitation_status: 'rejected', rejection_reason: reason || 'No reason provided' },
+            { new: true }
+        );
 
-        if (result.deletedCount === 0) {
+        if (!result) {
             return res.status(404).json({ message: 'Join request not found.' });
         }
 
-        res.status(200).json({ message: 'Join request rejected successfully.' });
+        res.status(200).json({ message: 'Join request rejected successfully.', rejection_reason: result.rejection_reason });
     } catch (err) {
         console.error('Error rejecting join request:', err);
         res.status(500).json({ message: 'Server error.' });
@@ -440,6 +440,53 @@ const getWaitlistPosition = async (req, res) => {
         res.status(200).json({ position });
     } catch (err) {
         console.error('Error getting waitlist position:', err);
+    }
+}
+const getRejectedRequests = async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        // Find all rejected requests for the user
+        const rejectedRequests = await Player.find({
+            user_id: userId,
+            invitation_status: 'rejected'
+        }).populate('game_id', 'game_name');
+
+        res.status(200).json(rejectedRequests);
+    } catch (err) {
+        console.error('Error fetching rejected requests:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+};
+
+const getRequestedGames = async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        // Find all requested or rejected games for the user
+        const requestedGames = await Player.find({
+            user_id: userId,
+            invitation_status: { $in: ['requested', 'rejected'] }
+        }).populate({
+            path: 'game_id',
+            populate: { path: 'host_id', select: 'username' }
+        });
+
+        // Format the response
+        const games = requestedGames.map(record => {
+            const game = record.game_id;
+            if (!game) return null;
+
+            return {
+                ...game.toObject(),
+                playerStatus: record.invitation_status,
+                rejectionReason: record.rejection_reason || null
+            };
+        }).filter(game => game !== null);
+
+        res.status(200).json(games);
+    } catch (err) {
+        console.error('Error fetching requested games:', err);
         res.status(500).json({ message: 'Server error.' });
     }
 };
@@ -459,5 +506,7 @@ module.exports = {
     requestToJoinGame,
     getGameJoinRequests,
     rejectJoinRequest,
-    getWaitlistPosition
+    getWaitlistPosition,
+    getRejectedRequests,
+    getRequestedGames,
 };
