@@ -7,6 +7,7 @@ import '../Dashboard.css';
 import './Games.css';
 import Sidebar from '../../../components/Sidebar/Sidebar';
 import Table from '../../../components/Table/Table';
+import Filter from '../../../components/Filter/Filter';
 
 export function Games() {
     const [user, setUser] = useState(null);
@@ -16,6 +17,9 @@ export function Games() {
     const [tab, setTab] = useState('Upcoming Games');
     const [games, setGames] = useState([]);
     const [invitations, setInvitations] = useState([]);
+    const [isRequesting, setIsRequesting] = useState(false);
+    const [filterParams, setFilterParams] = useState({});
+    const [waitlistPosition, setWaitlistPositions] = useState({});
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -35,7 +39,7 @@ export function Games() {
         fetchUser();
     }, [userId, navigate]);
 
-    // Wrap fetchGames in useCallback so that its identity is stable and dependencies are explicit.
+    // Wrap fetchGames in useCallback so that its identity is stable
     const fetchGames = useCallback(async () => {
         if (!user) return;
         try {
@@ -45,6 +49,37 @@ export function Games() {
                     params: { status }
                 });
                 setGames(res.data);
+            } else if (tab === 'Public Games') {
+                // For Public Games tab, use the filter parameters
+                const params = {
+                    status: 'upcoming',
+                    is_public: true,
+                    userId: user._id,
+                    ...filterParams
+                };
+                const res = await axios.get(`${process.env.REACT_APP_API_URL}/games`, { params });
+
+                // For each game, fetch player count
+                const gamesWithPlayerCount = await Promise.all(res.data.map(async (game) => {
+                    try {
+                    const playersRes = await axios.get(`${process.env.REACT_APP_API_URL}/players/game/${game._id}`);
+                    const acceptedPlayers = playersRes.data.filter(p => p.invitation_status === 'accepted');
+                    
+                    // If player is on waitlist, fetch their position
+                    if (game.playerStatus === 'waitlist') {
+                        await fetchWaitlistPosition(game._id);
+                    }
+                    
+                    return {
+                        ...game,
+                        acceptedPlayersCount: acceptedPlayers.length
+                    };
+                    } catch (err) {
+                    console.error(`Error fetching players for game ${game._id}:`, err);
+                    return game;
+                    }
+                }));
+                setGames(gamesWithPlayerCount);
             } else if (tab === 'Invitations') {
                 const res = await axios.get(`${process.env.REACT_APP_API_URL}/players/invitations/${user._id}`);
                 setInvitations(res.data);
@@ -52,7 +87,14 @@ export function Games() {
         } catch (error) {
             console.error('Error fetching games:', error);
         }
-    }, [tab, user]);
+    }, [tab, user, filterParams]);
+
+    // Apply filters when they change in Public Games tab
+    useEffect(() => {
+        if (tab === 'Public Games') {
+            fetchGames();
+        }
+    }, [filterParams, tab, fetchGames]);
 
     useEffect(() => {
         if (user) {
@@ -62,10 +104,19 @@ export function Games() {
 
     const handleAcceptInvitation = async (gameId) => {
         try {
-            await axios.post(`${process.env.REACT_APP_API_URL}/players/accept-invitation`, {
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/players/accept-invitation`, {
                 userId: user._id,
                 gameId: gameId
             });
+
+            // Check if the response indicates waitlist status
+            if (response.data.status === 'waitlist' && response.data.position) {
+                setWaitlistPositions(prev => ({
+                    ...prev,
+                    [gameId]: response.data.position
+                }));
+            }
+
             fetchGames();
         } catch (error) {
             console.error('Error accepting invitation:', error);
@@ -89,10 +140,95 @@ export function Games() {
 
     const handleRowClick = (gameId) => {
         if (tab === 'Invitations') {
-            // Do nothing; prevent viewing game details before accepting
             return;
         }
         navigate(`/dashboard/${user._id}/games/game/${gameId}`);
+    };
+
+    const handleRequestToJoin = async (gameId) => {
+        try {
+            setIsRequesting(true);
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/players/request-to-join`, {
+                userId: user._id,
+                gameId: gameId
+            });
+
+            //Check if the response indicates wa`itlist status
+            const newStatus = response.data.status || 'requested';
+            const position = response.data.position;
+
+            //If position is provided update the waitlist position
+            if (position) {
+                setWaitlistPositions(prev => ({
+                    ...prev,
+                    [gameId]: position
+                }));
+            }    
+
+            // Update the local games state to reflect the status change
+            setGames(prevGames =>
+                prevGames.map(game =>
+                    game._id === gameId
+                        ? { ...game, playerStatus: newStatus }
+                        : game
+                )
+            );
+
+            setIsRequesting(false);
+        } catch (error) {
+            console.error('Error requesting to join game:', error);
+            setIsRequesting(false);
+        }
+    };
+
+    // fetch waitlist position when needed
+    const fetchWaitlistPosition = async (gameId) => {
+        try {
+          const res = await axios.get(`${process.env.REACT_APP_API_URL}/players/waitlist/${gameId}/${user._id}`);
+          setWaitlistPositions(prev => ({
+            ...prev,
+            [gameId]: res.data.position
+          }));
+        } catch (error) {
+          console.error('Error fetching waitlist position:', error);
+        }
+      };
+
+    // Render function for status column in game tables
+    // Render function for status column in game tables
+    const renderGameStatus = (game) => {
+        if (game.playerStatus === 'none' && game.is_public) {
+
+            // Check if the game is full by comparing accepted players to game.handed
+            const isFull = game.acceptedPlayersCount >= game.handed
+
+            return (
+                <button
+                    className="request-button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        handleRequestToJoin(game._id);
+                    }}
+                    disabled={isRequesting}
+                >
+                    {isFull ? "Join Waitlist" : "Request to Join"}
+                </button>
+            );
+        } else if (game.playerStatus === 'requested') {
+            return <span className="status-tag requested">Request Pending</span>;
+        } else if (game.playerStatus === 'accepted') {
+            return <span className="status-tag accepted">Joined</span>;
+        } else if (game.playerStatus === 'pending') {
+            return <span className="status-tag pending">Invitation Pending</span>;
+        } else if (game.playerStatus === 'waitlist') {
+            const position = waitlistPosition[game._id];
+            return (
+                <span className="status-tag waitlist">
+                    Waitlist {position ? `(#${position})` : ''}
+                </span>
+            );
+        }
+        return null;
     };
 
     const menus = [
@@ -113,29 +249,55 @@ export function Games() {
     return (
         <div className="dashboard">
             <Sidebar menus={menus} setPage={setPage} page={page} username={user.username} />
-            <div className='logged-content-container'>
-                <div className='dashboard-heading'><h1>Games</h1></div>
-                <div className='tab-container'>
-                    <button
-                        className={`tab${tab === "Upcoming Games" ? "-selected" : ""}`}
-                        onClick={() => { setTab('Upcoming Games') }}
-                    >
+            <div className="logged-content-container">
+                <div className="dashboard-heading"><h1>Games</h1></div>
+                <div className="tab-container">
+                    <button className={`tab${tab === "Upcoming Games" ? "-selected" : ""}`} onClick={() => { setTab('Upcoming Games') }}>
                         Upcoming Games
                     </button>
-                    <button
-                        className={`tab${tab === "Past Games" ? "-selected" : ""}`}
-                        onClick={() => { setTab('Past Games') }}
-                    >
+                    <button className={`tab${tab === "Past Games" ? "-selected" : ""}`} onClick={() => { setTab('Past Games') }}>
                         Past Games
                     </button>
-                    <button
-                        className={`tab${tab === "Invitations" ? "-selected" : ""}`}
-                        onClick={() => { setTab('Invitations') }}
-                    >
+                    <button className={`tab${tab === "Public Games" ? "-selected" : ""}`} onClick={() => { setTab('Public Games') }}>
+                        Public Games
+                    </button>
+                    <button className={`tab${tab === "Invitations" ? "-selected" : ""}`} onClick={() => { setTab('Invitations') }}>
                         Invitations
                     </button>
                 </div>
-                {tab === 'Invitations' ? (
+
+                {tab === 'Public Games' ? (
+                    <div className="public-games-container" style={{ display: 'flex' }}>
+                        <Filter tab={tab} onApply={(filters) => setFilterParams(filters)} />
+                        <div className="games-table" style={{ flex: 1 }}>
+                            {games.length > 0 ? (
+                                <Table
+                                    headers={headers}
+                                    data={games.map((game) => {
+                                        const gameDate = new Date(game.game_date);
+                                        return {
+                                            'name': game.game_name,
+                                            'host': game.host_id.username,
+                                            'location': game.location,
+                                            'date': gameDate.toLocaleDateString(),
+                                            'time': gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                                            'blinds': game.blinds,
+                                            '_id': game._id,
+                                            'is_public': game.is_public,
+                                            'playerStatus': game.playerStatus || 'none',
+                                            'clickable': game.playerStatus === 'accepted'
+                                        };
+                                    })}
+                                    onRowClick={handleRowClick}
+                                    renderStatus={renderGameStatus}
+                                    shadow
+                                />
+                            ) : (
+                                <div className="no-games-message">There are no public games available.</div>
+                            )}
+                        </div>
+                    </div>
+                ) : tab === 'Invitations' ? (
                     invitations.length > 0 ? (
                         <table className="table-container">
                             <thead>
@@ -147,64 +309,52 @@ export function Games() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {invitations
-                                    .filter(invitation => invitation != null && invitation.host_id != null)
-                                    .map((invitation, rowIndex) => {
-                                        const gameDate = new Date(invitation.game_date);
-                                        const formattedDate = gameDate.toLocaleDateString();
-                                        const formattedTime = gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-                                        return (
-                                            <tr key={rowIndex}>
-                                                <td>{invitation.game_name}</td>
-                                                <td>{invitation.host_id.username}</td>
-                                                <td>{formattedDate}</td>
-                                                <td>{formattedTime}</td>
-                                                <td>{invitation.blinds}</td>
-                                                <td className='ad-buttons-container'>
-                                                    <button
-                                                        className="accept-button"
-                                                        onClick={() => handleAcceptInvitation(invitation._id)}
-                                                    >
-                                                        Accept
-                                                    </button>
-                                                    <button
-                                                        className="decline-button"
-                                                        onClick={() => handleDeclineInvitation(invitation._id)}
-                                                    >
-                                                        Decline
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
+                                {invitations.filter(inv => inv != null && inv.host_id != null).map((inv, rowIndex) => {
+                                    const gameDate = new Date(inv.game_date);
+                                    return (
+                                        <tr key={rowIndex}>
+                                            <td>{inv.game_name}</td>
+                                            <td>{inv.host_id.username}</td>
+                                            <td>{gameDate.toLocaleDateString()}</td>
+                                            <td>{gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                                            <td>{inv.blinds}</td>
+                                            <td className="ad-buttons-container">
+                                                <button className="accept-button small" onClick={() => handleAcceptInvitation(inv._id)}>
+                                                    Accept
+                                                </button>
+                                                <button className="decline-button small" onClick={() => handleDeclineInvitation(inv._id)}>
+                                                    Decline
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     ) : (
-                        <div className="no-games-message">
-                            You currently have no game invitations.
-                        </div>
+                        <div className="no-games-message">You currently have no game invitations.</div>
                     )
                 ) : (
                     games.length > 0 ? (
                         <Table
                             headers={headers}
-                            data={games.map(game => {
+                            data={games.map((game) => {
                                 const gameDate = new Date(game.game_date);
-                                const formattedDate = gameDate.toLocaleDateString();
-                                const formattedTime = gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
                                 return {
                                     'name': game.game_name,
                                     'host': game.host_id.username,
                                     'location': game.location,
-                                    'date': formattedDate,
-                                    'time': formattedTime,
+                                    'date': gameDate.toLocaleDateString(),
+                                    'time': gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                                     'blinds': game.blinds,
-                                    '_id': game._id
+                                    '_id': game._id,
+                                    'is_public': game.is_public,
+                                    'playerStatus': game.playerStatus || 'none',
+                                    'clickable': game.playerStatus === 'accepted'
                                 };
                             })}
                             onRowClick={handleRowClick}
+                            renderStatus={renderGameStatus}
                             shadow
                         />
                     ) : (

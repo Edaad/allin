@@ -28,6 +28,58 @@ export function GameDashboard() {
         notes: ''
     });
     const [players, setPlayers] = useState([]);
+    const [joinRequests, setJoinRequests] = useState([]);
+    const [isLoadingRequests, setIsLoadingRequests] = useState(false);
+
+    const fetchJoinRequests = useCallback(async () => {
+        if (!game || !user || !isHost) return;
+
+        try {
+            setIsLoadingRequests(true);
+            const res = await axios.get(
+                `${process.env.REACT_APP_API_URL}/players/requests/${gameId}`,
+                { params: { hostId: user._id } }
+            );
+            setJoinRequests(res.data);
+            setIsLoadingRequests(false);
+        } catch (error) {
+            console.error('Error fetching join requests:', error);
+            setIsLoadingRequests(false);
+        }
+    }, [gameId, game, user, isHost]);
+
+    useEffect(() => {
+        if (isHost && game && game.is_public) {
+            fetchJoinRequests();
+        }
+    }, [isHost, game, fetchJoinRequests]);
+
+    const handleAcceptRequest = async (requesterId) => {
+        try {
+            await axios.post(`${process.env.REACT_APP_API_URL}/players/accept-invitation`, {
+                userId: user._id,  // Host ID
+                gameId: gameId,
+                requesterId: requesterId
+            });
+            fetchJoinRequests();
+            fetchPlayers();
+        } catch (error) {
+            console.error('Error accepting join request:', error);
+        }
+    };
+
+    const handleRejectRequest = async (requesterId) => {
+        try {
+            await axios.post(`${process.env.REACT_APP_API_URL}/players/reject-request`, {
+                hostId: user._id,
+                gameId: gameId,
+                requesterId: requesterId
+            });
+            fetchJoinRequests();
+        } catch (error) {
+            console.error('Error rejecting join request:', error);
+        }
+    };
 
     // Fetch the user data
     useEffect(() => {
@@ -88,7 +140,8 @@ export function GameDashboard() {
                 date: formattedDate,
                 time: formattedTime,
                 notes: gameData.notes || '',
-                handed: gameData.handed
+                handed: gameData.handed,
+                isPublic: gameData.is_public // This is the key change
             });
             // Fetch players after fetching the game details
             fetchPlayers();
@@ -96,6 +149,7 @@ export function GameDashboard() {
             console.error('Error fetching game:', error);
         }
     }, [gameId, fetchPlayers]);
+
 
     // Fetch game details when gameId changes
     useEffect(() => {
@@ -204,7 +258,11 @@ export function GameDashboard() {
             <Sidebar menus={menus} setPage={() => { }} page="host" username={user.username} />
             <div className='logged-content-container game-dashboard'>
                 <div className='dashboard-heading'>
-                    <h1>{game.game_name}</h1>
+                    <h1>
+                        {game.game_name}
+                        {game.is_public && <span className="game-type-tag public">Public</span>}
+                        {!game.is_public && <span className="game-type-tag private">Private</span>}
+                    </h1>
                     <div className='buttons'>
                         {editing ? (
                             <>
@@ -270,6 +328,31 @@ export function GameDashboard() {
                                         ]}
                                     />
                                 </div>
+                                <div className="game-privacy-option">
+                                    <label className="input-label">Game Privacy</label>
+                                    <div className="radio-group">
+                                        <label className="radio-label">
+                                            <input
+                                                type="radio"
+                                                name="isPublic"
+                                                value="false"
+                                                checked={!gameForm.isPublic}
+                                                onChange={() => setGameForm({ ...gameForm, isPublic: false })}
+                                            />
+                                            Private (invite only)
+                                        </label>
+                                        <label className="radio-label">
+                                            <input
+                                                type="radio"
+                                                name="isPublic"
+                                                value="true"
+                                                checked={gameForm.isPublic}
+                                                onChange={() => setGameForm({ ...gameForm, isPublic: true })}
+                                            />
+                                            Public (open to join requests)
+                                        </label>
+                                    </div>
+                                </div>
                                 <Input
                                     name='location'
                                     type='text'
@@ -305,9 +388,15 @@ export function GameDashboard() {
                                         placeholder='Enter any additional notes about the game...'
                                     />
                                 </div>
-                            </form >
+                            </form>
                         ) : (
                             <div className='game-details'>
+                                <div className='detail-item'>
+                                    <span className='detail-label'>Game Type: </span>
+                                    <span className='detail-value'>
+                                        {game.is_public ? 'Public (open to join requests)' : 'Private (invite only)'}
+                                    </span>
+                                </div>
                                 {isHost && (
                                     <div className='detail-item'>
                                         <span className='detail-label'>Handed: </span>
@@ -336,9 +425,8 @@ export function GameDashboard() {
                                     <span className='detail-value notes-value'>{game.notes || 'No notes provided'}</span>
                                 </div>
                             </div>
-                        )
-                        }
-                    </div >
+                        )}
+                    </div>
                     <div className='summary-item players-item'>
                         <div className='summary-header'>
                             <h2>Players</h2>
@@ -375,12 +463,49 @@ export function GameDashboard() {
                                         </div>
                                     </>
                                 )}
+
+                                {/* Join Requests Section for Public Games */}
+                                {isHost && game.is_public && (
+                                    <div className="join-requests-section">
+                                        <h3>Join Requests {isLoadingRequests && <span className="loading-indicator">Loading...</span>}</h3>
+                                        {joinRequests.length > 0 ? (
+                                            <ul className="join-requests-list">
+                                                {joinRequests.map(request => (
+                                                    <li key={request._id} className="join-request-item">
+                                                        <div className="join-request-profile">
+                                                            <Profile
+                                                                data={request.user_id}
+                                                                size="compact"
+                                                            />
+                                                            <div className="join-request-actions">
+                                                                <button
+                                                                    className="accept-button small"
+                                                                    onClick={() => handleAcceptRequest(request.user_id._id)}
+                                                                >
+                                                                    Accept
+                                                                </button>
+                                                                <button
+                                                                    className="decline-button small"
+                                                                    onClick={() => handleRejectRequest(request.user_id._id)}
+                                                                >
+                                                                    Decline
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <p className="no-requests-message">No pending join requests</p>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
-                </div >
-            </div >
-        </div >
+                </div>
+            </div>
+        </div>
     );
 }
 

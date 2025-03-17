@@ -2,7 +2,7 @@
 
 import './Table.css';
 
-const Table = ({ headers, data, onRowClick, style, shadow, compact, disableRowClick }) => {
+const Table = ({ headers, data, onRowClick, style, shadow, compact, disableRowClick, renderStatus }) => {
     return (
         <div
             style={{
@@ -19,6 +19,7 @@ const Table = ({ headers, data, onRowClick, style, shadow, compact, disableRowCl
                                 {header}
                             </th>
                         ))}
+                        {renderStatus && <th className={compact ? "th-compact" : ""}>Status</th>}
                     </tr>
                 </thead>
                 <tbody>
@@ -26,15 +27,20 @@ const Table = ({ headers, data, onRowClick, style, shadow, compact, disableRowCl
                         <tr
                             key={rowIndex}
                             onClick={() => {
-                                if (!disableRowClick) onRowClick(item._id);
+                                if (!disableRowClick && item.clickable !== false) onRowClick(item._id);
                             }}
-                            className={disableRowClick ? 'row-disabled' : ''}
+                            className={disableRowClick || item.clickable === false ? 'row-disabled' : ''}
                         >
                             {headers.map((header, colIndex) => (
                                 <td key={colIndex} className={compact ? "td-compact" : ""}>
                                     {item[header.toLowerCase()]}
                                 </td>
                             ))}
+                            {renderStatus && (
+                                <td className={compact ? "td-compact" : ""}>
+                                    {renderStatus(item)}
+                                </td>
+                            )}
                         </tr>
                     ))}
                 </tbody>

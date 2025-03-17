@@ -1,5 +1,3 @@
-// models/game.js
-
 const mongoose = require('mongoose');
 
 const gameSchema = new mongoose.Schema({
@@ -11,12 +9,15 @@ const gameSchema = new mongoose.Schema({
     blinds: { type: String, required: true },
     handed: { type: Number, required: true },
     notes: { type: String, default: '' },
+    is_public: { type: Boolean, default: false }, // New field for public/private games
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
+    waitlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
 });
 
 // Index for faster querying by host and status
 gameSchema.index({ host_id: 1, game_status: 1 });
+gameSchema.index({ is_public: 1, game_status: 1 }); // New index for querying public games
 
 // Middleware to remove related players when a game is deleted
 gameSchema.pre('remove', async function (next) {
