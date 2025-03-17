@@ -75,6 +75,11 @@ table {
     color: white;
 }
 
+.status-tag.waitlist {
+    background-color: #9b59b6;
+    color: white;
+}
+
 .request-button {
     background: none;
     font-size: 14px;
@@ -105,3 +110,9 @@ table {
 .row-disabled:hover {
     background-color: inherit;
 }
+
+.games-capacity-info {
+    font-size: 12px;
+    color: #777;
+    margin-top: 4px;
+  }
