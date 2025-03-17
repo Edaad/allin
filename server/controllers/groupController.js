@@ -68,14 +68,45 @@ const getGroupById = async (req, res) => {
 // Create a new group
 const createGroup = async (req, res) => {
     try {
+        console.log('Incoming group creation request:', req.body);
+
         // Ensure boolean conversion for is_public
         const groupData = {
             ...req.body,
             is_public: req.body.is_public === true
         };
 
+        // Validate group name
+        if (!groupData.group_name || groupData.group_name.trim() === '') {
+            console.error('Group name is empty or undefined');
+            return res.status(400).json({ message: 'Group name is required' });
+        }
+
+        // Trim the group name
+        groupData.group_name = groupData.group_name.trim();
+
         const newGroup = new Group(groupData);
-        await newGroup.save();
+
+        try {
+            await newGroup.save();
+        } catch (saveError) {
+            console.error('Error saving group:', saveError);
+
+            // More detailed error logging
+            if (saveError.code === 11000) {
+                console.error('Duplicate key error:', saveError.keyValue);
+                return res.status(400).json({
+                    message: 'A group with this name may already exist',
+                    error: saveError.message,
+                    details: saveError.keyValue
+                });
+            }
+
+            return res.status(400).json({
+                message: 'Error creating group',
+                error: saveError.message
+            });
+        }
 
         // Automatically add the creator as an accepted member
         const newMember = new GroupMember({
@@ -83,12 +114,21 @@ const createGroup = async (req, res) => {
             group_id: newGroup._id,
             membership_status: 'accepted'
         });
-        await newMember.save();
+
+        try {
+            await newMember.save();
+        } catch (memberSaveError) {
+            console.error('Error saving group member:', memberSaveError);
+            // Optionally, you might want to delete the group if member save fails
+        }
 
         res.status(201).send(newGroup);
     } catch (err) {
-        console.error('Error creating group:', err);
-        res.status(400).send(err);
+        console.error('Unexpected error in group creation:', err);
+        res.status(500).json({
+            message: 'Unexpected error occurred',
+            error: err.message
+        });
     }
 };
 
