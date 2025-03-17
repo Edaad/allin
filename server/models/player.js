@@ -5,7 +5,7 @@ const playerSchema = new mongoose.Schema({
     game_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Game', required: true },
     invitation_status: {
         type: String,
-        enum: ['pending', 'accepted', 'rejected', 'requested'],
+        enum: ['pending', 'accepted', 'rejected', 'requested', 'waitlist'], // Added 'waitlist' status
         default: 'pending'
     },
     rejection_reason: { type: String, default: null }, // New field for rejection reason

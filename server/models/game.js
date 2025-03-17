@@ -12,6 +12,7 @@ const gameSchema = new mongoose.Schema({
     is_public: { type: Boolean, default: false }, // New field for public/private games
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
+    waitlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
 });
 
 // Index for faster querying by host and status
