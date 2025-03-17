@@ -171,12 +171,28 @@ const acceptInvitation = async (req, res) => {
         // Determine if the new player goes to the main list or waitlist
         if (acceptedPlayersCount < game.handed) {
             player.invitation_status = 'accepted';
+            await player.save();
+            return res.status(200).json({ 
+                message: 'Join request accepted successfully.',
+                status: 'accepted'
+            });
         } else {
             player.invitation_status = 'waitlist';
+            await player.save();
+            
+            // Get the player's position in the waitlist
+            const waitlistPosition = await Player.countDocuments({
+                game_id: gameId,
+                invitation_status: 'waitlist',
+                createdAt: { $lte: player.createdAt }
+            });
+            
+            return res.status(200).json({ 
+                message: 'Game is full. You have been added to the waitlist.',
+                status: 'waitlist',
+                position: waitlistPosition
+            });
         }
-        await player.save();
-
-        return res.status(200).json({ message: `Join request ${player.invitation_status} successfully.` });
     } catch (err) {
         console.error('Error accepting invitation/request:', err);
         res.status(500).json({ message: 'Server error.' });
@@ -266,6 +282,11 @@ const removePlayer = async (req, res) => {
                 if (waitlistedPlayer) {
                     waitlistedPlayer.invitation_status = 'accepted';
                     await waitlistedPlayer.save();
+
+                    return res.status(200).json({ 
+                        message: 'Player removed and waitlisted player promoted.',
+                        promotedPlayer: waitlistedPlayer.user_id
+                    });
                 }
             }
         }
@@ -304,20 +325,29 @@ const requestToJoinGame = async (req, res) => {
             invitation_status: 'accepted'
         });
 
-        if (acceptedPlayers >= game.handed) {
-            return res.status(400).json({ message: 'This game is already at full capacity.' });
-        }
-
         // Create a new player record with status 'requested'
         const newPlayer = new Player({
             user_id: userId,
             game_id: gameId,
-            invitation_status: 'requested'
+              // If game is full, add to waitlist, otherwise set to 'requested'
+            invitation_status: acceptedPlayers >= game.handed ? 'waitlist' : 'requested'
         });
 
         await newPlayer.save();
 
-        res.status(201).json({ message: 'Join request sent successfully.' });
+          // Return appropriate message based on the status
+        const message = acceptedPlayers >= game.handed 
+            ? 'Added to waitlist. You will be notified when a spot becomes available.' 
+            : 'Join request sent successfully.';
+
+        res.status(201).json({ 
+            message, 
+            status: newPlayer.invitation_status,
+            position: acceptedPlayers >= game.handed ? await Player.countDocuments({
+                game_id: gameId,
+                invitation_status: 'waitlist'
+            }) : null
+        });
     } catch (err) {
         console.error('Error requesting to join game:', err);
         res.status(500).json({ message: 'Server error.' });
@@ -386,6 +416,34 @@ const rejectJoinRequest = async (req, res) => {
     }
 };
 
+const getWaitlistPosition = async (req, res) => {
+    try {
+        const { gameId, userId } = req.params;
+        
+        const player = await Player.findOne({
+            game_id: gameId,
+            user_id: userId,
+            invitation_status: 'waitlist'
+        });
+        
+        if (!player) {
+            return res.status(404).json({ message: 'Player not found on waitlist.' });
+        }
+        
+        // Count how many players are ahead in the waitlist (created earlier)
+        const position = await Player.countDocuments({
+            game_id: gameId,
+            invitation_status: 'waitlist',
+            createdAt: { $lte: player.createdAt }
+        });
+        
+        res.status(200).json({ position });
+    } catch (err) {
+        console.error('Error getting waitlist position:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+};
+
 
 // Export all controller functions
 module.exports = {
@@ -401,4 +459,5 @@ module.exports = {
     requestToJoinGame,
     getGameJoinRequests,
     rejectJoinRequest,
+    getWaitlistPosition
 };

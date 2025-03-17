@@ -15,6 +15,7 @@ const {
     requestToJoinGame,
     getGameJoinRequests,
     rejectJoinRequest,
+    getWaitlistPosition
 
 } = require('../controllers/playerController');
 
@@ -31,6 +32,7 @@ router.post('/players/remove-player', removePlayer);
 router.post('/players/request-to-join', requestToJoinGame);
 router.get('/players/requests/:gameId', getGameJoinRequests);
 router.post('/players/reject-request', rejectJoinRequest);
+router.get('/players/waitlist/:gameId/:userId', getWaitlistPosition);
 
 
 // Export the router
