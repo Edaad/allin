@@ -8,20 +8,21 @@ import './Overview.css';
 import Sidebar from '../../../components/Sidebar/Sidebar';
 import Table from '../../../components/Table/Table';
 import Profile from '../../../components/Profile/Profile';
+import GameCard from '../../../components/GameCard/GameCard';
 
 export function Overview() {
     const [user, setUser] = useState(null);
     const { userId, menuItem } = useParams();
     const navigate = useNavigate();
     const [page, setPage] = useState(menuItem || 'overview');
-    // const [data, setData] = useState([]);
     const [friends, setFriends] = useState([]);
+    const [userGames, setUserGames] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const loggedUser = JSON.parse(localStorage.getItem('user'));
         if (loggedUser && loggedUser._id === userId) {
             setUser(loggedUser);
-            // Remove setting friends from localStorage
         } else {
             navigate('/signin'); // Redirect to sign-in if no user data found or user ID does not match
         }
@@ -31,7 +32,7 @@ export function Overview() {
         setPage(menuItem || 'overview');
     }, [menuItem]);
 
-    // New useEffect to fetch user data including friends
+    // Fetch user data including friends
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -47,6 +48,26 @@ export function Overview() {
 
         fetchUserData();
     }, [userId, navigate]);
+
+    // Fetch user's games
+    useEffect(() => {
+        const fetchUserGames = async () => {
+            if (!user) return;
+
+            setIsLoading(true);
+            try {
+                const res = await axios.get(`${process.env.REACT_APP_API_URL}/games/player/${userId}`);
+                // Get the most recent 3 games for the overview page
+                setUserGames(res.data.slice(0, 3));
+            } catch (error) {
+                console.error('Error fetching user games:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchUserGames();
+    }, [userId, user]);
 
     const menus = [
         { title: 'Overview', page: 'overview' },
@@ -99,10 +120,26 @@ export function Overview() {
                                     className="summary-link"
                                     onClick={() => navigate(`/dashboard/${userId}/games`)}
                                 >
-                                    Games
+                                    View All
                                 </div>
                             </div>
-                            <Table headers={headers} data={tableData} compact />
+                            {isLoading ? (
+                                <div className="loading-games">Loading your games...</div>
+                            ) : (
+                                <div className="overview-game-cards">
+                                    {userGames.length > 0 ? (
+                                        userGames.map(game => (
+                                            <GameCard
+                                                key={game._id}
+                                                game={game}
+                                                user={user}
+                                            />
+                                        ))
+                                    ) : (
+                                        <p>You don't have any upcoming games.</p>
+                                    )}
+                                </div>
+                            )}
                         </div>
                         <div className="summary-item">
                             <div className="summary-header">

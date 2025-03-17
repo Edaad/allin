@@ -54,10 +54,15 @@ table {
 }
 
 .status-tag {
+    display: flex;
     font-size: 14px;
     padding: 3px 8px;
     border-radius: 4px;
     white-space: nowrap;
+    width: calc(100% - 16px);
+    text-align: center;
+    align-items: center;
+    justify-content: center;
 }
 
 .status-tag.requested {
@@ -73,6 +78,24 @@ table {
 .status-tag.pending {
     background-color: #95a5a6;
     color: white;
+}
+
+.status-tag.rejected {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.rejected-status {
+    display: flex;
+    align-items: center;
+}
+
+.rejection-reason {
+    margin-left: 8px;
+    cursor: help;
+    color: #d32f2f;
+    font-size: 1.2em;
+    font-weight: bold;
 }
 
 .request-button {

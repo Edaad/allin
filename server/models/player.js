@@ -5,9 +5,10 @@ const playerSchema = new mongoose.Schema({
     game_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Game', required: true },
     invitation_status: {
         type: String,
-        enum: ['pending', 'accepted', 'rejected', 'requested'], // Added 'requested' status
+        enum: ['pending', 'accepted', 'rejected', 'requested'],
         default: 'pending'
     },
+    rejection_reason: { type: String, default: null }, // New field for rejection reason
     buy_in_amount: { type: Number, default: 0.00 },
     cash_out_amount: { type: Number, default: 0.00 },
     created_at: { type: Date, default: Date.now },
