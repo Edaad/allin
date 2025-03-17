@@ -15,7 +15,6 @@ const groupSchema = new mongoose.Schema({
 // Index for faster querying
 groupSchema.index({ admin_id: 1 });
 groupSchema.index({ is_public: 1 });
-groupSchema.index({ group_name: 1, admin_id: 1 }, { unique: true });
 
 // Middleware to remove related group members when a group is deleted
 groupSchema.pre('remove', async function (next) {
