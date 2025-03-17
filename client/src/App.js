@@ -11,6 +11,7 @@ import { Bankroll } from './pages/Dashboard/Bankroll/Bankroll';
 import { Games } from './pages/Dashboard/Games/Games';
 import { Account } from './pages/Dashboard/Account/Account';
 import { GameDashboard } from './pages/Dashboard/GameDashboard/GameDashboard';
+import { GroupDashboard } from './pages/Dashboard/GroupDashboard/GroupDashboard';
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
             <Route path="/dashboard/:userId/host/game/:gameId/edit" element={<GameDashboard />} />
             <Route path="/dashboard/:userId/community" element={<Community />} />
             <Route path="/dashboard/:userId/bankroll" element={<Bankroll />} />
+            <Route path="/dashboard/:userId/groups/:groupId" element={<GroupDashboard />} />
             {/* Add other specific routes here if needed */}
           </Route>
         </Routes>

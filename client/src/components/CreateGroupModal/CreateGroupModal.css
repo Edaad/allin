@@ -1,0 +1,85 @@
+/* src/components/CreateGroupModal/CreateGroupModal.css */
+.create-group-heading {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    color: #343434;
+}
+
+.create-group-error {
+    color: #e74c3c;
+    margin-bottom: 1rem;
+    padding: 8px;
+    background-color: rgba(231, 76, 60, 0.1);
+    border-radius: 4px;
+}
+
+.create-group-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.create-button {
+    font-size: 1rem;
+    text-align: center;
+    background: none;
+    border: solid 2px;
+    color: rgb(53, 115, 55);
+    border-color: rgb(53, 115, 55);
+    padding: 0.5rem 1rem;
+    border-radius: 2px;
+    transition: background-color 0.5s ease, color 0.5s ease;
+    cursor: pointer;
+}
+
+.create-button:hover:not(:disabled) {
+    background-color: rgb(53, 115, 55);
+    color: white;
+}
+
+.create-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.cancel-button {
+    font-size: 1rem;
+    text-align: center;
+    background: none;
+    border: none;
+    color: #666;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.cancel-button:hover {
+    color: #333;
+}
+
+.group-privacy-option {
+    margin: 1rem 0;
+}
+
+.textarea-container {
+    margin-bottom: 1rem;
+}
+
+.textarea-container textarea {
+    width: 100%;
+    resize: vertical;
+    min-height: 80px;
+    border: none;
+    border-bottom: 1.5px solid rgb(219, 219, 219);
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px;
+    padding: 8px 4px;
+    outline: none;
+}
+
+.textarea-container textarea:focus {
+    border-bottom: 1.5px solid #585858;
+    transition: 0.5s ease;
+}
