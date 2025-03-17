@@ -1,0 +1,353 @@
+/* src/pages/Dashboard/GroupDashboard/GroupDashboard.css */
+
+/* Layout structure similar to GameDashboard */
+.group-dashboard-container {
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+    width: 100%;
+}
+
+/* Banner styles */
+.group-banner {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.group-banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* This ensures the image covers the area without distortion */
+}
+
+/* Group info section */
+.group-info-section {
+    flex: 7;
+    padding: 30px;
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0px 2px 7px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+}
+
+/* Members section */
+.members-section {
+    flex: 5;
+    padding: 30px;
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0px 2px 7px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+}
+
+/* Profile image */
+.group-profile {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.group-profile-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #f0f0f0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Group details styling */
+.group-details {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.detail-item {
+    margin-bottom: 10px;
+}
+
+.detail-label {
+    font-weight: 700;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.detail-value {
+    font-weight: normal;
+}
+
+.description-value {
+    margin-top: 10px;
+    white-space: pre-wrap;
+    line-height: 1.5;
+}
+
+/* Form styling */
+.group-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Invite friends section */
+.invite-friends-container {
+    margin-top: 20px;
+}
+
+.invite-friends-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: 15px;
+}
+
+.invite-friend-item {
+    display: flex;
+    align-items: center;
+}
+
+.friend-label {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    cursor: pointer;
+}
+
+.friend-label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    margin-right: 10px;
+    accent-color: rgb(53, 115, 55);
+}
+
+.invite-button {
+    margin-top: 15px;
+    background: none;
+    font-size: 15px;
+    font-weight: 600;
+    color: rgb(53, 115, 55);
+    border: solid 2px;
+    border-color: rgb(53, 115, 55);
+    border-radius: 2px;
+    padding: 10px 15px;
+    transition: background-color 0.5s ease, color 0.5s ease;
+    align-self: flex-start;
+}
+
+.invite-button:hover:not(:disabled) {
+    background-color: rgb(53, 115, 55);
+    color: white;
+}
+
+.invite-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Join requests section */
+.join-requests-section {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.join-requests-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.join-request-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding: 5px 0;
+}
+
+.join-request-profile {
+    flex: 1;
+}
+
+.join-request-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.accept-button.small,
+.decline-button.small {
+    font-size: 12px;
+    padding: 5px 10px;
+}
+
+.loading-indicator {
+    font-size: 14px;
+    color: #7f8c8d;
+    margin-left: 10px;
+    font-weight: normal;
+}
+
+.no-requests-message {
+    font-style: italic;
+    color: #7f8c8d;
+}
+
+/* Group type tags */
+.group-type-tag {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-left: 10px;
+}
+
+.group-type-tag.public {
+    background-color: #3498db;
+    color: white;
+}
+
+.group-type-tag.private {
+    background-color: #95a5a6;
+    color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1100px) {
+    .group-dashboard-container {
+        flex-direction: column;
+    }
+
+    .group-info-section,
+    .members-section {
+        width: 100%;
+    }
+}
+
+.group-dashboard .dashboard-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Buttons at the top right */
+.group-dashboard .buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.group-dashboard .buttons button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+/* Edit & Save buttons */
+.group-dashboard .buttons .edit,
+.group-dashboard .buttons .save {
+    background: none;
+    color: rgb(53, 115, 55);
+    border: solid 2px rgb(53, 115, 55);
+    border-radius: 2px;
+    padding: 11px;
+}
+
+.group-dashboard .buttons .edit:hover,
+.group-dashboard .buttons .save:hover {
+    background-color: rgb(53, 115, 55);
+    color: white;
+}
+
+/* Delete button */
+.group-dashboard .buttons .delete {
+    background: none;
+    color: rgb(255, 0, 0);
+    border: solid 2px rgb(255, 0, 0);
+    border-radius: 2px;
+    padding: 11px;
+}
+
+.group-dashboard .buttons .delete:hover {
+    background-color: rgb(255, 0, 0);
+    color: white;
+}
+
+/* Cancel button */
+/* .group-dashboard .buttons .cancel {
+    background: none;
+    color: #343434;
+    border: solid 2px #ccc;
+    border-radius: 2px;
+    padding: 11px;
+} */
+
+.group-dashboard .dashboard-heading .cancel {
+    margin: 0;
+}
+
+/* .group-dashboard .buttons .cancel:hover {
+    background-color: #ccc;
+    color: white;
+} */
+
+/* Leave Group button */
+.group-dashboard .buttons .leave-group {
+    background: none;
+    color: rgb(255, 0, 0);
+    border: solid 2px rgb(255, 0, 0);
+    border-radius: 2px;
+    padding: 11px;
+}
+
+.group-dashboard .buttons .leave-group:hover {
+    background-color: rgb(255, 0, 0);
+    color: white;
+}
+
+/* Request to Join button */
+.group-dashboard .buttons .request-button {
+    background: none;
+    color: #0073e6;
+    border: solid 2px #0073e6;
+    border-radius: 2px;
+    padding: 11px;
+}
+
+.group-dashboard .buttons .request-button:hover {
+    background-color: #0073e6;
+    color: white;
+}
+
+/* Back button */
+.group-dashboard .buttons .back {
+    background: none;
+    color: #343434;
+    border: none;
+    border-radius: 2px;
+    padding: 11px;
+}
+
+.group-dashboard .buttons .back:hover {
+    font-weight: 700;
+}
+
+.group-privacy-option {
+    margin: 0;
+}
+
+.summary-header {
+    margin-bottom: 15px;
+}
