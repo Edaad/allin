@@ -124,12 +124,14 @@ const getGamePlayers = async (req, res) => {
 // Accept a game invitation
 const acceptInvitation = async (req, res) => {
     try {
+        let player;
+        let game;
         const { userId, gameId, requesterId } = req.body;
 
         // If requesterId is provided, it's a host accepting a join request
         if (requesterId) {
             // Verify the user is the host
-            const game = await Game.findById(gameId);
+            game = await Game.findById(gameId);
             if (!game) {
                 return res.status(404).json({ message: 'Game not found.' });
             }
@@ -139,36 +141,42 @@ const acceptInvitation = async (req, res) => {
             }
 
             // Find the player document
-            const player = await Player.findOne({
+            player = await Player.findOne({
                 user_id: requesterId,
                 game_id: gameId,
                 invitation_status: 'requested'
             });
-
+            //TODO: Changes made in the following parts fix if needed
             if (!player) {
                 return res.status(404).json({ message: 'Join request not found.' });
             }
-
-            // Update the invitation_status to 'accepted'
-            player.invitation_status = 'accepted';
-            await player.save();
-
-            return res.status(200).json({ message: 'Join request accepted successfully.' });
-        }
-        // Original functionality for accepting invitations
-        else {
-            // Find the player document
-            const player = await Player.findOne({ user_id: userId, game_id: gameId });
+        } else {
+            // User is accepting their own invitation
+            player = await Player.findOne({ user_id: userId, game_id: gameId });
             if (!player) {
                 return res.status(404).json({ message: 'Invitation not found.' });
             }
-
-            // Update the invitation_status to 'accepted'
-            player.invitation_status = 'accepted';
-            await player.save();
-
-            return res.status(200).json({ message: 'Invitation accepted successfully.' });
+            game = await Game.findById(gameId);
+            if (!game) {
+                return res.status(404).json({ message: 'Game not found.' });
+            }
         }
+
+        // Count how many players are currently accepted
+        const acceptedPlayersCount = await Player.countDocuments({
+            game_id: gameId,
+            invitation_status: 'accepted'
+        });
+
+        // Determine if the new player goes to the main list or waitlist
+        if (acceptedPlayersCount < game.handed) {
+            player.invitation_status = 'accepted';
+        } else {
+            player.invitation_status = 'waitlist';
+        }
+        await player.save();
+
+        return res.status(200).json({ message: `Join request ${player.invitation_status} successfully.` });
     } catch (err) {
         console.error('Error accepting invitation/request:', err);
         res.status(500).json({ message: 'Server error.' });
@@ -218,6 +226,7 @@ const getInvitationsForPlayer = async (req, res) => {
     }
 };
 
+//todo: changes made in removePlayer, fix if needed
 const removePlayer = async (req, res) => {
     const { gameId, inviterId, inviteeId } = req.body;
     try {
@@ -231,15 +240,35 @@ const removePlayer = async (req, res) => {
             return res.status(403).json({ message: 'You are not authorized to remove this player from the game.' });
         }
 
+        // Remove the player record (it could be in any status: accepted, waitlist, or requested)
         const result = await Player.findOneAndDelete({
             game_id: gameId,
             user_id: inviteeId,
+            invitation_status: { $in: ['accepted', 'waitlist', 'requested'] }
         });
 
         if (!result) {
             return res.status(404).json({ message: 'Player not found in the game.' });
         }
 
+        // If an accepted player is removed, check for waitlisted players to promote
+        if (result.invitation_status === 'accepted') {
+            const acceptedPlayersCount = await Player.countDocuments({
+                game_id: gameId,
+                invitation_status: 'accepted'
+            });
+            if (acceptedPlayersCount < game.handed) {
+                // Promote the earliest waitlisted player
+                const waitlistedPlayer = await Player.findOne({
+                    game_id: gameId,
+                    invitation_status: 'waitlist'
+                }).sort({ created_at: 1 });
+                if (waitlistedPlayer) {
+                    waitlistedPlayer.invitation_status = 'accepted';
+                    await waitlistedPlayer.save();
+                }
+            }
+        }
         res.status(200).json({ message: 'Player removed from the game.' });
     } catch (error) {
         console.error('Error removing player:', error);
