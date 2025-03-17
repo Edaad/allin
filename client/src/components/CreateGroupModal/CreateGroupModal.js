@@ -51,6 +51,15 @@ function CreateGroupModal({ open, onClose, user, onGroupCreated }) {
                 onGroupCreated(response.data);
             }
 
+            // Reset the form state to clear the fields
+            setGroupData({
+                group_name: '',
+                description: '',
+                profile_image: '',
+                banner_image: '',
+                is_public: false
+            });
+            setError('');
             onClose();
         } catch (error) {
             console.error('Error creating group:', error);
@@ -59,6 +68,7 @@ function CreateGroupModal({ open, onClose, user, onGroupCreated }) {
             setIsSubmitting(false);
         }
     };
+
 
     return (
         <Modal
