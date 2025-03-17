@@ -32,6 +32,7 @@ export function GroupDashboard() {
     const [selectedRequesterId, setSelectedRequesterId] = useState(null);
     const [friends, setFriends] = useState([]);
     const [selectedFriends, setSelectedFriends] = useState([]);
+    const [requestSent, setRequestSent] = useState(false);
 
     // Fetch user data
     useEffect(() => {
@@ -299,6 +300,7 @@ export function GroupDashboard() {
     };
 
     // Handle request to join public group
+    // Update the handleRequestToJoin function in GroupDashboard.js
     const handleRequestToJoin = async () => {
         try {
             await axios.post(`${process.env.REACT_APP_API_URL}/group-members/request-to-join`, {
@@ -306,8 +308,15 @@ export function GroupDashboard() {
                 groupId: groupId
             });
 
-            // Refresh group to update membership status
-            fetchGroup();
+            // Instead of fetching the group again, manually update the state
+            setGroup(prevGroup => ({
+                ...prevGroup,
+                membershipStatus: 'requested'
+            }));
+
+            // Disable the request button by updating a local state variable
+            setRequestSent(true);
+
         } catch (error) {
             console.error('Error requesting to join group:', error);
         }
@@ -357,7 +366,13 @@ export function GroupDashboard() {
                                     <button className="leave-group" onClick={handleLeaveGroup}>Leave Group</button>
                                 )}
                                 {!isAdmin && !isMember && group.is_public && (
-                                    <button className="request-button" onClick={handleRequestToJoin}>Request to Join</button>
+                                    requestSent || group.membershipStatus === 'requested' ? (
+                                        <span className="status-tag requested">Request Pending</span>
+                                    ) : (
+                                        <button className="request-button" onClick={handleRequestToJoin}>
+                                            Request to Join
+                                        </button>
+                                    )
                                 )}
                                 <button className="back" onClick={() => navigate(-1)}>Back</button>
                             </>
