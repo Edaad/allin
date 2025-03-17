@@ -156,7 +156,7 @@ export function Games() {
                     }}
                     disabled={isRequesting}
                 >
-                    Request to Join
+                    Request
                 </button>
             );
         } else if (game.playerStatus === 'requested') {
