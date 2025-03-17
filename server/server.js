@@ -11,6 +11,8 @@ const userRoutes = require('./routes/userRoutes');
 const gameRoutes = require('./routes/gameRoutes');
 const playerRoutes = require('./routes/playerRoutes'); // Ensure this is included
 const authRoutes = require('./routes/authRoutes');
+const groupRoutes = require('./routes/groupRoutes');
+const groupMemberRoutes = require('./routes/groupMemberRoutes');
 
 // Middleware
 app.use(cors());
@@ -30,6 +32,8 @@ app.use('/', userRoutes);
 app.use('/', gameRoutes);
 app.use('/', playerRoutes); // Ensure this is included
 app.use('/', authRoutes);
+app.use('/', groupRoutes);
+app.use('/', groupMemberRoutes);
 
 // Start the server
 app.listen(3001, () => {
