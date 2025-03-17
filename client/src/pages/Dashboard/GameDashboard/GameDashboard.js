@@ -9,6 +9,7 @@ import Input from '../../../components/Input/Input';
 import Select from '../../../components/Select/Select';
 import InvitePlayers from '../../../components/InvitePlayers/InvitePlayers';
 import Profile from '../../../components/Profile/Profile';
+import RejectModal from '../../../components/RejectModal/RejectModal';
 
 export function GameDashboard() {
     const [user, setUser] = useState(null);
@@ -68,17 +69,34 @@ export function GameDashboard() {
         }
     };
 
-    const handleRejectRequest = async (requesterId) => {
+    const handleRejectRequest = async () => {
+        if (!rejectReason.trim()) {
+            alert("Please enter a reason for rejection.");
+            return;
+        }
+
         try {
             await axios.post(`${process.env.REACT_APP_API_URL}/players/reject-request`, {
                 hostId: user._id,
                 gameId: gameId,
-                requesterId: requesterId
+                requesterId: selectedRequesterId,
+                reason: rejectReason,  // Send reason to backend
             });
+            setRejectModalOpen(false);
+            setRejectReason('');
             fetchJoinRequests();
         } catch (error) {
             console.error('Error rejecting join request:', error);
         }
+    };
+
+    const [isRejectModalOpen, setRejectModalOpen] = useState(false);
+    const [rejectReason, setRejectReason] = useState('');
+    const [selectedRequesterId, setSelectedRequesterId] = useState(null);
+
+    const openRejectModal = (requesterId) => {
+        setSelectedRequesterId(requesterId);
+        setRejectModalOpen(true);
     };
 
     // Fetch the user data
@@ -484,10 +502,7 @@ export function GameDashboard() {
                                                                 >
                                                                     Accept
                                                                 </button>
-                                                                <button
-                                                                    className="decline-button small"
-                                                                    onClick={() => handleRejectRequest(request.user_id._id)}
-                                                                >
+                                                                <button className="decline-button small" onClick={() => openRejectModal(request.user_id._id)}>
                                                                     Decline
                                                                 </button>
                                                             </div>
@@ -503,6 +518,15 @@ export function GameDashboard() {
                             </div>
                         )}
                     </div>
+                    {isRejectModalOpen && (
+                        <RejectModal
+                            open={isRejectModalOpen}
+                            onClose={() => setRejectModalOpen(false)}
+                            rejectReason={rejectReason}
+                            setRejectReason={setRejectReason}
+                            onSubmit={handleRejectRequest}
+                        />
+                    )}
                 </div>
             </div>
         </div>
