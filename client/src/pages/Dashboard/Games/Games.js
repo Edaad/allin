@@ -42,7 +42,11 @@ export function Games() {
     }, [userId, navigate]);
 
     // Define fetchWaitlistPosition with useCallback
+    // Define fetchWaitlistPosition with useCallback
     const fetchWaitlistPosition = useCallback(async (gameId) => {
+        // Add a check to ensure user exists before accessing user._id
+        if (!user) return;
+
         try {
             const res = await axios.get(
                 `${process.env.REACT_APP_API_URL}/players/waitlist/${gameId}/${user._id}`
@@ -54,7 +58,7 @@ export function Games() {
         } catch (error) {
             console.error('Error fetching waitlist position:', error);
         }
-    }, [user._id]);
+    }, [user]);  // Changed dependency from user._id to user itself
 
     // Update fetchGames to include fetchWaitlistPosition in its dependency array
     const fetchGames = useCallback(async () => {
