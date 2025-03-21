@@ -1,0 +1,9 @@
+.logo-name {
+    display: flex;
+    flex-direction: row;
+    color: #343434;
+    font-size: 40px;
+    margin-left: 5px;
+    font-weight: 600;
+    cursor: pointer;
+}

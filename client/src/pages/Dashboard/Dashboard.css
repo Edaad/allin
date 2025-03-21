@@ -27,9 +27,10 @@
 
 .logged-content-container {
     flex-grow: 1;
-    margin-left: 280px;
-    margin-right: 45px;
+    margin-left: 240px;
+    margin-right: 50px;
     padding-bottom: 20px;
+    margin-top: 10px;
 }
 
 .tab-container {
