@@ -1,16 +1,39 @@
 .filter-sidebar {
-    width: 10rem;
+    display: flex;
+    flex-direction: column;
+    width: 200px;
     margin-right: 2rem;
-    box-shadow: 0px 4px 7px rgba(0, 0, 0, 0.1);
     padding: 1rem;
+}
+
+.filter-header {
+    display: flex;
+    border-bottom: 1px solid #ddd;
+    padding: 1rem;
+    justify-content: space-between;
 }
 
 .filter-sidebar h4 {
     margin: 0;
+    font-weight: 500;
+    font-size: 1.25rem;
+}
+
+.filter-resetButton {
+    font-size: 1rem;
+    text-align: center;
+    background: none;
+    border: none;
+    color: gray;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.filter-resetButton:hover {
+    color: rgb(53, 115, 55);
 }
 
 .filter-group {
-    margin: 1rem 0;
+    margin: 0;
 }
 
 .filter-blinds {
@@ -28,7 +51,13 @@
     accent-color: rgb(53, 115, 55);
 }
 
+.filter-actions {
+    padding: 1rem;
+}
+
 .filter-applyButton {
+    display: flex;
+    justify-content: center;
     font-size: 1rem;
     text-align: center;
     background: none;
@@ -36,7 +65,8 @@
     color: rgb(53, 115, 55);
     transition: background-color 0.2s ease, color 0.2s ease;
     border-radius: 2px;
-    padding: 0.25rem 0.5rem;
+    padding: 0.5rem;
+    width: 100%;
 }
 
 .filter-applyButton:hover {
@@ -44,16 +74,15 @@
     color: white;
 }
 
-.filter-resetButton {
-    font-size: 1rem;
-    text-align: center;
-    background: none;
-    border: none;
-    color: gray;
-    transition: background-color 0.2s ease, color 0.2s ease;
-    padding: 0.5rem calc(0.5rem + 2px);
+.filter-range {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
 }
 
-.filter-resetButton:hover {
-    color: rgb(53, 115, 55);
+.filter-range-input {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
