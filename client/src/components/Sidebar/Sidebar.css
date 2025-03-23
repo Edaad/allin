@@ -1,11 +1,11 @@
 .sidebar-container {
     display: flex;
     flex-direction: column;
-    width: 200px;
+    width: 150px;
     background-color: #ffffff;
-    height: 100vh;
+    height: 100%;
     /* Ensures the sidebar covers the full height of the viewport */
-    padding: 5px 17px;
+    padding: 0 20px;
     /* Combined padding for horizontal and vertical spacing */
     position: fixed;
     top: 0;
@@ -13,7 +13,13 @@
     left: 0;
     /* Ensures the sidebar is aligned to the left of the viewport */
     transition: width 0.3s ease;
-    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.25);
+}
+
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+    margin-left: 15px;
 }
 
 .menu {
@@ -28,7 +34,6 @@
     width: 30px;
     height: 30px;
     background-color: rgb(247, 247, 247);
-    margin-left: 10px;
     border: solid 0.001px rgb(191, 191, 191);
     margin-right: 9px;
 }
@@ -41,27 +46,25 @@
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.2s ease;
+    height: 40px;
+    box-sizing: border-box;
 }
 
 .menu-item:hover {
     background-color: rgb(242, 242, 242);
-
-}
-
-.menu-item:hover {
     transition: font-size 0.1s ease;
 }
 
 .menu-item span.title {
     color: rgb(0, 0, 0);
-    font-size: 15px;
+    font-size: 16px;
     margin-left: 10px;
     opacity: 1;
     transition: font-size 0.1s ease, opacity 0.2s ease;
 }
 
 .menu-item:hover span.title {
-    font-size: 16px;
+    font-size: 17px;
 }
 
 .menu-item.bg-highlight {
@@ -72,10 +75,13 @@
     font-weight: 600;
 }
 
+.sidebar-footer {
+    margin-top: auto;
+}
+
 .signout-button {
     font-size: 15px;
     width: 90px;
-    margin-top: auto;
     margin-bottom: 40px;
     display: flex;
     align-items: center;
@@ -91,7 +97,7 @@
 .signout-button:hover {
     color: red;
     cursor: pointer;
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .menu-item-icon {
