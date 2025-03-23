@@ -2,6 +2,8 @@
 
 const Game = require('../models/game');
 const Player = require('../models/player');
+// Add this import for notification service
+const notificationService = require('../services/notificationService');
 
 const getGames = async (req, res) => {
     try {
@@ -99,6 +101,16 @@ const createGame = async (req, res) => {
 
         const newGame = new Game(gameData);
         await newGame.save();
+        
+        // Add notification for game creation
+        try {
+            await notificationService.notifyGameCreated(gameData.host_id, newGame._id);
+            console.log("Game creation notification sent");
+        } catch (notificationError) {
+            console.error("Error creating notification:", notificationError);
+            // Continue execution even if notification fails
+        }
+        
         console.log("Game created:", newGame);
         res.status(201).send(newGame);
     } catch (err) {
