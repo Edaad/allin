@@ -11,11 +11,11 @@ const {
     deleteAllNotifications
 } = require('../controllers/notificationController');
 
-// Get all notifications for a user with optional filters
-router.get('/notifications/:userId', getNotifications);
-
-// Get unread notification count for a user
+// Get unread notification count for a user (more specific route first)
 router.get('/notifications/unread/:userId', getUnreadCount);
+
+// Get all notifications for a user with optional filters (more general route second)
+router.get('/notifications/:userId', getNotifications);
 
 // Mark a notification as read
 router.put('/notifications/:id/read', markAsRead);
