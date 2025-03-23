@@ -228,6 +228,17 @@ const notifyGameEdited = async (gameId) => {
         const game = await Game.findById(gameId);
         if (!game) return;
 
+        // Notify the host
+        await createNotification({
+            user_id: game.host_id,
+            type: 'game_edited',
+            title: 'Game Updated',
+            message: `You've updated your game: ${game.game_name}`,
+            referenced_id: gameId,
+            referenced_model: 'Game',
+            link: `/dashboard/${game.host_id}/host/game/${gameId}`
+        });
+
         // Get all accepted players for this game
         const Player = require('../models/player');
         const players = await Player.find({
@@ -255,8 +266,21 @@ const notifyGameEdited = async (gameId) => {
 /**
  * Notify players that a game has been deleted
  */
-const notifyGameDeleted = async (gameId, gameName, players) => {
+const notifyGameDeleted = async (gameId, gameName, players, hostId) => {
     try {
+        // Notify the host
+        if (hostId) {
+            await createNotification({
+                user_id: hostId,
+                type: 'game_deleted',
+                title: 'Game Deleted',
+                message: `You've deleted your game: ${gameName}`,
+                referenced_id: hostId,
+                referenced_model: 'User',
+                link: `/dashboard/${hostId}/host`
+            });
+        }
+
         // Create a notification for each player
         await Promise.all(players.map(playerId =>
             createNotification({
@@ -264,7 +288,7 @@ const notifyGameDeleted = async (gameId, gameName, players) => {
                 type: 'game_deleted',
                 title: 'Game Cancelled',
                 message: `Game "${gameName}" has been cancelled by the host`,
-                referenced_id: playerId, // Reference the player since game no longer exists
+                referenced_id: playerId,
                 referenced_model: 'User',
                 link: `/dashboard/${playerId}/games`
             })
