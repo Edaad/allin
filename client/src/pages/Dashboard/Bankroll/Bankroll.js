@@ -20,7 +20,14 @@ export function Bankroll() {
 
     console.log(user);
 
-    const menus = [{ title: 'Overview', page: 'overview' }, { title: 'Games', page: 'games' }, { title: 'Host', page: 'host' }, { title: 'Community', page: 'community' }, { title: 'Bankroll', page: 'bankroll' }];
+    const menus = [
+        { title: 'Overview', page: 'overview' },
+        { title: 'Games', page: 'games' },
+        { title: 'Host', page: 'host' },
+        { title: 'Community', page: 'community' },
+        { title: 'Notifications', page: 'notifications' }, // New menu item
+        { title: 'Bankroll', page: 'bankroll' }
+    ];
 
     return (
         <div className="dashboard">
