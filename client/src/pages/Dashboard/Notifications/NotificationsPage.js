@@ -235,8 +235,8 @@ export function NotificationsPage() {
         { title: 'Games', page: 'games' },
         { title: 'Host', page: 'host' },
         { title: 'Community', page: 'community' },
-        { title: 'Notifications', page: 'notifications' },
-        { title: 'Bankroll', page: 'bankroll' }
+        { title: 'Bankroll', page: 'bankroll' },
+        { title: 'Notifications', page: 'notifications' }
     ];
 
     return (
