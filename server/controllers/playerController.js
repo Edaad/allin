@@ -63,6 +63,21 @@ const sendInvitations = async (req, res) => {
         // Insert invitations
         await Player.insertMany(invitations, { ordered: false });
 
+        // Send notifications to invitees and the host
+        try {
+            // Notify each invitee
+            for (const inviteeId of validInviteeIds) {
+                await notificationService.notifyGameInvitationReceived(inviteeId, inviterId, gameId);
+            }
+
+            // Notify the host about sent invitations
+            await notificationService.notifyGameInvitationSent(inviterId, validInviteeIds.length, gameId);
+            console.log(`Sent ${validInviteeIds.length} game invitations notifications`);
+        } catch (notificationError) {
+            console.error("Error creating invitation notifications:", notificationError);
+            // Continue execution even if notification fails
+        }
+
         res.status(201).send({ message: 'Invitations sent successfully.' });
     } catch (err) {
         if (err.code === 11000) {
@@ -146,9 +161,52 @@ const acceptInvitation = async (req, res) => {
                 game_id: gameId,
                 invitation_status: 'requested'
             });
-            //TODO: Changes made in the following parts fix if needed
+
             if (!player) {
                 return res.status(404).json({ message: 'Join request not found.' });
+            }
+
+            // Count how many players are currently accepted
+            const acceptedPlayersCount = await Player.countDocuments({
+                game_id: gameId,
+                invitation_status: 'accepted'
+            });
+
+            // Determine if the new player goes to the main list or waitlist
+            if (acceptedPlayersCount < game.handed) {
+                player.invitation_status = 'accepted';
+                await player.save();
+
+                // Notify the player their request was accepted
+                try {
+                    await notificationService.notifyGameJoinAccepted(requesterId, userId, gameId);
+                    console.log("Game join accepted notification sent");
+                } catch (notificationError) {
+                    console.error("Error creating notification:", notificationError);
+                }
+
+                return res.status(200).json({
+                    message: 'Join request accepted successfully.',
+                    status: 'accepted'
+                });
+            } else {
+                player.invitation_status = 'waitlist';
+                await player.save();
+
+                // Different notification could be sent for waitlist
+
+                // Get the player's position in the waitlist
+                const waitlistPosition = await Player.countDocuments({
+                    game_id: gameId,
+                    invitation_status: 'waitlist',
+                    createdAt: { $lte: player.createdAt }
+                });
+
+                return res.status(200).json({
+                    message: 'Game is full. You have been added to the waitlist.',
+                    status: 'waitlist',
+                    position: waitlistPosition
+                });
             }
         } else {
             // User is accepting their own invitation
@@ -160,38 +218,49 @@ const acceptInvitation = async (req, res) => {
             if (!game) {
                 return res.status(404).json({ message: 'Game not found.' });
             }
-        }
 
-        // Count how many players are currently accepted
-        const acceptedPlayersCount = await Player.countDocuments({
-            game_id: gameId,
-            invitation_status: 'accepted'
-        });
-
-        // Determine if the new player goes to the main list or waitlist
-        if (acceptedPlayersCount < game.handed) {
-            player.invitation_status = 'accepted';
-            await player.save();
-            return res.status(200).json({ 
-                message: 'Join request accepted successfully.',
-                status: 'accepted'
-            });
-        } else {
-            player.invitation_status = 'waitlist';
-            await player.save();
-            
-            // Get the player's position in the waitlist
-            const waitlistPosition = await Player.countDocuments({
+            // Count how many players are currently accepted
+            const acceptedPlayersCount = await Player.countDocuments({
                 game_id: gameId,
-                invitation_status: 'waitlist',
-                createdAt: { $lte: player.createdAt }
+                invitation_status: 'accepted'
             });
-            
-            return res.status(200).json({ 
-                message: 'Game is full. You have been added to the waitlist.',
-                status: 'waitlist',
-                position: waitlistPosition
-            });
+
+            // Determine if the new player goes to the main list or waitlist
+            if (acceptedPlayersCount < game.handed) {
+                player.invitation_status = 'accepted';
+                await player.save();
+
+                // Notify the host that the player accepted
+                try {
+                    await notificationService.notifyGameInvitationAccepted(game.host_id, userId, gameId);
+                    console.log("Game invitation accepted notification sent");
+                } catch (notificationError) {
+                    console.error("Error creating notification:", notificationError);
+                }
+
+                return res.status(200).json({
+                    message: 'Invitation accepted successfully.',
+                    status: 'accepted'
+                });
+            } else {
+                player.invitation_status = 'waitlist';
+                await player.save();
+
+                // Different notification for waitlist
+
+                // Get the player's position in the waitlist
+                const waitlistPosition = await Player.countDocuments({
+                    game_id: gameId,
+                    invitation_status: 'waitlist',
+                    createdAt: { $lte: player.createdAt }
+                });
+
+                return res.status(200).json({
+                    message: 'Game is full. You have been added to the waitlist.',
+                    status: 'waitlist',
+                    position: waitlistPosition
+                });
+            }
         }
     } catch (err) {
         console.error('Error accepting invitation/request:', err);
@@ -204,10 +273,26 @@ const declineInvitation = async (req, res) => {
     try {
         const { userId, gameId } = req.body;
 
-        // Delete the player document
-        const result = await Player.deleteOne({ user_id: userId, game_id: gameId });
-        if (result.deletedCount === 0) {
+        // Get game and player info for notification before deletion
+        const game = await Game.findById(gameId);
+        if (!game) {
+            return res.status(404).send({ message: 'Game not found.' });
+        }
+
+        const player = await Player.findOne({ user_id: userId, game_id: gameId });
+        if (!player) {
             return res.status(404).send({ message: 'Invitation not found.' });
+        }
+
+        // Delete the player document
+        await Player.deleteOne({ user_id: userId, game_id: gameId });
+
+        // Notify the host that the invitation was declined
+        try {
+            await notificationService.notifyGameInvitationDeclined(game.host_id, userId, gameId);
+            console.log("Game invitation declined notification sent");
+        } catch (notificationError) {
+            console.error("Error creating notification:", notificationError);
         }
 
         res.status(200).send({ message: 'Invitation declined successfully.' });
@@ -256,7 +341,7 @@ const removePlayer = async (req, res) => {
             return res.status(403).json({ message: 'You are not authorized to remove this player from the game.' });
         }
 
-        // Remove the player record (it could be in any status: accepted, waitlist, or requested)
+        // Remove the player record
         const result = await Player.findOneAndDelete({
             game_id: gameId,
             user_id: inviteeId,
@@ -265,6 +350,25 @@ const removePlayer = async (req, res) => {
 
         if (!result) {
             return res.status(404).json({ message: 'Player not found in the game.' });
+        }
+
+        // If host is removing player, notify the player
+        if (game.host_id.toString() === inviterId && inviterId !== inviteeId) {
+            try {
+                await notificationService.notifyPlayerRemoved(inviteeId, inviterId, gameId);
+                console.log("Player removed notification sent");
+            } catch (notificationError) {
+                console.error("Error creating notification:", notificationError);
+            }
+        }
+        // If player is removing themselves, notify the host
+        else if (inviterId === inviteeId) {
+            try {
+                await notificationService.notifyPlayerLeft(game.host_id, inviteeId, gameId);
+                console.log("Player left notification sent");
+            } catch (notificationError) {
+                console.error("Error creating notification:", notificationError);
+            }
         }
 
         // If an accepted player is removed, check for waitlisted players to promote
@@ -283,7 +387,7 @@ const removePlayer = async (req, res) => {
                     waitlistedPlayer.invitation_status = 'accepted';
                     await waitlistedPlayer.save();
 
-                    return res.status(200).json({ 
+                    return res.status(200).json({
                         message: 'Player removed and waitlisted player promoted.',
                         promotedPlayer: waitlistedPlayer.user_id
                     });
@@ -325,23 +429,33 @@ const requestToJoinGame = async (req, res) => {
             invitation_status: 'accepted'
         });
 
-        // Create a new player record with status 'requested'
+        // Create a new player record
         const newPlayer = new Player({
             user_id: userId,
             game_id: gameId,
-              // If game is full, add to waitlist, otherwise set to 'requested'
+            // If game is full, add to waitlist, otherwise set to 'requested'
             invitation_status: acceptedPlayers >= game.handed ? 'waitlist' : 'requested'
         });
 
         await newPlayer.save();
 
-          // Return appropriate message based on the status
-        const message = acceptedPlayers >= game.handed 
-            ? 'Added to waitlist. You will be notified when a spot becomes available.' 
+        // If the player is requesting to join (not waitlisted), notify the host
+        if (newPlayer.invitation_status === 'requested') {
+            try {
+                await notificationService.notifyGameJoinRequest(game.host_id, userId, gameId);
+                console.log("Game join request notification sent");
+            } catch (notificationError) {
+                console.error("Error creating notification:", notificationError);
+            }
+        }
+
+        // Return appropriate message based on the status
+        const message = acceptedPlayers >= game.handed
+            ? 'Added to waitlist. You will be notified when a spot becomes available.'
             : 'Join request sent successfully.';
 
-        res.status(201).json({ 
-            message, 
+        res.status(201).json({
+            message,
             status: newPlayer.invitation_status,
             position: acceptedPlayers >= game.handed ? await Player.countDocuments({
                 game_id: gameId,
@@ -409,6 +523,14 @@ const rejectJoinRequest = async (req, res) => {
             return res.status(404).json({ message: 'Join request not found.' });
         }
 
+        // Notify the player that their request was rejected
+        try {
+            await notificationService.notifyGameJoinRejected(requesterId, hostId, gameId, reason || 'No reason provided');
+            console.log("Game join rejected notification sent");
+        } catch (notificationError) {
+            console.error("Error creating notification:", notificationError);
+        }
+
         res.status(200).json({ message: 'Join request rejected successfully.', rejection_reason: result.rejection_reason });
     } catch (err) {
         console.error('Error rejecting join request:', err);
@@ -419,29 +541,30 @@ const rejectJoinRequest = async (req, res) => {
 const getWaitlistPosition = async (req, res) => {
     try {
         const { gameId, userId } = req.params;
-        
+
         const player = await Player.findOne({
             game_id: gameId,
             user_id: userId,
             invitation_status: 'waitlist'
         });
-        
+
         if (!player) {
             return res.status(404).json({ message: 'Player not found on waitlist.' });
         }
-        
+
         // Count how many players are ahead in the waitlist (created earlier)
         const position = await Player.countDocuments({
             game_id: gameId,
             invitation_status: 'waitlist',
             createdAt: { $lte: player.createdAt }
         });
-        
+
         res.status(200).json({ position });
     } catch (err) {
         console.error('Error getting waitlist position:', err);
     }
 }
+
 const getRejectedRequests = async (req, res) => {
     try {
         const { userId } = req.params;
