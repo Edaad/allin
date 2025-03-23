@@ -1,4 +1,5 @@
 import './App.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Home } from './pages/Home/Home';
 import { SignUp } from './pages/Access/SignUp';
@@ -12,6 +13,7 @@ import { Games } from './pages/Dashboard/Games/Games';
 import { Account } from './pages/Dashboard/Account/Account';
 import { GameDashboard } from './pages/Dashboard/GameDashboard/GameDashboard';
 import { GroupDashboard } from './pages/Dashboard/GroupDashboard/GroupDashboard';
+import NotificationsPage from './pages/Dashboard/Notifications/NotificationsPage';
 
 function App() {
   return (
@@ -36,6 +38,7 @@ function App() {
             <Route path="/dashboard/:userId/community" element={<Community />} />
             <Route path="/dashboard/:userId/bankroll" element={<Bankroll />} />
             <Route path="/dashboard/:userId/groups/:groupId" element={<GroupDashboard />} />
+            <Route path="/dashboard/:userId/notifications" element={<NotificationsPage />} />
             {/* Add other specific routes here if needed */}
           </Route>
         </Routes>
