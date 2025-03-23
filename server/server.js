@@ -9,10 +9,11 @@ const app = express();
 // Import routes
 const userRoutes = require('./routes/userRoutes');
 const gameRoutes = require('./routes/gameRoutes');
-const playerRoutes = require('./routes/playerRoutes'); // Ensure this is included
+const playerRoutes = require('./routes/playerRoutes');
 const authRoutes = require('./routes/authRoutes');
 const groupRoutes = require('./routes/groupRoutes');
 const groupMemberRoutes = require('./routes/groupMemberRoutes');
+const notificationRoutes = require('./routes/notificationRoutes'); // New import
 
 // Middleware
 app.use(cors());
@@ -30,10 +31,11 @@ mongoose.connect(process.env.MONGO_URI, {
 // Use routes
 app.use('/', userRoutes);
 app.use('/', gameRoutes);
-app.use('/', playerRoutes); // Ensure this is included
+app.use('/', playerRoutes);
 app.use('/', authRoutes);
 app.use('/', groupRoutes);
 app.use('/', groupMemberRoutes);
+app.use('/', notificationRoutes); // New route registration
 
 // Start the server
 app.listen(3001, () => {
