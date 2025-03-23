@@ -119,7 +119,6 @@ const createGame = async (req, res) => {
     }
 };
 
-// Update updateGame:
 const updateGame = async (req, res) => {
     try {
         // Ensure boolean conversion for is_public field
@@ -136,12 +135,26 @@ const updateGame = async (req, res) => {
             return res.status(404).send({ message: 'Game not found' });
         }
 
-        // Add notification for game update
+        // Notify players about the update
         try {
             await notificationService.notifyGameEdited(updatedGame._id);
-            console.log("Game update notification sent");
+            console.log("Game update notifications sent to players");
+
+            // Create a notification for the host
+            const hostNotification = {
+                user_id: updatedGame.host_id,
+                type: 'game_edited',
+                title: 'Game Updated',
+                message: `You've updated your game: ${updatedGame.game_name}`,
+                referenced_id: updatedGame._id,
+                referenced_model: 'Game',
+                link: `/dashboard/${updatedGame.host_id}/host/game/${updatedGame._id}`
+            };
+
+            await notificationService.createNotification(hostNotification);
+            console.log("Game update notification sent to host");
         } catch (notificationError) {
-            console.error("Error creating notification:", notificationError);
+            console.error("Error creating notifications:", notificationError);
             // Continue execution even if notification fails
         }
 
@@ -152,7 +165,6 @@ const updateGame = async (req, res) => {
     }
 };
 
-// Update deleteGame:
 const deleteGame = async (req, res) => {
     try {
         const game = await Game.findById(req.params.id);
@@ -160,10 +172,12 @@ const deleteGame = async (req, res) => {
             return res.status(404).send({ message: 'Game not found' });
         }
 
+        const hostId = game.host_id;
+        const gameName = game.game_name;
+
         // Get all players to notify before deletion
         const players = await Player.find({ game_id: game._id, invitation_status: 'accepted' });
         const playerIds = players.map(player => player.user_id);
-        const gameName = game.game_name;
 
         // Delete associated players
         await Player.deleteMany({ game_id: game._id });
@@ -171,13 +185,27 @@ const deleteGame = async (req, res) => {
         // Delete the game
         await Game.findByIdAndDelete(game._id);
 
-        // Send notifications to all players
+        // Notify players about game deletion
         try {
             await notificationService.notifyGameDeleted(game._id, gameName, playerIds);
-            console.log("Game deletion notifications sent");
+            console.log("Game deletion notifications sent to players");
+
+            // Create a notification for the host
+            const hostNotification = {
+                user_id: hostId,
+                type: 'game_deleted',
+                title: 'Game Deleted',
+                message: `You've deleted your game: ${gameName}`,
+                referenced_id: hostId, // Reference the host since game no longer exists
+                referenced_model: 'User',
+                link: `/dashboard/${hostId}/host`
+            };
+
+            await notificationService.createNotification(hostNotification);
+            console.log("Game deletion notification sent to host");
         } catch (notificationError) {
             console.error("Error creating notifications:", notificationError);
-            // Continue execution even if notifications fail
+            // Continue execution even if notification fails
         }
 
         res.json({ message: 'Game and associated players deleted successfully' });
@@ -186,7 +214,6 @@ const deleteGame = async (req, res) => {
         res.status(500).send({ message: 'Server error.' });
     }
 };
-
 
 // Get games for a player with optional status filter
 const getGamesForPlayer = async (req, res) => {
