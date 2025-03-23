@@ -2,6 +2,7 @@
 const GroupMember = require('../models/groupMember');
 const Group = require('../models/group');
 const User = require('../models/user');
+const notificationService = require('../services/notificationService');
 
 // Get all members of a group
 const getGroupMembers = async (req, res) => {
@@ -51,6 +52,20 @@ const sendInvitations = async (req, res) => {
 
         // Insert invitations, ignoring duplicates
         await GroupMember.insertMany(invitations, { ordered: false });
+
+        // Send notifications
+        try {
+            // Notify each invitee
+            for (const inviteeId of validInviteeIds) {
+                await notificationService.notifyGroupInvitationReceived(inviteeId, adminId, groupId);
+            }
+
+            // Notify the admin
+            await notificationService.notifyGroupInvitationSent(adminId, validInviteeIds.length, groupId);
+            console.log(`Sent ${validInviteeIds.length} group invitation notifications`);
+        } catch (notificationError) {
+            console.error("Error creating invitation notifications:", notificationError);
+        }
 
         res.status(201).send({ message: 'Invitations sent successfully.' });
     } catch (err) {
@@ -127,6 +142,14 @@ const requestToJoin = async (req, res) => {
 
         await newMember.save();
 
+        // Notify the admin about the join request
+        try {
+            await notificationService.notifyGroupJoinRequest(group.admin_id, userId, groupId);
+            console.log("Group join request notification sent");
+        } catch (notificationError) {
+            console.error("Error creating notification:", notificationError);
+        }
+
         res.status(201).json({ message: 'Join request sent successfully.' });
     } catch (err) {
         console.error('Error requesting to join group:', err);
@@ -195,6 +218,14 @@ const acceptInvitation = async (req, res) => {
             member.membership_status = 'accepted';
             await member.save();
 
+            // Notify the user that their request was accepted
+            try {
+                await notificationService.notifyGroupJoinAccepted(requesterId, userId, groupId);
+                console.log("Group join accepted notification sent");
+            } catch (notificationError) {
+                console.error("Error creating notification:", notificationError);
+            }
+
             return res.status(200).json({ message: 'Join request accepted successfully.' });
         }
         // A user is accepting an invitation
@@ -205,9 +236,22 @@ const acceptInvitation = async (req, res) => {
                 return res.status(404).json({ message: 'Invitation not found.' });
             }
 
+            const group = await Group.findById(groupId);
+            if (!group) {
+                return res.status(404).json({ message: 'Group not found.' });
+            }
+
             // Update the membership_status to 'accepted'
             member.membership_status = 'accepted';
             await member.save();
+
+            // Notify the admin that the invitation was accepted
+            try {
+                await notificationService.notifyGroupInvitationAccepted(group.admin_id, userId, groupId);
+                console.log("Group invitation accepted notification sent");
+            } catch (notificationError) {
+                console.error("Error creating notification:", notificationError);
+            }
 
             return res.status(200).json({ message: 'Invitation accepted successfully.' });
         }
@@ -222,10 +266,27 @@ const declineInvitation = async (req, res) => {
     try {
         const { userId, groupId } = req.body;
 
-        // Delete the member document
-        const result = await GroupMember.deleteOne({ user_id: userId, group_id: groupId });
-        if (result.deletedCount === 0) {
+        // Get group info for notification before deletion
+        const group = await Group.findById(groupId);
+        if (!group) {
+            return res.status(404).json({ message: 'Group not found.' });
+        }
+
+        // Find the member record
+        const member = await GroupMember.findOne({ user_id: userId, group_id: groupId });
+        if (!member) {
             return res.status(404).json({ message: 'Invitation not found.' });
+        }
+
+        // Delete the member document
+        await GroupMember.deleteOne({ user_id: userId, group_id: groupId });
+
+        // Notify the admin that the invitation was declined
+        try {
+            await notificationService.notifyGroupInvitationDeclined(group.admin_id, userId, groupId);
+            console.log("Group invitation declined notification sent");
+        } catch (notificationError) {
+            console.error("Error creating notification:", notificationError);
         }
 
         res.status(200).json({ message: 'Invitation declined successfully.' });
@@ -265,6 +326,14 @@ const rejectJoinRequest = async (req, res) => {
         member.membership_status = 'rejected';
         member.rejection_reason = reason || '';
         await member.save();
+
+        // Notify the user that their request was rejected
+        try {
+            await notificationService.notifyGroupJoinRejected(requesterId, adminId, groupId, reason || '');
+            console.log("Group join rejection notification sent");
+        } catch (notificationError) {
+            console.error("Error creating notification:", notificationError);
+        }
 
         res.status(200).json({ message: 'Join request rejected successfully.' });
     } catch (err) {
@@ -332,6 +401,21 @@ const removeMember = async (req, res) => {
 
         if (!result) {
             return res.status(404).json({ message: 'Member not found in the group.' });
+        }
+
+        // Send notification based on who initiated the removal
+        try {
+            if (isAdmin && !isSelfRemoval) {
+                // Admin removed a member
+                await notificationService.notifyMemberRemoved(memberId, adminId, groupId);
+                console.log("Member removed notification sent");
+            } else if (isSelfRemoval) {
+                // Member left voluntarily
+                await notificationService.notifyMemberLeft(group.admin_id, memberId, groupId);
+                console.log("Member left notification sent");
+            }
+        } catch (notificationError) {
+            console.error("Error creating notification:", notificationError);
         }
 
         res.status(200).json({ message: 'Member removed from the group.' });
