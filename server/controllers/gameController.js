@@ -119,6 +119,7 @@ const createGame = async (req, res) => {
     }
 };
 
+// Update updateGame:
 const updateGame = async (req, res) => {
     try {
         // Ensure boolean conversion for is_public field
@@ -134,6 +135,16 @@ const updateGame = async (req, res) => {
         if (!updatedGame) {
             return res.status(404).send({ message: 'Game not found' });
         }
+
+        // Add notification for game update
+        try {
+            await notificationService.notifyGameEdited(updatedGame._id);
+            console.log("Game update notification sent");
+        } catch (notificationError) {
+            console.error("Error creating notification:", notificationError);
+            // Continue execution even if notification fails
+        }
+
         res.json(updatedGame);
     } catch (err) {
         console.error('Error updating game:', err);
@@ -141,6 +152,7 @@ const updateGame = async (req, res) => {
     }
 };
 
+// Update deleteGame:
 const deleteGame = async (req, res) => {
     try {
         const game = await Game.findById(req.params.id);
@@ -148,11 +160,25 @@ const deleteGame = async (req, res) => {
             return res.status(404).send({ message: 'Game not found' });
         }
 
+        // Get all players to notify before deletion
+        const players = await Player.find({ game_id: game._id, invitation_status: 'accepted' });
+        const playerIds = players.map(player => player.user_id);
+        const gameName = game.game_name;
+
         // Delete associated players
         await Player.deleteMany({ game_id: game._id });
 
         // Delete the game
         await Game.findByIdAndDelete(game._id);
+
+        // Send notifications to all players
+        try {
+            await notificationService.notifyGameDeleted(game._id, gameName, playerIds);
+            console.log("Game deletion notifications sent");
+        } catch (notificationError) {
+            console.error("Error creating notifications:", notificationError);
+            // Continue execution even if notifications fail
+        }
 
         res.json({ message: 'Game and associated players deleted successfully' });
     } catch (err) {
