@@ -90,11 +90,7 @@ function GameCard({ game, user }) {
                 </div>
 
                 <div className="game-info-row">
-                    <p className="info-value"><span>Blinds:</span> {game.blinds}</p>
-                </div>
-
-                <div className="game-info-row">
-                    <p className="info-value">Handed: {game.handed}</p>
+                    <p className="info-value"><span>Blinds: {game.blinds}</span> <span>Handed: {game.handed}</span></p>
                 </div>
 
             </div>

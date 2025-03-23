@@ -73,6 +73,10 @@
     font-size: 16px;
 }
 
+.game-info-row span {
+    margin-right: 2rem;
+}
+
 .game-info-row p {
     margin: 0;
     font-weight: 500;

@@ -360,35 +360,24 @@ export function Games() {
 							onApply={handleApplyFilters}
 							initialFilters={tabFilters[tab]}
 						/>
-						<div className="games-table" style={{ flex: 1 }}>
+						<div className="games-container" style={{ flex: 1 }}>
 							{games.length > 0 ? (
-								<Table
-									headers={headers}
-									data={games.map((game) => {
-										const gameDate = new Date(game.game_date);
-										return {
-											'name': game.game_name,
-											'host': game.host_id.username,
-											'location': game.location,
-											'date': gameDate.toLocaleDateString(),
-											'time': gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-											'blinds': game.blinds,
-											'_id': game._id,
-											'is_public': game.is_public,
-											'playerStatus': game.playerStatus || 'none',
-											'clickable': game.playerStatus === 'accepted'
-										};
-									})}
-									onRowClick={handleRowClick}
-									renderStatus={renderGameStatus}
-									shadow
-								/>
+								<div className="game-cards-grid">
+									{games.map(game => (
+										<GameCard
+											key={game._id}
+											game={game}
+											user={user}
+										/>
+									))}
+								</div>
 							) : (
 								<div className="no-games-message">There are no public games available.</div>
 							)}
 						</div>
 					</div>
 				) : tab === 'Invitations' ? (
+					// Invitations tab remains as a table for now - this could also be converted to card view if desired
 					invitations.length > 0 ? (
 						<table className="table-container">
 							<thead>
@@ -426,14 +415,14 @@ export function Games() {
 						<div className="no-games-message">You currently have no game invitations.</div>
 					)
 				) : tab === 'Requested Games' ? (
-					// Requested Games tab with Filter component
+					// Requested Games tab (already using GameCard)
 					<div className="public-games-container" style={{ display: 'flex' }}>
 						<Filter
 							tab={tab}
 							onApply={handleApplyFilters}
 							initialFilters={tabFilters[tab]}
 						/>
-						<div className="requested-games-container" style={{ flex: 1 }}>
+						<div className="games-container" style={{ flex: 1 }}>
 							{requestedGames.length > 0 ? (
 								<div className="game-cards-grid">
 									{requestedGames.map(game => (
@@ -452,36 +441,24 @@ export function Games() {
 						</div>
 					</div>
 				) : (
-					// Upcoming and Past Games tabs with Filter component
+					// Upcoming and Past Games tabs with GameCard component
 					<div className="public-games-container" style={{ display: 'flex' }}>
 						<Filter
 							tab={tab}
 							onApply={handleApplyFilters}
 							initialFilters={tabFilters[tab]}
 						/>
-						<div className="games-table" style={{ flex: 1 }}>
+						<div className="games-container" style={{ flex: 1 }}>
 							{games.length > 0 ? (
-								<Table
-									headers={headers}
-									data={games.map((game) => {
-										const gameDate = new Date(game.game_date);
-										return {
-											'name': game.game_name,
-											'host': game.host_id.username,
-											'location': game.location,
-											'date': gameDate.toLocaleDateString(),
-											'time': gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-											'blinds': game.blinds,
-											'_id': game._id,
-											'is_public': game.is_public,
-											'playerStatus': game.playerStatus || 'none',
-											'clickable': game.playerStatus === 'accepted'
-										};
-									})}
-									onRowClick={handleRowClick}
-									renderStatus={renderGameStatus}
-									shadow
-								/>
+								<div className="game-cards-grid">
+									{games.map(game => (
+										<GameCard
+											key={game._id}
+											game={game}
+											user={user}
+										/>
+									))}
+								</div>
 							) : (
 								<div className="no-games-message">
 									You currently have no {tab.toLowerCase()}.
