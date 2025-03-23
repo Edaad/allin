@@ -98,9 +98,7 @@
 }
 
 .invitation-item,
-.accepted-item {
-    /* Remove margin to eliminate padding between profiles */
-}
+
 
 .invitation-item .profile-container-compact,
 .accepted-item .profile-container-compact {

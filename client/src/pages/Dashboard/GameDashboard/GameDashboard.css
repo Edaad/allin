@@ -326,3 +326,20 @@
 .radio-label input {
     cursor: pointer;
 }
+
+/* Waitlist styles for GameDashboard */
+
+.waitlist-player {
+    display: flex;
+    align-items: center;
+    border-radius: 4px;
+}
+
+.waitlist-position {
+    min-width: 25px;
+    margin-right: 10px;
+    font-weight: bold;
+    color: #777;
+    font-size: 14px;
+}
+

@@ -467,12 +467,12 @@ export function GameDashboard() {
                                 )}
                                 {waitlistedPlayers.length > 0 && (
                                     <>
-                                        <h3>Waitlisted Players</h3>
-                                        <div className='all-profiles-container'>
+                                        <h3>Waitlist</h3>
+                                        <div className="all-profiles-container">
                                             {waitlistedPlayers.map((player, index) => (
-                                                <div key={player._id} className="waitlisted-player">
-                                                    <div className="waitlisted-position">#{index + 1}</div>
-                                                    <Profile data={player.user_id} size={"compact"} />
+                                                <div key={player._id} className="waitlist-player">
+                                                    <span className="waitlist-position">#{index + 1}</span>
+                                                    <Profile data={player.user_id} size="compact" />
                                                 </div>
                                             ))}
                                         </div>
