@@ -2,6 +2,7 @@
 
 const User = require('../models/user');
 const { hashPassword, comparePassword } = require('../utils/hashing');
+const notificationService = require('../services/notificationService');
 
 /**
  * Fetches a user by ID and populates friends, pendingRequests, and friendRequests.
@@ -188,6 +189,16 @@ const sendFriendRequest = async (req, res) => {
 
         await User.findByIdAndUpdate(friendId, { $addToSet: { friendRequests: userId } });
         await User.findByIdAndUpdate(userId, { $addToSet: { pendingRequests: friendId } });
+
+        // Send notification to the recipient of the friend request
+        try {
+            await notificationService.notifyFriendRequestReceived(friendId, userId);
+            console.log("Friend request notification sent");
+        } catch (notificationError) {
+            console.error("Error creating notification:", notificationError);
+            // Continue execution even if notification fails
+        }
+
         res.status(200).send({ message: 'Friend request sent' });
     } catch (err) {
         console.error('Error sending friend request:', err);
@@ -210,6 +221,16 @@ const acceptFriendRequest = async (req, res) => {
             $addToSet: { friends: userId },
             $pull: { pendingRequests: userId }
         });
+
+        // Send notification to the person who sent the friend request
+        try {
+            await notificationService.notifyFriendRequestAccepted(friendId, userId);
+            console.log("Friend request accepted notification sent");
+        } catch (notificationError) {
+            console.error("Error creating notification:", notificationError);
+            // Continue execution even if notification fails
+        }
+
         res.status(200).send({ message: 'Friend request accepted' });
     } catch (err) {
         console.error('Error accepting friend request:', err);
@@ -226,6 +247,16 @@ const rejectFriendRequest = async (req, res) => {
         // Remove the friend request from both users
         await User.findByIdAndUpdate(userId, { $pull: { friendRequests: friendId } });
         await User.findByIdAndUpdate(friendId, { $pull: { pendingRequests: userId } });
+
+        // Send notification to the person who sent the friend request
+        try {
+            await notificationService.notifyFriendRequestDeclined(friendId, userId);
+            console.log("Friend request declined notification sent");
+        } catch (notificationError) {
+            console.error("Error creating notification:", notificationError);
+            // Continue execution even if notification fails
+        }
+
         res.status(200).send({ message: 'Friend request rejected' });
     } catch (err) {
         console.error('Error rejecting friend request:', err);
@@ -278,6 +309,16 @@ const removeFriend = async (req, res) => {
     try {
         await User.findByIdAndUpdate(userId, { $pull: { friends: friendId } });
         await User.findByIdAndUpdate(friendId, { $pull: { friends: userId } });
+
+        // Notify the user that they have been removed as a friend
+        try {
+            await notificationService.notifyFriendRemoved(friendId, userId);
+            console.log("Friend removed notification sent");
+        } catch (notificationError) {
+            console.error("Error creating notification:", notificationError);
+            // Continue execution even if notification fails
+        }
+
         res.status(200).send({ message: 'Friend removed successfully' });
     } catch (err) {
         console.error('Error removing friend:', err);
