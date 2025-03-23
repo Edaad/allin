@@ -159,7 +159,6 @@ const deleteGame = async (req, res) => {
             return res.status(404).send({ message: 'Game not found' });
         }
 
-        // Get all players to notify before deletion
         const players = await Player.find({ game_id: game._id, invitation_status: 'accepted' });
         const playerIds = players.map(player => player.user_id);
         const gameName = game.game_name;
