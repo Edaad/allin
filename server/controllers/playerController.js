@@ -172,22 +172,22 @@ const acceptInvitation = async (req, res) => {
         if (acceptedPlayersCount < game.handed) {
             player.invitation_status = 'accepted';
             await player.save();
-            return res.status(200).json({ 
+            return res.status(200).json({
                 message: 'Join request accepted successfully.',
                 status: 'accepted'
             });
         } else {
             player.invitation_status = 'waitlist';
             await player.save();
-            
+
             // Get the player's position in the waitlist
             const waitlistPosition = await Player.countDocuments({
                 game_id: gameId,
                 invitation_status: 'waitlist',
                 createdAt: { $lte: player.createdAt }
             });
-            
-            return res.status(200).json({ 
+
+            return res.status(200).json({
                 message: 'Game is full. You have been added to the waitlist.',
                 status: 'waitlist',
                 position: waitlistPosition
@@ -283,7 +283,7 @@ const removePlayer = async (req, res) => {
                     waitlistedPlayer.invitation_status = 'accepted';
                     await waitlistedPlayer.save();
 
-                    return res.status(200).json({ 
+                    return res.status(200).json({
                         message: 'Player removed and waitlisted player promoted.',
                         promotedPlayer: waitlistedPlayer.user_id
                     });
@@ -329,19 +329,19 @@ const requestToJoinGame = async (req, res) => {
         const newPlayer = new Player({
             user_id: userId,
             game_id: gameId,
-              // If game is full, add to waitlist, otherwise set to 'requested'
+            // If game is full, add to waitlist, otherwise set to 'requested'
             invitation_status: acceptedPlayers >= game.handed ? 'waitlist' : 'requested'
         });
 
         await newPlayer.save();
 
-          // Return appropriate message based on the status
-        const message = acceptedPlayers >= game.handed 
-            ? 'Added to waitlist. You will be notified when a spot becomes available.' 
+        // Return appropriate message based on the status
+        const message = acceptedPlayers >= game.handed
+            ? 'Added to waitlist. You will be notified when a spot becomes available.'
             : 'Join request sent successfully.';
 
-        res.status(201).json({ 
-            message, 
+        res.status(201).json({
+            message,
             status: newPlayer.invitation_status,
             position: acceptedPlayers >= game.handed ? await Player.countDocuments({
                 game_id: gameId,
@@ -419,24 +419,24 @@ const rejectJoinRequest = async (req, res) => {
 const getWaitlistPosition = async (req, res) => {
     try {
         const { gameId, userId } = req.params;
-        
+
         const player = await Player.findOne({
             game_id: gameId,
             user_id: userId,
             invitation_status: 'waitlist'
         });
-        
+
         if (!player) {
             return res.status(404).json({ message: 'Player not found on waitlist.' });
         }
-        
+
         // Count how many players are ahead in the waitlist (created earlier)
         const position = await Player.countDocuments({
             game_id: gameId,
             invitation_status: 'waitlist',
             createdAt: { $lte: player.createdAt }
         });
-        
+
         res.status(200).json({ position });
     } catch (err) {
         console.error('Error getting waitlist position:', err);
@@ -462,32 +462,122 @@ const getRejectedRequests = async (req, res) => {
 const getRequestedGames = async (req, res) => {
     try {
         const { userId } = req.params;
+        const { blinds, dateRange, handed } = req.query;
 
-        // Find all requested or rejected games for the user
-        const requestedGames = await Player.find({
+        // Create base query
+        let matchQuery = {
             user_id: userId,
             invitation_status: { $in: ['requested', 'rejected'] }
-        }).populate({
-            path: 'game_id',
-            populate: { path: 'host_id', select: 'username' }
-        });
+        };
 
-        // Format the response
-        const games = requestedGames.map(record => {
-            const game = record.game_id;
-            if (!game) return null;
+        // Find all requested or rejected games for the user
+        const requestedPlayers = await Player.find(matchQuery)
+            .select('game_id invitation_status rejection_reason');
 
-            return {
-                ...game.toObject(),
-                playerStatus: record.invitation_status,
+        // Get the game IDs
+        const gameIds = requestedPlayers.map(p => p.game_id);
+
+        if (gameIds.length === 0) {
+            return res.status(200).json([]);
+        }
+
+        // Create a map of game ID to player status and rejection reason
+        const playerStatusMap = {};
+        requestedPlayers.forEach(record => {
+            playerStatusMap[record.game_id.toString()] = {
+                status: record.invitation_status,
                 rejectionReason: record.rejection_reason || null
             };
-        }).filter(game => game !== null);
+        });
 
-        res.status(200).json(games);
+        // Build query for games with filters
+        const gameQuery = {
+            _id: { $in: gameIds }
+        };
+
+        // Apply filter for blinds if provided
+        if (blinds) {
+            if (Array.isArray(blinds)) {
+                gameQuery.blinds = { $in: blinds };
+            } else {
+                gameQuery.blinds = { $in: blinds.split(",") };
+            }
+        }
+
+        // Apply filter for handed range if provided
+        if (handed) {
+            try {
+                const handedObj = typeof handed === "string" ? JSON.parse(handed) : handed;
+                if (handedObj && typeof handedObj === "object") {
+                    const handedQuery = {};
+                    if (handedObj.min !== undefined) {
+                        handedQuery.$gte = Number(handedObj.min);
+                    }
+                    if (handedObj.max !== undefined) {
+                        handedQuery.$lte = Number(handedObj.max);
+                    }
+                    if (Object.keys(handedQuery).length > 0) {
+                        gameQuery.handed = handedQuery;
+                    }
+                }
+            } catch (e) {
+                console.error("Error parsing handed filter:", e);
+            }
+        }
+
+        // Apply filter for date range if provided
+        if (dateRange) {
+            try {
+                const dateRangeObj = typeof dateRange === "string" ? JSON.parse(dateRange) : dateRange;
+
+                if (dateRangeObj && typeof dateRangeObj === "object") {
+                    const dateQuery = {};
+
+                    if (dateRangeObj.startDate) {
+                        const startDate = new Date(dateRangeObj.startDate);
+                        const startDateOffset = startDate.getTimezoneOffset();
+                        const startOffsetHours = Math.abs(startDateOffset) / 60;
+                        startDate.setUTCHours(startOffsetHours, 0, 0, 0);
+                        dateQuery.$gte = startDate;
+                    }
+
+                    if (dateRangeObj.endDate) {
+                        const endDate = new Date(dateRangeObj.endDate);
+                        const endDateOffset = endDate.getTimezoneOffset();
+                        const endOffsetHours = Math.abs(endDateOffset) / 60;
+                        endDate.setUTCHours(24 + endOffsetHours, 59, 59, 999);
+                        dateQuery.$lte = endDate;
+                    }
+
+                    if (Object.keys(dateQuery).length > 0) {
+                        gameQuery.game_date = dateQuery;
+                    }
+                }
+            } catch (e) {
+                console.error("Error parsing date range filter:", e);
+            }
+        }
+
+        // Get the filtered games
+        const games = await Game.find(gameQuery).populate("host_id", "username");
+
+        // Format the response with player status and rejection reason
+        const formattedGames = games.map(game => {
+            const gameObj = game.toObject();
+            const gameId = game._id.toString();
+            const playerInfo = playerStatusMap[gameId] || { status: 'unknown', rejectionReason: null };
+
+            return {
+                ...gameObj,
+                playerStatus: playerInfo.status,
+                rejectionReason: playerInfo.rejectionReason
+            };
+        });
+
+        res.status(200).json(formattedGames);
     } catch (err) {
         console.error('Error fetching requested games:', err);
-        res.status(500).json({ message: 'Server error.' });
+        res.status(500).json({ message: 'Server error' });
     }
 };
 

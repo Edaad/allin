@@ -12,7 +12,7 @@ const BLINDS_OPTIONS = [
 	"5/10",
 ];
 
-function Filter({ onApply, tab }) {
+function Filter({ onApply, tab, initialFilters }) {
 	const defaultFilters = useMemo(
 		() => ({
 			blinds: [],
@@ -32,22 +32,41 @@ function Filter({ onApply, tab }) {
 		[]
 	);
 
-	// Local state for filters
-	const [filters, setFilters] = useState(defaultFilters);
+	// Local state for filters - initialize with initialFilters if available
+	const [filters, setFilters] = useState(initialFilters || defaultFilters);
+
+	// Update filters when initialFilters changes
+	useEffect(() => {
+		// Ensure we always have a properly structured filters object
+		const safeFilters = initialFilters && Object.keys(initialFilters).length > 0
+			? {
+				// Provide defaults for any missing properties
+				blinds: initialFilters.blinds || [],
+				handed: initialFilters.handed || { min: 2, max: 10 },
+				dateRange: initialFilters.dateRange || { startDate: "", endDate: "" },
+				timeRange: initialFilters.timeRange || { startTime: "", endTime: "" }
+			}
+			: defaultFilters;
+
+		setFilters(safeFilters);
+	}, [initialFilters, defaultFilters, tab]);
 
 	// Handler for blinds checkboxes
 	const handleBlindsChange = (e) => {
 		const { value, checked } = e.target;
 		setFilters((prevFilters) => {
+			// Ensure blinds is an array, default to empty if undefined
+			const currentBlinds = prevFilters.blinds || [];
+
 			if (checked) {
 				return {
 					...prevFilters,
-					blinds: [...prevFilters.blinds, value],
+					blinds: [...currentBlinds, value],
 				};
 			} else {
 				return {
 					...prevFilters,
-					blinds: prevFilters.blinds.filter((b) => b !== value),
+					blinds: currentBlinds.filter((b) => b !== value),
 				};
 			}
 		});
@@ -59,7 +78,7 @@ function Filter({ onApply, tab }) {
 		setFilters((prevFilters) => ({
 			...prevFilters,
 			handed: {
-				...prevFilters.handed,
+				...(prevFilters.handed || { min: 2, max: 10 }),
 				[name]: Number(value),
 			},
 		}));
@@ -71,7 +90,7 @@ function Filter({ onApply, tab }) {
 		setFilters((prevFilters) => ({
 			...prevFilters,
 			dateRange: {
-				...prevFilters.dateRange,
+				...(prevFilters.dateRange || { startDate: "", endDate: "" }),
 				[name]: value,
 			},
 		}));
@@ -88,12 +107,10 @@ function Filter({ onApply, tab }) {
 		onApply({});
 	};
 
-	// When the tab changes, reset the filters and clear the parent's filters.
-	useEffect(() => {
-		setFilters(defaultFilters);
-		onApply({});
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [tab]);
+	// Guard against accessing properties of undefined
+	const blinds = filters && filters.blinds ? filters.blinds : [];
+	const handed = filters && filters.handed ? filters.handed : { min: 2, max: 10 };
+	const dateRange = filters && filters.dateRange ? filters.dateRange : { startDate: "", endDate: "" };
 
 	return (
 		<div className="filter-sidebar">
@@ -114,9 +131,7 @@ function Filter({ onApply, tab }) {
 									type="checkbox"
 									name="blinds"
 									value={blindValue}
-									checked={filters.blinds.includes(
-										blindValue
-									)}
+									checked={blinds.includes(blindValue)}
 									onChange={handleBlindsChange}
 								/>
 								<label className="filter-blinds">
@@ -132,7 +147,7 @@ function Filter({ onApply, tab }) {
 						<div className="filter-range">
 							<div className="filter-range-input">
 								<label>
-									Min: <strong>{filters.handed.min}</strong>
+									Min: <strong>{handed.min}</strong>
 								</label>
 								<input
 									className="filter-slider"
@@ -140,13 +155,13 @@ function Filter({ onApply, tab }) {
 									name="min"
 									min="2"
 									max="10"
-									value={filters.handed.min}
+									value={handed.min}
 									onChange={handleHandedChange}
 								/>
 							</div>
 							<div className="filter-range-input">
 								<label>
-									Max: <strong>{filters.handed.max}</strong>
+									Max: <strong>{handed.max}</strong>
 								</label>
 								<input
 									className="filter-slider"
@@ -154,7 +169,7 @@ function Filter({ onApply, tab }) {
 									name="max"
 									min="2"
 									max="10"
-									value={filters.handed.max}
+									value={handed.max}
 									onChange={handleHandedChange}
 								/>
 							</div>
@@ -171,7 +186,7 @@ function Filter({ onApply, tab }) {
 									className="filter-date"
 									type="date"
 									name="startDate"
-									value={filters.dateRange.startDate}
+									value={dateRange.startDate}
 									onChange={handleDateChange}
 								/>
 							</div>
@@ -181,9 +196,9 @@ function Filter({ onApply, tab }) {
 									className="filter-date"
 									type="date"
 									name="endDate"
-									value={filters.dateRange.endDate}
+									value={dateRange.endDate}
 									onChange={handleDateChange}
-									min={filters.dateRange.startDate}
+									min={dateRange.startDate}
 								/>
 							</div>
 						</div>

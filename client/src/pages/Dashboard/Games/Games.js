@@ -1,21 +1,21 @@
 // src/pages/Dashboard/Games/Games.js
 
-import React, { useEffect, useState, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
-import "../Dashboard.css";
-import "./Games.css";
-import Sidebar from "../../../components/Sidebar/Sidebar";
-import Table from "../../../components/Table/Table";
-import Filter from "../../../components/Filter/Filter";
-import GameCard from "../../../components/GameCard/GameCard";
+import React, { useEffect, useState, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import '../Dashboard.css';
+import './Games.css';
+import Sidebar from '../../../components/Sidebar/Sidebar';
+import Table from '../../../components/Table/Table';
+import Filter from '../../../components/Filter/Filter';
+import GameCard from '../../../components/GameCard/GameCard';
 
 export function Games() {
 	const [user, setUser] = useState(null);
 	const { userId } = useParams();
 	const navigate = useNavigate();
-	const [page, setPage] = useState("games");
-	const [tab, setTab] = useState("Public Games");
+	const [page, setPage] = useState('games');
+	const [tab, setTab] = useState('Public Games');
 	const [games, setGames] = useState([]);
 	const [requestedGames, setRequestedGames] = useState([]);
 	const [invitations, setInvitations] = useState([]);
@@ -23,148 +23,136 @@ export function Games() {
 	const [filterParams, setFilterParams] = useState({});
 	const [waitlistPosition, setWaitlistPositions] = useState({});
 
+	// Add this new state to store filters per tab
+	const [tabFilters, setTabFilters] = useState({
+		'Public Games': {
+			blinds: [],
+			handed: { min: 2, max: 10 },
+			dateRange: { startDate: "", endDate: "" },
+			timeRange: { startTime: "", endTime: "" },
+		},
+		'Requested Games': {
+			blinds: [],
+			handed: { min: 2, max: 10 },
+			dateRange: { startDate: "", endDate: "" },
+			timeRange: { startTime: "", endTime: "" },
+		},
+		'Upcoming Games': {
+			blinds: [],
+			handed: { min: 2, max: 10 },
+			dateRange: { startDate: "", endDate: "" },
+			timeRange: { startTime: "", endTime: "" },
+		},
+		'Past Games': {
+			blinds: [],
+			handed: { min: 2, max: 10 },
+			dateRange: { startDate: "", endDate: "" },
+			timeRange: { startTime: "", endTime: "" },
+		}
+	});
+
 	useEffect(() => {
 		const fetchUser = async () => {
 			try {
-				const loggedUser = JSON.parse(localStorage.getItem("user"));
+				const loggedUser = JSON.parse(localStorage.getItem('user'));
 				if (loggedUser && loggedUser._id === userId) {
-					const res = await axios.get(
-						`${process.env.REACT_APP_API_URL}/users/${userId}`
-					);
+					const res = await axios.get(`${process.env.REACT_APP_API_URL}/users/${userId}`);
 					setUser(res.data);
 				} else {
-					navigate("/signin");
+					navigate('/signin');
 				}
 			} catch (error) {
-				console.error("Error fetching user:", error);
-				navigate("/signin");
+				console.error('Error fetching user:', error);
+				navigate('/signin');
 			}
 		};
 		fetchUser();
 	}, [userId, navigate]);
 
 	// Define fetchWaitlistPosition with useCallback
-	// Define fetchWaitlistPosition with useCallback
-	const fetchWaitlistPosition = useCallback(
-		async (gameId) => {
-			// Add a check to ensure user exists before accessing user._id
-			if (!user) return;
+	const fetchWaitlistPosition = useCallback(async (gameId) => {
+		// Add a check to ensure user exists before accessing user._id
+		if (!user) return;
 
-			try {
-				const res = await axios.get(
-					`${process.env.REACT_APP_API_URL}/players/waitlist/${gameId}/${user._id}`
-				);
-				setWaitlistPositions((prev) => ({
-					...prev,
-					[gameId]: res.data.position,
-				}));
-			} catch (error) {
-				console.error("Error fetching waitlist position:", error);
-			}
-		},
-		[user]
-	); // Changed dependency from user._id to user itself
+		try {
+			const res = await axios.get(
+				`${process.env.REACT_APP_API_URL}/players/waitlist/${gameId}/${user._id}`
+			);
+			setWaitlistPositions(prev => ({
+				...prev,
+				[gameId]: res.data.position
+			}));
+		} catch (error) {
+			console.error('Error fetching waitlist position:', error);
+		}
+	}, [user]);  // Changed dependency from user._id to user itself
 
 	// Update fetchGames to include fetchWaitlistPosition in its dependency array
 	const fetchGames = useCallback(async () => {
 		if (!user) return;
 		try {
-			if (tab === "Upcoming Games" || tab === "Past Games") {
-				const status =
-					tab === "Upcoming Games" ? "upcoming" : "completed";
-				const res = await axios.get(
-					`${process.env.REACT_APP_API_URL}/games/player/${user._id}`,
-					{
-						params: { status },
-					}
-				);
-				setGames(res.data);
-			} else if (tab === "Public Games") {
-				// Prepare base params
+			if (tab === 'Upcoming Games' || tab === 'Past Games') {
+				const status = tab === 'Upcoming Games' ? 'upcoming' : 'completed';
+				// Apply filters to upcoming and past games
 				const params = {
-					status: "upcoming",
+					status,
+					...filterParams
+				};
+				const res = await axios.get(`${process.env.REACT_APP_API_URL}/games/player/${user._id}`, {
+					params
+				});
+				setGames(res.data);
+			} else if (tab === 'Public Games') {
+				const params = {
+					status: 'upcoming',
 					is_public: true,
 					userId: user._id,
+					...filterParams
 				};
-
-				// Add blinds filter if present
-				if (filterParams.blinds && filterParams.blinds.length > 0) {
-					params.blinds = filterParams.blinds;
-				}
-
-				// Add handed range filter if present
-				if (
-					filterParams.handed &&
-					(filterParams.handed.min !== undefined ||
-						filterParams.handed.max !== undefined)
-				) {
-					params.handed = JSON.stringify(filterParams.handed);
-				}
-
-				// Add date range filter if present
-				if (
-					filterParams.dateRange &&
-					(filterParams.dateRange.startDate ||
-						filterParams.dateRange.endDate)
-				) {
-					params.dateRange = JSON.stringify(filterParams.dateRange);
-				}
-
-				const res = await axios.get(
-					`${process.env.REACT_APP_API_URL}/games`,
-					{ params }
-				);
+				const res = await axios.get(`${process.env.REACT_APP_API_URL}/games`, { params });
 
 				// For each game, fetch player count and waitlist position if needed
 				const gamesWithPlayerCount = await Promise.all(
 					res.data.map(async (game) => {
 						try {
-							const playersRes = await axios.get(
-								`${process.env.REACT_APP_API_URL}/players/game/${game._id}`
-							);
-							const acceptedPlayers = playersRes.data.filter(
-								(p) => p.invitation_status === "accepted"
-							);
+							const playersRes = await axios.get(`${process.env.REACT_APP_API_URL}/players/game/${game._id}`);
+							const acceptedPlayers = playersRes.data.filter(p => p.invitation_status === 'accepted');
 
 							// If player is on waitlist, fetch their position
-							if (game.playerStatus === "waitlist") {
+							if (game.playerStatus === 'waitlist') {
 								await fetchWaitlistPosition(game._id);
 							}
 
 							return {
 								...game,
-								acceptedPlayersCount: acceptedPlayers.length,
+								acceptedPlayersCount: acceptedPlayers.length
 							};
 						} catch (err) {
-							console.error(
-								`Error fetching players for game ${game._id}:`,
-								err
-							);
+							console.error(`Error fetching players for game ${game._id}:`, err);
 							return game;
 						}
 					})
 				);
 				setGames(gamesWithPlayerCount);
-			} else if (tab === "Invitations") {
-				const res = await axios.get(
-					`${process.env.REACT_APP_API_URL}/players/invitations/${user._id}`
-				);
+			} else if (tab === 'Invitations') {
+				const res = await axios.get(`${process.env.REACT_APP_API_URL}/players/invitations/${user._id}`);
 				setInvitations(res.data);
-			} else if (tab === "Requested Games") {
-				// Fetch games where the user has requested to join or was rejected
-				const res = await axios.get(
-					`${process.env.REACT_APP_API_URL}/requested/${user._id}`
-				);
+			} else if (tab === 'Requested Games') {
+				// Apply filters to requested games
+				const params = {
+					...filterParams
+				};
+				const res = await axios.get(`${process.env.REACT_APP_API_URL}/requested/${user._id}`, { params });
 				setRequestedGames(res.data);
 			}
 		} catch (error) {
-			console.error("Error fetching games:", error);
+			console.error('Error fetching games:', error);
 		}
 	}, [tab, user, filterParams, fetchWaitlistPosition]);
 
-	// Apply filters when they change in Public Games tab
+	// Apply filters when they change in any tab that needs filtering
 	useEffect(() => {
-		if (tab === "Public Games") {
+		if (['Public Games', 'Requested Games', 'Upcoming Games', 'Past Games'].includes(tab)) {
 			fetchGames();
 		}
 	}, [filterParams, tab, fetchGames]);
@@ -175,52 +163,63 @@ export function Games() {
 		}
 	}, [user, fetchGames]);
 
+	// Handle tab change and restore tab-specific filters
+	const handleTabChange = (newTab) => {
+		setTab(newTab);
+		// Apply the stored filters for this tab
+		setFilterParams(tabFilters[newTab] || {});
+	};
+
+	// Handle filter application and store filters per tab
+	const handleApplyFilters = (filters) => {
+		// Store filters for the current tab
+		setTabFilters(prev => ({
+			...prev,
+			[tab]: filters
+		}));
+
+		// Apply the filters
+		setFilterParams(filters);
+	};
+
 	const handleAcceptInvitation = async (gameId) => {
 		try {
-			const response = await axios.post(
-				`${process.env.REACT_APP_API_URL}/players/accept-invitation`,
-				{
-					userId: user._id,
-					gameId: gameId,
-				}
-			);
+			const response = await axios.post(`${process.env.REACT_APP_API_URL}/players/accept-invitation`, {
+				userId: user._id,
+				gameId: gameId
+			});
 
 			// Check if the response indicates waitlist status
-			if (response.data.status === "waitlist" && response.data.position) {
-				setWaitlistPositions((prev) => ({
+			if (response.data.status === 'waitlist' && response.data.position) {
+				setWaitlistPositions(prev => ({
 					...prev,
-					[gameId]: response.data.position,
+					[gameId]: response.data.position
 				}));
 			}
 
 			fetchGames();
 		} catch (error) {
-			console.error("Error accepting invitation:", error);
+			console.error('Error accepting invitation:', error);
 		}
 	};
 
 	const handleDeclineInvitation = async (gameId) => {
-		const confirmDecline = window.confirm(
-			"Are you sure you want to decline this invitation?"
-		);
+		const confirmDecline = window.confirm("Are you sure you want to decline this invitation?");
 		if (!confirmDecline) return;
 
 		try {
-			await axios.post(
-				`${process.env.REACT_APP_API_URL}/players/decline-invitation`,
-				{
-					userId: user._id,
-					gameId: gameId,
-				}
-			);
+			await axios.post(`${process.env.REACT_APP_API_URL}/players/decline-invitation`, {
+				userId: user._id,
+				gameId: gameId
+			});
 			fetchGames();
 		} catch (error) {
-			console.error("Error declining invitation:", error);
+			console.error('Error declining invitation:', error);
 		}
 	};
 
 	const handleRowClick = (gameId) => {
-		if (tab === "Invitations") {
+		if (tab === 'Invitations') {
 			return;
 		}
 		navigate(`/dashboard/${user._id}/games/game/${gameId}`);
@@ -229,29 +228,26 @@ export function Games() {
 	const handleRequestToJoin = async (gameId) => {
 		try {
 			setIsRequesting(true);
-			const response = await axios.post(
-				`${process.env.REACT_APP_API_URL}/players/request-to-join`,
-				{
-					userId: user._id,
-					gameId: gameId,
-				}
-			);
+			const response = await axios.post(`${process.env.REACT_APP_API_URL}/players/request-to-join`, {
+				userId: user._id,
+				gameId: gameId
+			});
 
-			//Check if the response indicates wa`itlist status
-			const newStatus = response.data.status || "requested";
+			//Check if the response indicates waitlist status
+			const newStatus = response.data.status || 'requested';
 			const position = response.data.position;
 
 			//If position is provided update the waitlist position
 			if (position) {
-				setWaitlistPositions((prev) => ({
+				setWaitlistPositions(prev => ({
 					...prev,
-					[gameId]: position,
+					[gameId]: position
 				}));
 			}
 
 			// Update the local games state to reflect the status change
-			setGames((prevGames) =>
-				prevGames.map((game) =>
+			setGames(prevGames =>
+				prevGames.map(game =>
 					game._id === gameId
 						? { ...game, playerStatus: newStatus }
 						: game
@@ -260,17 +256,18 @@ export function Games() {
 
 			setIsRequesting(false);
 		} catch (error) {
-			console.error("Error requesting to join game:", error);
+			console.error('Error requesting to join game:', error);
 			setIsRequesting(false);
 		}
 	};
 
-	// Render function for status column in game tables
+
 	// Render function for status column in game tables
 	const renderGameStatus = (game) => {
-		if (game.playerStatus === "none" && game.is_public) {
+		if (game.playerStatus === 'none' && game.is_public) {
+
 			// Check if the game is full by comparing accepted players to game.handed
-			const isFull = game.acceptedPlayersCount >= game.handed;
+			const isFull = game.acceptedPlayersCount >= game.handed
 
 			return (
 				<button
@@ -284,33 +281,31 @@ export function Games() {
 					{isFull ? "Join Waitlist" : "Request to Join"}
 				</button>
 			);
-		} else if (game.playerStatus === "requested") {
+		} else if (game.playerStatus === 'requested') {
 			return <span className="status-tag requested">Pending</span>;
-		} else if (game.playerStatus === "accepted") {
+		} else if (game.playerStatus === 'accepted') {
 			return <span className="status-tag accepted">Joined</span>;
-		} else if (game.playerStatus === "pending") {
-			return (
-				<span className="status-tag pending">Invitation Pending</span>
-			);
-		} else if (game.playerStatus === "waitlist") {
+		} else if (game.playerStatus === 'pending') {
+			return <span className="status-tag pending">Invitation Pending</span>;
+		} else if (game.playerStatus === 'waitlist') {
 			const position = waitlistPosition[game._id];
 			return (
 				<span className="status-tag waitlist">
-					Waitlist {position ? `(#${position})` : ""}
+					Waitlist {position ? `(#${position})` : ''}
 				</span>
 			);
-		} else if (game.playerStatus === "rejected") {
+		} else if (game.playerStatus === 'rejected') {
 			return <span className="status-tag rejected">Rejected</span>;
 		}
 		return null;
 	};
 
 	const menus = [
-		{ title: "Overview", page: "overview" },
-		{ title: "Games", page: "games" },
-		{ title: "Host", page: "host" },
-		{ title: "Community", page: "community" },
-		{ title: "Bankroll", page: "bankroll" },
+		{ title: 'Overview', page: 'overview' },
+		{ title: 'Games', page: 'games' },
+		{ title: 'Host', page: 'host' },
+		{ title: 'Community', page: 'community' },
+		{ title: 'Bankroll', page: 'bankroll' }
 	];
 
 	const headers = ["Name", "Host", "Location", "Date", "Time", "Blinds"];
@@ -322,109 +317,66 @@ export function Games() {
 
 	return (
 		<div className="dashboard">
-			<Sidebar
-				menus={menus}
-				setPage={setPage}
-				page={page}
-				username={user.username}
-			/>
+			<Sidebar menus={menus} setPage={setPage} page={page} username={user.username} />
 			<div className="logged-content-container">
-				<div className="dashboard-heading">
-					<h1>Games</h1>
-				</div>
+				<div className="dashboard-heading"><h1>Games</h1></div>
 				<div className="tab-container">
 					<button
-						className={`tab${
-							tab === "Public Games" ? "-selected" : ""
-						}`}
-						onClick={() => {
-							setTab("Public Games");
-						}}
+						className={`tab${tab === "Public Games" ? "-selected" : ""}`}
+						onClick={() => handleTabChange('Public Games')}
 					>
 						Public Games
 					</button>
 					<button
-						className={`tab${
-							tab === "Requested Games" ? "-selected" : ""
-						}`}
-						onClick={() => {
-							setTab("Requested Games");
-						}}
+						className={`tab${tab === "Requested Games" ? "-selected" : ""}`}
+						onClick={() => handleTabChange('Requested Games')}
 					>
 						Requested Games
 					</button>
 					<button
-						className={`tab${
-							tab === "Invitations" ? "-selected" : ""
-						}`}
-						onClick={() => {
-							setTab("Invitations");
-						}}
+						className={`tab${tab === "Invitations" ? "-selected" : ""}`}
+						onClick={() => handleTabChange('Invitations')}
 					>
 						Invitations
 					</button>
 					<button
-						className={`tab${
-							tab === "Upcoming Games" ? "-selected" : ""
-						}`}
-						onClick={() => {
-							setTab("Upcoming Games");
-						}}
+						className={`tab${tab === "Upcoming Games" ? "-selected" : ""}`}
+						onClick={() => handleTabChange('Upcoming Games')}
 					>
 						Upcoming Games
 					</button>
 					<button
-						className={`tab${
-							tab === "Past Games" ? "-selected" : ""
-						}`}
-						onClick={() => {
-							setTab("Past Games");
-						}}
+						className={`tab${tab === "Past Games" ? "-selected" : ""}`}
+						onClick={() => handleTabChange('Past Games')}
 					>
 						Past Games
 					</button>
 				</div>
 
-				{tab === "Public Games" ? (
-					<div
-						className="public-games-container"
-						style={{ display: "flex" }}
-					>
+				{tab === 'Public Games' ? (
+					<div className="public-games-container" style={{ display: 'flex' }}>
 						<Filter
 							tab={tab}
-							onApply={(filters) => setFilterParams(filters)}
+							onApply={handleApplyFilters}
+							initialFilters={tabFilters[tab]}
 						/>
 						<div className="games-table" style={{ flex: 1 }}>
 							{games.length > 0 ? (
 								<Table
 									headers={headers}
 									data={games.map((game) => {
-										const gameDate = new Date(
-											game.game_date
-										);
+										const gameDate = new Date(game.game_date);
 										return {
-											name: game.game_name,
-											host: game.host_id.username,
-											location: game.location,
-											date: gameDate.toLocaleDateString(),
-											time: gameDate.toLocaleTimeString(
-												[],
-												{
-													hour: "2-digit",
-													minute: "2-digit",
-												}
-											),
-											blinds: game.blinds,
-											_id: game._id,
-											is_public: game.is_public,
-											playerStatus:
-												game.playerStatus || "none",
-											clickable:
-												game.playerStatus ===
-												"accepted",
-											handed: game.handed, // Add handed property
-											acceptedPlayersCount:
-												game.acceptedPlayersCount, // Add player count
+											'name': game.game_name,
+											'host': game.host_id.username,
+											'location': game.location,
+											'date': gameDate.toLocaleDateString(),
+											'time': gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+											'blinds': game.blinds,
+											'_id': game._id,
+											'is_public': game.is_public,
+											'playerStatus': game.playerStatus || 'none',
+											'clickable': game.playerStatus === 'accepted'
 										};
 									})}
 									onRowClick={handleRowClick}
@@ -432,15 +384,11 @@ export function Games() {
 									shadow
 								/>
 							) : (
-								<div className="no-games-message">
-									{Object.keys(filterParams).length > 0
-										? "No games match your filter criteria."
-										: "There are no public games available."}
-								</div>
+								<div className="no-games-message">There are no public games available.</div>
 							)}
 						</div>
 					</div>
-				) : tab === "Invitations" ? (
+				) : tab === 'Invitations' ? (
 					invitations.length > 0 ? (
 						<table className="table-container">
 							<thead>
@@ -452,111 +400,94 @@ export function Games() {
 								</tr>
 							</thead>
 							<tbody>
-								{invitations
-									.filter(
-										(inv) =>
-											inv != null && inv.host_id != null
-									)
-									.map((inv, rowIndex) => {
-										const gameDate = new Date(
-											inv.game_date
-										);
-										return (
-											<tr key={rowIndex}>
-												<td>{inv.game_name}</td>
-												<td>{inv.host_id.username}</td>
-												<td>
-													{gameDate.toLocaleDateString()}
-												</td>
-												<td>
-													{gameDate.toLocaleTimeString(
-														[],
-														{
-															hour: "2-digit",
-															minute: "2-digit",
-														}
-													)}
-												</td>
-												<td>{inv.blinds}</td>
-												<td className="ad-buttons-container">
-													<button
-														className="accept-button small"
-														onClick={() =>
-															handleAcceptInvitation(
-																inv._id
-															)
-														}
-													>
-														Accept
-													</button>
-													<button
-														className="decline-button small"
-														onClick={() =>
-															handleDeclineInvitation(
-																inv._id
-															)
-														}
-													>
-														Decline
-													</button>
-												</td>
-											</tr>
-										);
-									})}
+								{invitations.filter(inv => inv != null && inv.host_id != null).map((inv, rowIndex) => {
+									const gameDate = new Date(inv.game_date);
+									return (
+										<tr key={rowIndex}>
+											<td>{inv.game_name}</td>
+											<td>{inv.host_id.username}</td>
+											<td>{gameDate.toLocaleDateString()}</td>
+											<td>{gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+											<td>{inv.blinds}</td>
+											<td className="ad-buttons-container">
+												<button className="accept-button small" onClick={() => handleAcceptInvitation(inv._id)}>
+													Accept
+												</button>
+												<button className="decline-button small" onClick={() => handleDeclineInvitation(inv._id)}>
+													Decline
+												</button>
+											</td>
+										</tr>
+									);
+								})}
 							</tbody>
 						</table>
 					) : (
-						<div className="no-games-message">
-							You currently have no game invitations.
-						</div>
+						<div className="no-games-message">You currently have no game invitations.</div>
 					)
-				) : tab === "Requested Games" ? (
-					// New Requested Games tab content with GameCard components
-					<div className="requested-games-container">
-						{requestedGames.length > 0 ? (
-							<div className="game-cards-grid">
-								{requestedGames.map((game) => (
-									<GameCard
-										key={game._id}
-										game={game}
-										user={user}
-									/>
-								))}
-							</div>
-						) : (
-							<div className="no-games-message">
-								You haven't requested to join any games yet.
-							</div>
-						)}
+				) : tab === 'Requested Games' ? (
+					// Requested Games tab with Filter component
+					<div className="public-games-container" style={{ display: 'flex' }}>
+						<Filter
+							tab={tab}
+							onApply={handleApplyFilters}
+							initialFilters={tabFilters[tab]}
+						/>
+						<div className="requested-games-container" style={{ flex: 1 }}>
+							{requestedGames.length > 0 ? (
+								<div className="game-cards-grid">
+									{requestedGames.map(game => (
+										<GameCard
+											key={game._id}
+											game={game}
+											user={user}
+										/>
+									))}
+								</div>
+							) : (
+								<div className="no-games-message">
+									You haven't requested to join any games yet.
+								</div>
+							)}
+						</div>
 					</div>
-				) : games.length > 0 ? (
-					<Table
-						headers={headers}
-						data={games.map((game) => {
-							const gameDate = new Date(game.game_date);
-							return {
-								name: game.game_name,
-								host: game.host_id.username,
-								location: game.location,
-								date: gameDate.toLocaleDateString(),
-								time: gameDate.toLocaleTimeString([], {
-									hour: "2-digit",
-									minute: "2-digit",
-								}),
-								blinds: game.blinds,
-								_id: game._id,
-								is_public: game.is_public,
-								playerStatus: game.playerStatus || "none",
-								clickable: game.playerStatus === "accepted",
-							};
-						})}
-						onRowClick={handleRowClick}
-						renderStatus={renderGameStatus}
-						shadow
-					/>
 				) : (
-					<div className="no-games-message">
-						You currently have no {tab.toLowerCase()}.
+					// Upcoming and Past Games tabs with Filter component
+					<div className="public-games-container" style={{ display: 'flex' }}>
+						<Filter
+							tab={tab}
+							onApply={handleApplyFilters}
+							initialFilters={tabFilters[tab]}
+						/>
+						<div className="games-table" style={{ flex: 1 }}>
+							{games.length > 0 ? (
+								<Table
+									headers={headers}
+									data={games.map((game) => {
+										const gameDate = new Date(game.game_date);
+										return {
+											'name': game.game_name,
+											'host': game.host_id.username,
+											'location': game.location,
+											'date': gameDate.toLocaleDateString(),
+											'time': gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+											'blinds': game.blinds,
+											'_id': game._id,
+											'is_public': game.is_public,
+											'playerStatus': game.playerStatus || 'none',
+											'clickable': game.playerStatus === 'accepted'
+										};
+									})}
+									onRowClick={handleRowClick}
+									renderStatus={renderGameStatus}
+									shadow
+								/>
+							) : (
+								<div className="no-games-message">
+									You currently have no {tab.toLowerCase()}.
+								</div>
+							)}
+						</div>
 					</div>
 				)}
 			</div>

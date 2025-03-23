@@ -8,7 +8,7 @@ function GameCard({ game, user }) {
 
     // Format date to be more readable
     const formatDate = (dateString) => {
-        const options = { weekday: 'short', month: 'short', day: 'numeric' };
+        const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
         return new Date(dateString).toLocaleDateString('en-US', options);
     };
 
@@ -33,7 +33,6 @@ function GameCard({ game, user }) {
             case 'rejected':
                 return (
                     <div className="status-badge-container">
-                        <span className="status-badge rejected">Request Rejected</span>
                         {game.rejectionReason && (
                             <span
                                 className="info-icon"
@@ -43,6 +42,8 @@ function GameCard({ game, user }) {
                                 ⓘ
                             </span>
                         )}
+                        <span className="status-badge rejected">Request Rejected</span>
+
                         {showReason && game.rejectionReason && (
                             <div className="rejection-reason-tooltip">
                                 {game.rejectionReason}
@@ -62,45 +63,43 @@ function GameCard({ game, user }) {
     return (
         <div className="game-card" onClick={handleCardClick}>
             <div className="game-card-header">
-                <h3 className="game-title">{game.game_name}</h3>
+                <div className="game-header">
+                    <h3 className='game-title'>{game.game_name}</h3>
+                    <h4 className='game-host'>{game.host_id?.username}</h4>
+                </div>
                 <div className="game-privacy">
                     {game.is_public ?
                         <span className="privacy-tag public">Public</span> :
                         <span className="privacy-tag private">Private</span>
                     }
+                    <div className="game-card-footer">
+                        {renderStatusBadge()}
+                    </div>
                 </div>
+
             </div>
 
             <div className="game-card-content">
+
                 <div className="game-info-row">
-                    <span className="info-label">Host:</span>
-                    <span className="info-value">{game.host_id?.username || 'Unknown'}</span>
+                    <p className="info-value">{formatDate(game.game_date)} at {formatTime(game.game_date)}</p>
                 </div>
 
                 <div className="game-info-row">
-                    <span className="info-label">Location:</span>
-                    <span className="info-value">{game.location}</span>
+                    <p className="info-value">{game.location}</p>
                 </div>
 
                 <div className="game-info-row">
-                    <span className="info-label">Date:</span>
-                    <span className="info-value">{formatDate(game.game_date)}</span>
+                    <p className="info-value"><span>Blinds:</span> {game.blinds}</p>
                 </div>
 
                 <div className="game-info-row">
-                    <span className="info-label">Time:</span>
-                    <span className="info-value">{formatTime(game.game_date)}</span>
+                    <p className="info-value">Handed: {game.handed}</p>
                 </div>
 
-                <div className="game-info-row">
-                    <span className="info-label">Blinds:</span>
-                    <span className="info-value">{game.blinds}</span>
-                </div>
             </div>
 
-            <div className="game-card-footer">
-                {renderStatusBadge()}
-            </div>
+
         </div>
     );
 }

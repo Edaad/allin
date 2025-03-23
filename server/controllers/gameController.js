@@ -265,7 +265,7 @@ const deleteGame = async (req, res) => {
 const getGamesForPlayer = async (req, res) => {
 	try {
 		const { userId } = req.params;
-		const { status } = req.query;
+		const { status, blinds, dateRange, handed } = req.query;
 
 		// Find all games where the user is a player and invitation_status is 'accepted'
 		const playerGames = await Player.find({
@@ -275,22 +275,6 @@ const getGamesForPlayer = async (req, res) => {
 
 		const acceptedGameIds = playerGames.map((pg) => pg.game_id);
 
-		// Find all games the user has requested to join
-		const requestedGames = await Player.find({
-			user_id: userId,
-			invitation_status: "requested",
-		}).select("game_id");
-
-		const requestedGameIds = requestedGames.map((rg) => rg.game_id);
-
-		// Find all games the user has pending invitations for
-		const pendingGames = await Player.find({
-			user_id: userId,
-			invitation_status: "pending",
-		}).select("game_id");
-
-		const pendingGameIds = pendingGames.map((pg) => pg.game_id);
-
 		// Updated query to only show games the user has joined (accepted invitations)
 		const query = {
 			_id: { $in: acceptedGameIds },
@@ -298,6 +282,69 @@ const getGamesForPlayer = async (req, res) => {
 
 		if (status) {
 			query.game_status = status;
+		}
+
+		// Apply filter for blinds if provided
+		if (blinds) {
+			if (Array.isArray(blinds)) {
+				query.blinds = { $in: blinds };
+			} else {
+				query.blinds = { $in: blinds.split(",") };
+			}
+		}
+
+		// Apply filter for handed range if provided
+		if (handed) {
+			try {
+				const handedObj = typeof handed === "string" ? JSON.parse(handed) : handed;
+				if (handedObj && typeof handedObj === "object") {
+					const handedQuery = {};
+					if (handedObj.min !== undefined) {
+						handedQuery.$gte = Number(handedObj.min);
+					}
+					if (handedObj.max !== undefined) {
+						handedQuery.$lte = Number(handedObj.max);
+					}
+					if (Object.keys(handedQuery).length > 0) {
+						query.handed = handedQuery;
+					}
+				}
+			} catch (e) {
+				console.error("Error parsing handed filter:", e);
+			}
+		}
+
+		// Apply filter for date range if provided
+		if (dateRange) {
+			try {
+				const dateRangeObj = typeof dateRange === "string" ? JSON.parse(dateRange) : dateRange;
+
+				if (dateRangeObj && typeof dateRangeObj === "object") {
+					const dateQuery = {};
+
+					if (dateRangeObj.startDate) {
+						const startDate = new Date(dateRangeObj.startDate);
+						const startDateOffset = startDate.getTimezoneOffset();
+						const startOffsetHours = Math.abs(startDateOffset) / 60;
+						startDate.setUTCHours(startOffsetHours, 0, 0, 0);
+						dateQuery.$gte = startDate;
+					}
+
+					if (dateRangeObj.endDate) {
+						const endDate = new Date(dateRangeObj.endDate);
+						const endDateOffset = endDate.getTimezoneOffset();
+						const endOffsetHours = Math.abs(endDateOffset) / 60;
+						endDate.setUTCHours(24 + endOffsetHours, 59, 59, 999);
+						dateQuery.$lte = endDate;
+					}
+
+					if (Object.keys(dateQuery).length > 0) {
+						query.game_date = dateQuery;
+					}
+				}
+			} catch (e) {
+				console.error("Error parsing date range filter:", e);
+			}
 		}
 
 		// Get all matching games
