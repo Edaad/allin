@@ -20,6 +20,14 @@ function Filter({ onApply, tab }) {
 				min: 2,
 				max: 10,
 			},
+			dateRange: {
+				startDate: "",
+				endDate: "",
+			},
+			timeRange: {
+				startTime: "",
+				endTime: "",
+			},
 		}),
 		[]
 	);
@@ -53,6 +61,18 @@ function Filter({ onApply, tab }) {
 			handed: {
 				...prevFilters.handed,
 				[name]: Number(value),
+			},
+		}));
+	};
+
+	// Handler for date range inputs
+	const handleDateChange = (e) => {
+		const { name, value } = e.target;
+		setFilters((prevFilters) => ({
+			...prevFilters,
+			dateRange: {
+				...prevFilters.dateRange,
+				[name]: value,
 			},
 		}));
 	};
@@ -136,6 +156,34 @@ function Filter({ onApply, tab }) {
 									max="10"
 									value={filters.handed.max}
 									onChange={handleHandedChange}
+								/>
+							</div>
+						</div>
+					</div>
+				</AccordionItem>
+
+				<AccordionItem title="Date Range">
+					<div className="filter-group">
+						<div className="filter-date-range">
+							<div className="filter-date-input">
+								<label>Start Date</label>
+								<input
+									className="filter-date"
+									type="date"
+									name="startDate"
+									value={filters.dateRange.startDate}
+									onChange={handleDateChange}
+								/>
+							</div>
+							<div className="filter-date-input">
+								<label>End Date</label>
+								<input
+									className="filter-date"
+									type="date"
+									name="endDate"
+									value={filters.dateRange.endDate}
+									onChange={handleDateChange}
+									min={filters.dateRange.startDate}
 								/>
 							</div>
 						</div>

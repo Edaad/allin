@@ -5,7 +5,8 @@ const Player = require("../models/player");
 
 const getGames = async (req, res) => {
 	try {
-		const { status, host_id, is_public, blinds, userId } = req.query;
+		const { status, host_id, is_public, blinds, userId, dateRange } =
+			req.query;
 		const query = {};
 
 		// Filter by game_status if provided
@@ -75,6 +76,67 @@ const getGames = async (req, res) => {
 				}
 			} catch (e) {
 				console.error("Error parsing handed filter:", e);
+			}
+		}
+
+		// Filter by date range if provided
+		if (dateRange) {
+			try {
+				const dateRangeObj =
+					typeof dateRange === "string"
+						? JSON.parse(dateRange)
+						: dateRange;
+
+				if (dateRangeObj && typeof dateRangeObj === "object") {
+					const dateQuery = {};
+
+					// Dynamically determine the timezone offset for each date
+
+					if (dateRangeObj.startDate) {
+						const startDate = new Date(dateRangeObj.startDate);
+
+						const startDateOffset = startDate.getTimezoneOffset();
+						const startOffsetHours = Math.abs(startDateOffset) / 60;
+						startDate.setUTCHours(startOffsetHours, 0, 0, 0);
+
+						console.log(
+							`Start date ${dateRangeObj.startDate} has offset of ${startOffsetHours} hours`
+						);
+						console.log(
+							`Adjusted start date: ${startDate.toISOString()}`
+						);
+
+						dateQuery.$gte = startDate;
+					}
+
+					if (dateRangeObj.endDate) {
+						// Create date at end of day local time
+						const endDate = new Date(dateRangeObj.endDate);
+						const endDateOffset = endDate.getTimezoneOffset();
+						const endOffsetHours = Math.abs(endDateOffset) / 60;
+
+						endDate.setUTCHours(24 + endOffsetHours, 59, 59, 999);
+
+						console.log(
+							`End date ${dateRangeObj.endDate} has offset of ${endOffsetHours} hours`
+						);
+						console.log(
+							`Adjusted end date: ${endDate.toISOString()}`
+						);
+
+						dateQuery.$lte = endDate;
+					}
+
+					if (Object.keys(dateQuery).length > 0) {
+						query.game_date = dateQuery;
+						console.log(
+							"Final date query:",
+							JSON.stringify(dateQuery)
+						);
+					}
+				}
+			} catch (e) {
+				console.error("Error parsing date range filter:", e);
 			}
 		}
 
