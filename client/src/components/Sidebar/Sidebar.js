@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import './Sidebar.css';
 import { minidenticon } from 'minidenticons';
-// import icon from '../../assets/images/games.png'
+import Logo from "../Logo/Logo";
 
 const Sidebar = ({ menus, page, username }) => {
     const navigate = useNavigate();
@@ -23,8 +23,10 @@ const Sidebar = ({ menus, page, username }) => {
 
     return (
         <div className='sidebar-container'>
+            <div className='sidebar-logo'>
+                <Logo />
+            </div>
             <ul className="menu">
-                <div className="menu-item" onClick={() => navigate(`/dashboard/${userId}/account`)}><MinidenticonImg className="profile-pic" username={username} /><span className={`account-username ${page === "account" ? "bg-highlight" : ""}`}>{username}</span></div>
                 {menus.map((Menu, index) => (
                     <li
                         key={index}
@@ -36,7 +38,10 @@ const Sidebar = ({ menus, page, username }) => {
                     </li>
                 ))}
             </ul>
-            <button className="signout-button" onClick={signOut}>Sign Out</button>
+            <div className="sidebar-footer">
+                <div className="menu-item" onClick={() => navigate(`/dashboard/${userId}/account`)}><MinidenticonImg className="profile-pic" username={username} /><span className={`account-username ${page === "account" ? "bg-highlight" : ""}`}>{username}</span></div>
+                <button className="signout-button" onClick={signOut}>Sign Out</button>
+            </div>
         </div>
     );
 };

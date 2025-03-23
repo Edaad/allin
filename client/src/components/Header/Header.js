@@ -1,19 +1,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Header.css'
+import Logo from '../Logo/Logo';
 
 const HeaderComp = ({ links }) => {
 
     const navigate = useNavigate();
     return (
         <header className="header">
-            <div className="logo-container" onClick={() => { navigate('/') }}>
-                {/* <img src={logo} alt="Logo" className="logo" /> */}
-                <div className='logo-name'>
-                    <p>all</p>
-                    <p style={{ color: "rgb(53, 115, 55)" }}>in.</p>
-                </div>
-
+            <div className='header-logo'>
+                <Logo />
             </div>
             <nav className="nav">
                 <ul className="nav-list">
