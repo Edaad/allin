@@ -1,6 +1,7 @@
 // controllers/groupController.js
 const Group = require('../models/group');
 const GroupMember = require('../models/groupMember');
+const notificationService = require('../services/notificationService');
 
 // Get groups with optional filters
 const getGroups = async (req, res) => {
@@ -85,6 +86,15 @@ const createGroup = async (req, res) => {
         });
         await newMember.save();
 
+        // Send notification to the group creator
+        try {
+            await notificationService.notifyGroupCreated(groupData.admin_id, newGroup._id);
+            console.log("Group creation notification sent");
+        } catch (notificationError) {
+            console.error("Error creating notification:", notificationError);
+            // Continue execution even if notification fails
+        }
+
         res.status(201).send(newGroup);
     } catch (err) {
         console.error('Error creating group:', err);
@@ -111,6 +121,15 @@ const updateGroup = async (req, res) => {
             return res.status(404).send({ message: 'Group not found' });
         }
 
+        // Notify members about the group update
+        try {
+            await notificationService.notifyGroupEdited(updatedGroup._id);
+            console.log("Group update notifications sent");
+        } catch (notificationError) {
+            console.error("Error creating notifications:", notificationError);
+            // Continue execution even if notification fails
+        }
+
         res.json(updatedGroup);
     } catch (err) {
         console.error('Error updating group:', err);
@@ -131,11 +150,29 @@ const deleteGroup = async (req, res) => {
             return res.status(403).send({ message: 'Only the group admin can delete the group' });
         }
 
+        // Get all members to notify about deletion
+        const members = await GroupMember.find({
+            group_id: group._id,
+            user_id: { $ne: req.body.userId }, // Exclude admin from notification list
+            membership_status: 'accepted'
+        });
+        const memberIds = members.map(member => member.user_id);
+        const groupName = group.group_name;
+
         // Delete associated group members
         await GroupMember.deleteMany({ group_id: group._id });
 
         // Delete the group
         await Group.findByIdAndDelete(group._id);
+
+        // Send notifications to members
+        try {
+            await notificationService.notifyGroupDeleted(group._id, groupName, memberIds);
+            console.log("Group deletion notifications sent");
+        } catch (notificationError) {
+            console.error("Error creating notifications:", notificationError);
+            // Continue execution even if notification fails
+        }
 
         res.json({ message: 'Group and associated members deleted successfully' });
     } catch (err) {
