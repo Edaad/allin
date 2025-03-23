@@ -473,14 +473,6 @@ export function GameDashboard() {
                                                 <div key={player._id} className="waitlisted-player">
                                                     <div className="waitlisted-position">#{index + 1}</div>
                                                     <Profile data={player.user_id} size={"compact"} />
-                                                    {isHost && player.user_id._id !== user._id && (
-                                                        <button
-                                                            className="remove-waitlist-button"
-                                                            onClick={() => handleLeaveGame(player.user_id._id)}
-                                                        >
-                                                            Remove
-                                                        </button>   
-                                                    )}
                                                 </div>
                                             ))}
                                         </div>

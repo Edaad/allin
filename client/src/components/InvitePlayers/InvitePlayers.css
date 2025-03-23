@@ -112,3 +112,40 @@
 .accepted-item+.accepted-item {
     margin-top: 0;
 }
+
+/* Waitlist styles */
+.waitlist-list {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 10px;
+    margin-top: 0;
+}
+
+.waitlist-item {
+    margin-bottom: 0;
+}
+
+.waitlist-player {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.waitlist-position {
+    min-width: 25px;
+    margin-right: 10px;
+    font-weight: bold;
+    color: #777;
+    font-size: 14px;
+}
+
+.waitlist-player .profile-container-compact {
+    flex: 1;
+    width: calc(100% - 35px);
+}
+
+.no-waitlist-message {
+    font-style: italic;
+    color: #777;
+    margin-top: 5px;
+}

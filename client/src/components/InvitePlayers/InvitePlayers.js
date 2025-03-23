@@ -129,6 +129,29 @@ export default function InvitePlayers({ user, gameId, players, fetchPlayers }) {
                         </li>
                     ))}
             </ul>
+            <h3>Waitlist</h3>
+            <ul className="waitlist-list">
+                {players
+                    .filter(player => player.invitation_status === 'waitlist')
+                    .sort((a, b) => new Date(a.created_at || a.createdAt) - new Date(b.created_at || b.createdAt))
+                    .map((player, index) => (
+                        <li key={player._id} className="waitlist-item">
+                            <div className="waitlist-player">
+                                <span className="waitlist-position">#{index + 1}</span>
+                                <Profile
+                                    data={player.user_id}
+                                    size="compact"
+                                    action="removePlayer"
+                                    onAction={() => handleRemovePlayer(player.user_id._id)}
+                                />
+                            </div>
+                        </li>
+                    ))}
+                {players.filter(player => player.invitation_status === 'waitlist').length === 0 && (
+                    <li className="no-waitlist-message">No players on waitlist</li>
+                )}
+            </ul>
+
         </div>
     );
 }
