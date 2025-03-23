@@ -101,7 +101,7 @@ const createGame = async (req, res) => {
 
         const newGame = new Game(gameData);
         await newGame.save();
-        
+
         // Add notification for game creation
         try {
             await notificationService.notifyGameCreated(gameData.host_id, newGame._id);
@@ -110,7 +110,7 @@ const createGame = async (req, res) => {
             console.error("Error creating notification:", notificationError);
             // Continue execution even if notification fails
         }
-        
+
         console.log("Game created:", newGame);
         res.status(201).send(newGame);
     } catch (err) {

@@ -33,13 +33,15 @@ const Sidebar = ({ menus, page, username }) => {
                         className={`menu-item ${page === Menu.page ? "bg-highlight" : ""}`}
                         onClick={() => navigate(`/dashboard/${userId}/${Menu.page}`)}
                     >
-                        {/* <img src={icon} alt="Menu Icon" className="menu-item-icon" /> */}
-                        <span className='title' >{Menu.title}</span>
+                        <span className='title'>{Menu.title}</span>
                     </li>
                 ))}
             </ul>
             <div className="sidebar-footer">
-                <div className="menu-item" onClick={() => navigate(`/dashboard/${userId}/account`)}><MinidenticonImg className="profile-pic" username={username} /><span className={`account-username ${page === "account" ? "bg-highlight" : ""}`}>{username}</span></div>
+                <div className="menu-item" onClick={() => navigate(`/dashboard/${userId}/account`)}>
+                    <MinidenticonImg className="profile-pic" username={username} />
+                    <span className={`account-username ${page === "account" ? "bg-highlight" : ""}`}>{username}</span>
+                </div>
                 <button className="signout-button" onClick={signOut}>Sign Out</button>
             </div>
         </div>

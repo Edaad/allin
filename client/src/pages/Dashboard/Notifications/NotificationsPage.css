@@ -1,0 +1,260 @@
+/* src/pages/Dashboard/Notifications/NotificationsPage.css */
+.notifications-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.notifications-filters {
+    display: flex;
+    gap: 10px;
+}
+
+.filter-btn {
+    background: none;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+    transition: all 0.3s;
+}
+
+.filter-btn:hover {
+    background-color: #f1f1f1;
+}
+
+.filter-btn.active {
+    background-color: #f0f8ff;
+    color: #357337;
+    font-weight: 500;
+}
+
+.notifications-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.action-btn {
+    background: none;
+    border: 1px solid #ddd;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #357337;
+    transition: all 0.3s;
+}
+
+.action-btn:hover {
+    background-color: #f1f1f1;
+}
+
+.action-btn.delete {
+    color: #e74c3c;
+}
+
+.action-btn.delete:hover {
+    background-color: #fee;
+}
+
+.notifications-list {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.select-all-container {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 20px;
+    background-color: #f9f9f9;
+    border-bottom: 1px solid #eee;
+}
+
+.select-all {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+}
+
+.notification-count {
+    font-size: 14px;
+    color: #666;
+}
+
+.notifications-group {
+    border-bottom: 1px solid #eee;
+}
+
+.notifications-date {
+    padding: 10px 20px;
+    background-color: #f9f9f9;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+}
+
+.notification-item {
+    display: flex;
+    padding: 15px 20px;
+    border-bottom: 1px solid #f5f5f5;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item:hover {
+    background-color: #f9f9f9;
+}
+
+.notification-item.unread {
+    background-color: #f0f8ff;
+}
+
+.notification-item.unread:hover {
+    background-color: #e6f2ff;
+}
+
+.notification-checkbox {
+    margin-right: 15px;
+    display: flex;
+    align-items: flex-start;
+    padding-top: 3px;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.notification-title {
+    font-weight: 500;
+    color: #333;
+}
+
+.notification-time {
+    font-size: 12px;
+    color: #999;
+}
+
+.notification-message {
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #666;
+    line-height: 1.4;
+}
+
+.notification-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.notification-item:hover .notification-actions {
+    opacity: 1;
+}
+
+.mark-read-btn,
+.delete-btn {
+    background: none;
+    border: none;
+    font-size: 12px;
+    color: #357337;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+}
+
+.delete-btn {
+    color: #e74c3c;
+}
+
+.notifications-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: #f9f9f9;
+}
+
+.pagination-pages {
+    display: flex;
+    gap: 5px;
+}
+
+.pagination-pages button {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #666;
+}
+
+.pagination-pages button.active {
+    background-color: #357337;
+    color: white;
+    border-color: #357337;
+}
+
+.notifications-pagination button {
+    background: none;
+    border: 1px solid #ddd;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #666;
+}
+
+.notifications-pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.notifications-loading {
+    text-align: center;
+    padding: 50px;
+    color: #666;
+}
+
+.notifications-empty {
+    text-align: center;
+    padding: 50px;
+    color: #666;
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+    color: #ccc;
+}
+
+.notifications-empty h3 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.notifications-empty p {
+    color: #999;
+}

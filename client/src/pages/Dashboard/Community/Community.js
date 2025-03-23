@@ -133,6 +133,7 @@ export function Community() {
         { title: 'Games', page: 'games' },
         { title: 'Host', page: 'host' },
         { title: 'Community', page: 'community' },
+        { title: 'Notifications', page: 'notifications' }, // New menu item
         { title: 'Bankroll', page: 'bankroll' }
     ];
 
