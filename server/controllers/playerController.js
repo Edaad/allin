@@ -220,29 +220,10 @@ const acceptInvitation = async (req, res) => {
                 return res.status(404).json({ message: 'Game not found.' });
             }
 
-        // Determine if the new player goes to the main list or waitlist
-        if (acceptedPlayersCount < game.handed) {
-            player.invitation_status = 'accepted';
-            await player.save();
-            return res.status(200).json({
-                message: 'Join request accepted successfully.',
-                status: 'accepted'
-            });
-        } else {
-            player.invitation_status = 'waitlist';
-            await player.save();
-
-            // Get the player's position in the waitlist
-            const waitlistPosition = await Player.countDocuments({
+            // Count how many players are currently accepted
+            const acceptedPlayersCount = await Player.countDocuments({
                 game_id: gameId,
-                invitation_status: 'waitlist',
-                createdAt: { $lte: player.createdAt }
-            });
-
-            return res.status(200).json({
-                message: 'Game is full. You have been added to the waitlist.',
-                status: 'waitlist',
-                position: waitlistPosition
+                invitation_status: 'accepted'
             });
 
             // Determine if the new player goes to the main list or waitlist
