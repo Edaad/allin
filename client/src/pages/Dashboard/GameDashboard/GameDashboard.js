@@ -268,9 +268,11 @@ export function GameDashboard() {
     const formattedDate = gameDate.toLocaleDateString();
     const formattedTime = gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    // Separate players into accepted and pending
+    // Separate players into accepted and pending and waitlisted
     const acceptedPlayers = players.filter(player => player.invitation_status === 'accepted');
     const pendingPlayers = players.filter(player => player.invitation_status === 'pending');
+    const waitlistedPlayers = players.filter(player => player.invitation_status === 'waitlist')
+        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at)); // Sort by creation date
 
     return (
         <div className="dashboard">
@@ -478,6 +480,19 @@ export function GameDashboard() {
                                         <div className='all-profiles-container'>
                                             {pendingPlayers.map(player => (
                                                 <Profile key={player._id} data={player.user_id} size={"compact"} />
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                                {waitlistedPlayers.length > 0 && (
+                                    <>
+                                        <h3>Waitlist</h3>
+                                        <div className="all-profiles-container">
+                                            {waitlistedPlayers.map((player, index) => (
+                                                <div key={player._id} className="waitlist-player">
+                                                    <span className="waitlist-position">#{index + 1}</span>
+                                                    <Profile data={player.user_id} size="compact" />
+                                                </div>
                                             ))}
                                         </div>
                                     </>
