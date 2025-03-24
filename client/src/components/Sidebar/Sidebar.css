@@ -14,6 +14,7 @@
     /* Ensures the sidebar is aligned to the left of the viewport */
     transition: width 0.3s ease;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.25);
+    border: #CCCBCB solid 1px;
 }
 
 .sidebar-logo {

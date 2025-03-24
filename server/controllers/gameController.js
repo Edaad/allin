@@ -140,37 +140,58 @@ const getGames = async (req, res) => {
 			}
 		}
 
-		const games = await Game.find(query).populate("host_id", "username");
-
-		// If userId is provided, add player status to each game
+		// If userId is provided, filter out games hosted by the user and add player status
 		if (userId) {
-			// Find all games where the user has any relationship
+			// First filter out games hosted by the user
+			query.host_id = { $ne: userId };
+
+			// Find all player records for this user
 			const playerRecords = await Player.find({
 				user_id: userId,
-				game_id: { $in: games.map((g) => g._id) },
-			});
+			}).select("game_id invitation_status");
 
-			// Create a map of gameId to player status for quick lookup
+			// Create a map of game IDs to player status
 			const playerStatusMap = {};
 			playerRecords.forEach((record) => {
 				playerStatusMap[record.game_id.toString()] =
 					record.invitation_status;
 			});
 
-			const playerGames = games.map((game) => {
-				const gameObj = game.toObject();
-				const gameId = game._id.toString();
+			// Get games with the filtered query
+			const games = await Game.find(query).populate(
+				"host_id",
+				"username"
+			);
 
-				// Set player status from the map or 'none' if not found
-				gameObj.playerStatus = playerStatusMap[gameId] || "none";
+			// Add player status to each game and filter out games the user has already interacted with
+			const filteredGames = games
+				.map((game) => {
+					const gameObject = game.toObject();
+					const gameId = game._id.toString();
+					gameObject.playerStatus =
+						playerStatusMap[gameId] || "none";
+					return gameObject;
+				})
+				.filter((game) => {
+					// Only include games with 'none' or 'waitlist' status when is_public is true
+					if (is_public) {
+						return (
+							!game.playerStatus ||
+							["none", "waitlist"].includes(game.playerStatus)
+						);
+					}
+					return true;
+				});
 
-				return gameObj;
-			});
-
-			return res.json(playerGames);
+			res.json(filteredGames);
+		} else {
+			// If no userId provided, just return all games that match the query
+			const games = await Game.find(query).populate(
+				"host_id",
+				"username"
+			);
+			res.json(games);
 		}
-
-		res.json(games);
 	} catch (err) {
 		console.error("Error fetching games:", err);
 		res.status(500).send(err);
@@ -296,7 +317,8 @@ const getGamesForPlayer = async (req, res) => {
 		// Apply filter for handed range if provided
 		if (handed) {
 			try {
-				const handedObj = typeof handed === "string" ? JSON.parse(handed) : handed;
+				const handedObj =
+					typeof handed === "string" ? JSON.parse(handed) : handed;
 				if (handedObj && typeof handedObj === "object") {
 					const handedQuery = {};
 					if (handedObj.min !== undefined) {
@@ -317,7 +339,10 @@ const getGamesForPlayer = async (req, res) => {
 		// Apply filter for date range if provided
 		if (dateRange) {
 			try {
-				const dateRangeObj = typeof dateRange === "string" ? JSON.parse(dateRange) : dateRange;
+				const dateRangeObj =
+					typeof dateRange === "string"
+						? JSON.parse(dateRange)
+						: dateRange;
 
 				if (dateRangeObj && typeof dateRangeObj === "object") {
 					const dateQuery = {};

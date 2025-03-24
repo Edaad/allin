@@ -1,5 +1,5 @@
 .game-card {
-    background-color: #fff;
+    background-color: #fdfdfd;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     padding: 16px;
@@ -123,6 +123,11 @@
     color: white;
 }
 
+.status-badge.waitlist {
+    background-color: #9b59b6;
+    color: white;
+}
+
 .status-badge-container {
     display: flex;
     align-items: center;
@@ -159,6 +164,52 @@
     border-width: 6px;
     border-style: solid;
     border-color: transparent transparent #333 transparent;
+}
+
+.request-button {
+    background: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgb(53, 115, 55);
+    border: solid 2px;
+    border-color: rgb(53, 115, 55);
+    border-radius: 4px;
+    padding: 5px 10px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    cursor: pointer;
+}
+
+.request-button:hover:not(:disabled) {
+    background-color: rgb(53, 115, 55);
+    color: white;
+}
+
+.request-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.card-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.card-actions .accept-button,
+.card-actions .decline-button {
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 4px;
+}
+
+.card-actions .accept-button:hover {
+    background-color: rgb(53, 115, 55);
+    color: white;
+}
+
+.card-actions .decline-button:hover {
+    background-color: rgb(255, 0, 0);
+    color: white;
 }
 
 @media (max-width: 768px) {

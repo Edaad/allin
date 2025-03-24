@@ -1,14 +1,42 @@
-// src/pages/Dashboard/Games/Games.js
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../Dashboard.css';
 import './Games.css';
 import Sidebar from '../../../components/Sidebar/Sidebar';
-import Table from '../../../components/Table/Table';
 import Filter from '../../../components/Filter/Filter';
 import GameCard from '../../../components/GameCard/GameCard';
+
+// Helper function to get current date in YYYY-MM-DD format
+const getCurrentDate = () => {
+	const today = new Date();
+	const year = today.getFullYear();
+	const month = String(today.getMonth() + 1).padStart(2, '0');
+	const day = String(today.getDate()).padStart(2, '0');
+	return `${year}-${month}-${day}`;
+};
+
+// Update the formatFiltersForAPI function to handle undefined filters
+
+// Add this utility function for formatting filters
+const formatFiltersForAPI = (filters) => {
+	// Check if filters is undefined or null
+	if (!filters) return {};
+
+	const formattedFilters = { ...filters };
+
+	// Format date range if it exists
+	if (filters.dateRange && (filters.dateRange.startDate || filters.dateRange.endDate)) {
+		formattedFilters.dateRange = JSON.stringify(filters.dateRange);
+	}
+
+	// Format handed range if it exists
+	if (filters.handed && (filters.handed.min !== undefined || filters.handed.max !== undefined)) {
+		formattedFilters.handed = JSON.stringify(filters.handed);
+	}
+
+	return formattedFilters;
+};
 
 export function Games() {
 	const [user, setUser] = useState(null);
@@ -19,22 +47,21 @@ export function Games() {
 	const [games, setGames] = useState([]);
 	const [requestedGames, setRequestedGames] = useState([]);
 	const [invitations, setInvitations] = useState([]);
-	const [isRequesting, setIsRequesting] = useState(false);
 	const [filterParams, setFilterParams] = useState({});
-	const [waitlistPosition, setWaitlistPositions] = useState({});
+	const [waitlistPositions, setWaitlistPositions] = useState({});
 
 	// Add this new state to store filters per tab
 	const [tabFilters, setTabFilters] = useState({
 		'Public Games': {
 			blinds: [],
 			handed: { min: 2, max: 10 },
-			dateRange: { startDate: "", endDate: "" },
+			dateRange: { startDate: getCurrentDate(), endDate: "" },
 			timeRange: { startTime: "", endTime: "" },
 		},
 		'Requested Games': {
 			blinds: [],
 			handed: { min: 2, max: 10 },
-			dateRange: { startDate: "", endDate: "" },
+			dateRange: { startDate: getCurrentDate(), endDate: "" },
 			timeRange: { startTime: "", endTime: "" },
 		},
 		'Upcoming Games': {
@@ -58,6 +85,12 @@ export function Games() {
 				if (loggedUser && loggedUser._id === userId) {
 					const res = await axios.get(`${process.env.REACT_APP_API_URL}/users/${userId}`);
 					setUser(res.data);
+
+					// Only apply default filters if tabFilters[tab] exists
+					if (tabFilters && tabFilters[tab]) {
+						const currentTabFilters = tabFilters[tab];
+						setFilterParams(formatFiltersForAPI(currentTabFilters));
+					}
 				} else {
 					navigate('/signin');
 				}
@@ -67,7 +100,7 @@ export function Games() {
 			}
 		};
 		fetchUser();
-	}, [userId, navigate]);
+	}, [userId, navigate, tab, tabFilters]);
 
 	// Define fetchWaitlistPosition with useCallback
 	const fetchWaitlistPosition = useCallback(async (gameId) => {
@@ -159,18 +192,20 @@ export function Games() {
 
 	useEffect(() => {
 		if (user) {
+			// Apply the initial filters for the current tab
+			setFilterParams(tabFilters[tab]);
 			fetchGames();
 		}
-	}, [user, fetchGames]);
+	}, [user, fetchGames, tab, tabFilters]);
 
 	// Handle tab change and restore tab-specific filters
 	const handleTabChange = (newTab) => {
 		setTab(newTab);
-		// Apply the stored filters for this tab
-		setFilterParams(tabFilters[newTab] || {});
+		// Apply the stored filters for this tab (including default dates if applicable)
+		setFilterParams(tabFilters[newTab]);
 	};
 
-	// Handle filter application and store filters per tab
+	// Then update the handleApplyFilters function
 	const handleApplyFilters = (filters) => {
 		// Store filters for the current tab
 		setTabFilters(prev => ({
@@ -178,10 +213,11 @@ export function Games() {
 			[tab]: filters
 		}));
 
-		// Apply the filters
-		setFilterParams(filters);
+		// Apply the formatted filters
+		setFilterParams(formatFiltersForAPI(filters));
 	};
 
+	// Keep these functions for the Invitations tab
 	const handleAcceptInvitation = async (gameId) => {
 		try {
 			const response = await axios.post(`${process.env.REACT_APP_API_URL}/players/accept-invitation`, {
@@ -197,7 +233,7 @@ export function Games() {
 				}));
 			}
 
-			fetchGames();
+			fetchGames(); // Refresh all game data
 		} catch (error) {
 			console.error('Error accepting invitation:', error);
 		}
@@ -212,92 +248,10 @@ export function Games() {
 				userId: user._id,
 				gameId: gameId
 			});
-			fetchGames();
+			fetchGames(); // Refresh all game data
 		} catch (error) {
 			console.error('Error declining invitation:', error);
 		}
-	};
-
-	const handleRowClick = (gameId) => {
-		if (tab === 'Invitations') {
-			return;
-		}
-		navigate(`/dashboard/${user._id}/games/game/${gameId}`);
-	};
-
-	const handleRequestToJoin = async (gameId) => {
-		try {
-			setIsRequesting(true);
-			const response = await axios.post(`${process.env.REACT_APP_API_URL}/players/request-to-join`, {
-				userId: user._id,
-				gameId: gameId
-			});
-
-			//Check if the response indicates waitlist status
-			const newStatus = response.data.status || 'requested';
-			const position = response.data.position;
-
-			//If position is provided update the waitlist position
-			if (position) {
-				setWaitlistPositions(prev => ({
-					...prev,
-					[gameId]: position
-				}));
-			}
-
-			// Update the local games state to reflect the status change
-			setGames(prevGames =>
-				prevGames.map(game =>
-					game._id === gameId
-						? { ...game, playerStatus: newStatus }
-						: game
-				)
-			);
-
-			setIsRequesting(false);
-		} catch (error) {
-			console.error('Error requesting to join game:', error);
-			setIsRequesting(false);
-		}
-	};
-
-
-	// Render function for status column in game tables
-	const renderGameStatus = (game) => {
-		if (game.playerStatus === 'none' && game.is_public) {
-
-			// Check if the game is full by comparing accepted players to game.handed
-			const isFull = game.acceptedPlayersCount >= game.handed
-
-			return (
-				<button
-					className="request-button"
-					onClick={(e) => {
-						e.stopPropagation();
-						handleRequestToJoin(game._id);
-					}}
-					disabled={isRequesting}
-				>
-					{isFull ? "Join Waitlist" : "Request to Join"}
-				</button>
-			);
-		} else if (game.playerStatus === 'requested') {
-			return <span className="status-tag requested">Pending</span>;
-		} else if (game.playerStatus === 'accepted') {
-			return <span className="status-tag accepted">Joined</span>;
-		} else if (game.playerStatus === 'pending') {
-			return <span className="status-tag pending">Invitation Pending</span>;
-		} else if (game.playerStatus === 'waitlist') {
-			const position = waitlistPosition[game._id];
-			return (
-				<span className="status-tag waitlist">
-					Waitlist {position ? `(#${position})` : ''}
-				</span>
-			);
-		} else if (game.playerStatus === 'rejected') {
-			return <span className="status-tag rejected">Rejected</span>;
-		}
-		return null;
 	};
 
 	const menus = [
@@ -307,9 +261,6 @@ export function Games() {
 		{ title: 'Community', page: 'community' },
 		{ title: 'Bankroll', page: 'bankroll' }
 	];
-
-	const headers = ["Name", "Host", "Location", "Date", "Time", "Blinds"];
-	const invitationHeaders = ["Name", "Host", "Date", "Time", "Blinds"];
 
 	if (!user) {
 		return <div>Loading...</div>;
@@ -366,7 +317,11 @@ export function Games() {
 									{games.map(game => (
 										<GameCard
 											key={game._id}
-											game={game}
+											game={{
+												...game,
+												waitlistPosition: game.playerStatus === 'waitlist' ?
+													waitlistPositions[game._id] : undefined
+											}}
 											user={user}
 										/>
 									))}
@@ -377,43 +332,48 @@ export function Games() {
 						</div>
 					</div>
 				) : tab === 'Invitations' ? (
-					// Invitations tab remains as a table for now - this could also be converted to card view if desired
-					invitations.length > 0 ? (
-						<table className="table-container">
-							<thead>
-								<tr>
-									{invitationHeaders.map((header, index) => (
-										<th key={index}>{header}</th>
-									))}
-									<th>Actions</th>
-								</tr>
-							</thead>
-							<tbody>
-								{invitations.filter(inv => inv != null && inv.host_id != null).map((inv, rowIndex) => {
-									const gameDate = new Date(inv.game_date);
-									return (
-										<tr key={rowIndex}>
-											<td>{inv.game_name}</td>
-											<td>{inv.host_id.username}</td>
-											<td>{gameDate.toLocaleDateString()}</td>
-											<td>{gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-											<td>{inv.blinds}</td>
-											<td className="ad-buttons-container">
-												<button className="accept-button small" onClick={() => handleAcceptInvitation(inv._id)}>
-													Accept
-												</button>
-												<button className="decline-button small" onClick={() => handleDeclineInvitation(inv._id)}>
-													Decline
-												</button>
-											</td>
-										</tr>
-									);
-								})}
-							</tbody>
-						</table>
-					) : (
-						<div className="no-games-message">You currently have no game invitations.</div>
-					)
+					<div className="public-games-container">
+						<div className="games-container" style={{ flex: 1 }}>
+							{invitations.length > 0 ? (
+								<div className="game-cards-grid">
+									{invitations
+										.filter(inv => inv != null && inv.host_id != null)
+										.map(invitation => (
+											<GameCard
+												key={invitation._id}
+												game={invitation}
+												user={user}
+												customActions={
+													<div className="card-actions">
+														<button
+															className="accept-button"
+															onClick={(e) => {
+																e.stopPropagation();
+																handleAcceptInvitation(invitation._id);
+															}}
+														>
+															Accept
+														</button>
+														<button
+															className="decline-button"
+															onClick={(e) => {
+																e.stopPropagation();
+																handleDeclineInvitation(invitation._id);
+															}}
+														>
+															Decline
+														</button>
+													</div>
+												}
+											/>
+										))
+									}
+								</div>
+							) : (
+								<div className="no-games-message">You currently have no game invitations.</div>
+							)}
+						</div>
+					</div>
 				) : tab === 'Requested Games' ? (
 					// Requested Games tab (already using GameCard)
 					<div className="public-games-container" style={{ display: 'flex' }}>
@@ -428,7 +388,11 @@ export function Games() {
 									{requestedGames.map(game => (
 										<GameCard
 											key={game._id}
-											game={game}
+											game={{
+												...game,
+												waitlistPosition: game.playerStatus === 'waitlist' ?
+													waitlistPositions[game._id] : undefined
+											}}
 											user={user}
 										/>
 									))}
@@ -454,7 +418,11 @@ export function Games() {
 									{games.map(game => (
 										<GameCard
 											key={game._id}
-											game={game}
+											game={{
+												...game,
+												waitlistPosition: game.playerStatus === 'waitlist' ?
+													waitlistPositions[game._id] : undefined
+											}}
 											user={user}
 										/>
 									))}

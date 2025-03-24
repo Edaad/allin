@@ -99,6 +99,30 @@ export function GameDashboard() {
         setRejectModalOpen(true);
     };
 
+    // Add this function to handle requesting to join a game
+
+    const handleRequestToJoin = async () => {
+        try {
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/players/request-to-join`, {
+                userId: user._id,
+                gameId: gameId
+            });
+
+            // Check if the response indicates waitlist status
+            if (response.data.status === 'waitlist') {
+                alert(`The game is currently full. You've been added to the waitlist at position #${response.data.position || ''}.`);
+            } else {
+                alert('Your request to join the game has been sent successfully.');
+            }
+
+            // Refresh game data
+            fetchGame();
+        } catch (error) {
+            console.error('Error requesting to join game:', error);
+            alert('Failed to request to join game. Please try again.');
+        }
+    };
+
     // Fetch the user data
     useEffect(() => {
         const fetchUser = async () => {
@@ -178,10 +202,11 @@ export function GameDashboard() {
     useEffect(() => {
         if (user && game) {
             setIsHost(user._id === game.host_id._id);
+
+            // Check if user is already a player or has requested to join
             const isUserPlayer = players.some(
-                (player) =>
-                    player.user_id._id === user._id &&
-                    player.invitation_status === 'accepted'
+                (player) => player.user_id._id === user._id &&
+                    ['accepted', 'requested', 'waitlist'].includes(player.invitation_status)
             );
             setIsPlayer(isUserPlayer);
         }
@@ -293,6 +318,10 @@ export function GameDashboard() {
                                 {isHost && <button className="delete" onClick={handleDelete}>Delete</button>}
                                 {!isHost && isPlayer && (
                                     <button className="leave-game" onClick={handleLeaveGame}>Leave Game</button>
+                                )}
+                                {/* Add Request to Join button for public games */}
+                                {!isHost && !isPlayer && game.is_public && (
+                                    <button className="request-button" onClick={handleRequestToJoin}>Request to Join</button>
                                 )}
                                 <button className="back" onClick={() => navigate(-1)}>Back</button>
                             </>
