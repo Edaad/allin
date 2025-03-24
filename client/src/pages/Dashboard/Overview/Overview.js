@@ -75,8 +75,8 @@ export function Overview() {
         { title: 'Host', page: 'host' },
         { title: 'Community', page: 'community' },
         { title: 'Bankroll', page: 'bankroll' },
+        { title: 'Notifications', page: 'notifications' }
     ];
-
     const headers = ['Name', 'Host', 'Location', 'Date', 'Seats'];
     const tableData = [
         { name: 'Game 1', host: 'Alice', location: 'NYC', date: '2022-01-01', seats: 5, _id: 1 },

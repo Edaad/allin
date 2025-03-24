@@ -78,12 +78,15 @@
 
 .sidebar-footer {
     margin-top: auto;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
 }
 
 .signout-button {
     font-size: 15px;
     width: 90px;
-    margin-bottom: 40px;
+    margin-top: 15px;
     display: flex;
     align-items: center;
     padding: 8px 10px;

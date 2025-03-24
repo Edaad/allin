@@ -133,7 +133,8 @@ export function Community() {
         { title: 'Games', page: 'games' },
         { title: 'Host', page: 'host' },
         { title: 'Community', page: 'community' },
-        { title: 'Bankroll', page: 'bankroll' }
+        { title: 'Bankroll', page: 'bankroll' },
+        { title: 'Notifications', page: 'notifications' }
     ];
 
     const getEmptyMessage = () => {

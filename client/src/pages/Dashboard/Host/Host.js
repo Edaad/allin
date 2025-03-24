@@ -103,13 +103,14 @@ export function Host() {
 		navigate(`/dashboard/${user._id}/host/game/${gameId}`);
 	};
 
-	const menus = [
-		{ title: "Overview", page: "overview" },
-		{ title: "Games", page: "games" },
-		{ title: "Host", page: "host" },
-		{ title: "Community", page: "community" },
-		{ title: "Bankroll", page: "bankroll" },
-	];
+    const menus = [
+        { title: 'Overview', page: 'overview' },
+        { title: 'Games', page: 'games' },
+        { title: 'Host', page: 'host' },
+        { title: 'Community', page: 'community' },
+        { title: 'Bankroll', page: 'bankroll' },
+        { title: 'Notifications', page: 'notifications' }
+    ];
 
 	const headers = ["Name", "Host", "Location", "Date", "Time", "Blinds"];
 
