@@ -335,6 +335,22 @@
     cursor: pointer;
 }
 
+/* Request to Join button */
+.game-dashboard .buttons .request-button {
+    background: none;
+    color: rgb(53, 115, 55);
+    border: solid 2px rgb(53, 115, 55);
+    border-radius: 2px;
+    padding: 11px;
+    font-weight: 600;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.game-dashboard .buttons .request-button:hover {
+    background-color: rgb(53, 115, 55);
+    color: white;
+}
+
 /* Waitlist styles for GameDashboard */
 
 .waitlist-player {
