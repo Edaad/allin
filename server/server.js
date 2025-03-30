@@ -13,7 +13,8 @@ const playerRoutes = require('./routes/playerRoutes');
 const authRoutes = require('./routes/authRoutes');
 const groupRoutes = require('./routes/groupRoutes');
 const groupMemberRoutes = require('./routes/groupMemberRoutes');
-const notificationRoutes = require('./routes/notificationRoutes'); // New import
+const notificationRoutes = require('./routes/notificationRoutes'); 
+const profileRoutes = require('./routes/profileRoutes');
 
 // Middleware
 app.use(cors());
@@ -36,6 +37,7 @@ app.use('/', authRoutes);
 app.use('/', groupRoutes);
 app.use('/', groupMemberRoutes);
 app.use('/', notificationRoutes); // New route registration
+app.use('/', profileRoutes); // New route registration
 
 // Start the server
 app.listen(3001, () => {

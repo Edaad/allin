@@ -1,0 +1,110 @@
+/* src/pages/Dashboard/Account/Account.css */
+.account-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.account-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.account-section h2 {
+    color: #333;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.account-card {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    position: relative;
+}
+
+.account-card h3 {
+    margin-top: 0;
+    color: #333;
+    font-size: 18px;
+}
+
+.account-card p {
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.account-card.clickable {
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.account-card.clickable:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-arrow {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 24px;
+    color: rgb(53, 115, 55);
+    opacity: 0.7;
+}
+
+.account-card.clickable:hover .card-arrow {
+    opacity: 1;
+    transform: translateY(-50%) translateX(5px);
+    transition: transform 0.2s, opacity 0.2s;
+}
+
+.user-info {
+    margin-top: 10px;
+}
+
+.user-info p {
+    margin: 8px 0;
+}
+
+.account-button {
+    background-color: rgb(53, 115, 55);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.account-button:hover {
+    background-color: rgba(53, 115, 55, 0.9);
+}
+
+.danger-zone {
+    border: 1px solid #ffcccc;
+}
+
+.danger-zone h3 {
+    color: #d32f2f;
+}
+
+.delete-button {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.delete-button:hover {
+    background-color: #d32f2f;
+}
