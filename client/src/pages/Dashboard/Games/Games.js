@@ -102,6 +102,17 @@ export function Games() {
         fetchUser();
     }, [userId, navigate, tab, tabFilters]);
 
+    // Add this to your useEffect at the beginning of the component:
+
+    useEffect(() => {
+        // Check for tab parameter in URL
+        const params = new URLSearchParams(window.location.search);
+        const tabParam = params.get('tab');
+        if (tabParam && ['Public Games', 'Requested Games', 'Invitations', 'Upcoming Games', 'Past Games'].includes(tabParam)) {
+            setTab(tabParam);
+        }
+    }, []);
+
     // Define fetchWaitlistPosition with useCallback
     const fetchWaitlistPosition = useCallback(async (gameId) => {
         // Add a check to ensure user exists before accessing user._id

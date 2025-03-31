@@ -313,6 +313,7 @@ const getInvitationsForPlayer = async (req, res) => {
             .populate({
                 path: 'game_id',
                 populate: { path: 'host_id', select: 'username' },
+                options: { sort: { game_date: 1 } }, // Sort by date, ascending order
             });
 
         // Filter out any invitations where game_id is null (in case the game was deleted)
@@ -682,8 +683,10 @@ const getRequestedGames = async (req, res) => {
             }
         }
 
-        // Get the filtered games
-        const games = await Game.find(gameQuery).populate("host_id", "username");
+        // Get the filtered games, sorted by date
+        const games = await Game.find(gameQuery)
+            .populate("host_id", "username")
+            .sort({ game_date: 1 }); // Sort by date, ascending order
 
         // Format the response with player status and rejection reason
         const formattedGames = games.map(game => {

@@ -59,14 +59,19 @@ function GameCard({ game, user, customActions }) {
                 <button
                     className="request-button"
                     onClick={handleRequestToJoin}
-                    disabled={isRequesting}
+                    disabled={isRequesting || game.game_status === 'completed'}
                 >
                     {isFull ? "Join Waitlist" : "Request to Join"}
                 </button>
             );
         }
 
-        // Otherwise, show status badges
+        // Check if game is completed first, regardless of player status
+        if (game.game_status === 'completed') {
+            return <span className="status-badge completed">Completed</span>;
+        }
+
+        // Otherwise, show status badges for upcoming games
         switch (playerStatus) {
             case 'accepted':
                 return <span className="status-badge accepted">Joined</span>;
@@ -140,7 +145,7 @@ function GameCard({ game, user, customActions }) {
                 </div>
 
                 <div className="game-info-row">
-                    <p className="info-value"><span>Blinds: {game.blinds}</span> <span>Handed: {game.handed}</span></p>
+                    <p className="info-value"><span>Blinds: {game.blinds}</span> <span>Players: {game.handed}</span></p>
                 </div>
             </div>
         </div>
