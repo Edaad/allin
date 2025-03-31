@@ -127,10 +127,12 @@ const Profile = ({ data, size, currentUser, refreshData, updateUserState, action
                 <div className={`profile-details-container${size === "compact" ? "-compact" : ""}`}>
                     <span className={`profile-username${size === "compact" ? "-compact" : ""}`}>{data.username}</span>
                     <span className={`profile-name${size === "compact" ? "-compact" : ""}`}>{data.names.firstName} {data.names.lastName}</span>
-                    {/* Display the mutual friends count */}
-                    <span className={`profile-mutual-friends${size === "compact" ? "-compact" : ""}`}>
-                        {mutualFriendsCount} Mutual Friend{mutualFriendsCount !== 1 ? 's' : ''}
-                    </span>
+                    {/* Display the mutual friends count if greater than 0 */}
+                    {data.mutualFriendsCount > 0 && (
+                        <span className="profile-mutual-friends-compact visible">
+                            {data.mutualFriendsCount} Mutual Friend{data.mutualFriendsCount !== 1 ? 's' : ''}
+                        </span>
+                    )}
                 </div>
                 {getButton()}
             </div>

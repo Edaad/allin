@@ -142,7 +142,7 @@ function Filter({ onApply, tab, initialFilters }) {
 					</div>
 				</AccordionItem>
 
-				<AccordionItem title="Handed">
+				<AccordionItem title="Players">
 					<div className="filter-group">
 						<div className="filter-range">
 							<div className="filter-range-input">

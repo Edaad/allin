@@ -229,7 +229,8 @@ export function GameDashboard() {
                 game_date: gameDateTime,
                 blinds: gameForm.blinds,
                 notes: gameForm.notes,
-                handed: gameForm.handed
+                handed: gameForm.handed,
+                is_public: gameForm.isPublic
             };
 
             await axios.put(`${process.env.REACT_APP_API_URL}/games/${gameId}`, updatedGame);
@@ -324,7 +325,9 @@ export function GameDashboard() {
                                 )}
                                 {/* Add Request to Join button for public games */}
                                 {!isHost && !isPlayer && game.is_public && (
-                                    <button className="request-button" onClick={handleRequestToJoin}>Request to Join</button>
+                                    <button className="request-button" onClick={handleRequestToJoin}>
+                                        {acceptedPlayers.length >= game.handed ? "Join Waitlist" : "Request to Join"}
+                                    </button>
                                 )}
                                 <button className="back" onClick={() => navigate(-1)}>Back</button>
                             </>

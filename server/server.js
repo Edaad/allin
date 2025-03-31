@@ -37,7 +37,21 @@ app.use('/', groupRoutes);
 app.use('/', groupMemberRoutes);
 app.use('/', notificationRoutes); // New route registration
 
+const scheduleGameStatusUpdates = require('./services/gameStatusScheduler');
+const { updateGameStatuses } = require('./services/gameStatusUpdater');
+
 // Start the server
-app.listen(3001, () => {
+app.listen(3001, async () => {
     console.log('Server is running on port 3001');
+
+    // Update game statuses immediately when server starts
+    try {
+        console.log('Running initial game status update...');
+        await updateGameStatuses();
+    } catch (error) {
+        console.error('Initial game status update failed:', error);
+    }
+
+    // Schedule regular updates
+    scheduleGameStatusUpdates();
 });

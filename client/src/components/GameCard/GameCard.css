@@ -128,6 +128,11 @@
     color: white;
 }
 
+.status-badge.completed {
+    background-color: #34495e;
+    color: white;
+}
+
 .status-badge-container {
     display: flex;
     align-items: center;
