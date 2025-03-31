@@ -3,9 +3,11 @@
 import React, { useMemo } from "react";
 import './Profile.css';
 import { minidenticon } from 'minidenticons';
+import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 
 const Profile = ({ data, size, currentUser, refreshData, updateUserState, action, onAction }) => {
+    const navigate = useNavigate();
     if (!data || !data.username) {
         return null;
     }
@@ -46,6 +48,18 @@ const Profile = ({ data, size, currentUser, refreshData, updateUserState, action
             console.error(`Error ${actionType} friend request:`, error);
         }
     };
+
+
+    const handleProfileClick = () => {
+        // Don't navigate to profile view if clicking on your own profile
+        if (currentUser._id === data._id) {
+            navigate(`/dashboard/${currentUser._id}/profile`);
+        } else {
+            // Navigate to the profile view page for other users
+            navigate(`/dashboard/${currentUser._id}/profiles/${data._id}`);
+        }
+    };
+    
 
     const getButton = () => {
         // Handle 'cancelInvitation' and 'removePlayer' actions
@@ -121,19 +135,23 @@ const Profile = ({ data, size, currentUser, refreshData, updateUserState, action
     const mutualFriendsCount = data.mutualFriendsCount || 0;
 
     return (
-        <div className={`profile-container${size === "compact" ? "-compact" : ""}`}>
-            <MinidenticonImg className={`profile-picture${size === "compact" ? "-compact" : ""}`} username={data.username} />
-            <div className={`profile-details-wrapper${size === "compact" ? "-compact" : ""}`}>
-                <div className={`profile-details-container${size === "compact" ? "-compact" : ""}`}>
-                    <span className={`profile-username${size === "compact" ? "-compact" : ""}`}>{data.username}</span>
-                    <span className={`profile-name${size === "compact" ? "-compact" : ""}`}>{data.names.firstName} {data.names.lastName}</span>
-                    {/* Display the mutual friends count */}
-                    <span className={`profile-mutual-friends${size === "compact" ? "-compact" : ""}`}>
-                        {mutualFriendsCount} Mutual Friend{mutualFriendsCount !== 1 ? 's' : ''}
-                    </span>
+        <div className={`profile-container${size === "compact" ? "-compact" : ""}`}onClick={handleProfileClick}
+        style={{ cursor: 'pointer' }}>
+        
+                <MinidenticonImg className={`profile-picture${size === "compact" ? "-compact" : ""}`} username={data.username} />
+                <div className={`profile-details-wrapper${size === "compact" ? "-compact" : ""}`}>
+                    <div className={`profile-details-container${size === "compact" ? "-compact" : ""}`}>
+                        <span className={`profile-username${size === "compact" ? "-compact" : ""}`}>{data.username}</span>
+                        <span className={`profile-name${size === "compact" ? "-compact" : ""}`}>{data.names.firstName} {data.names.lastName}</span>
+                        {/* Display the mutual friends count */}
+                        <span className={`profile-mutual-friends${size === "compact" ? "-compact" : ""}`}>
+                            {mutualFriendsCount} Mutual Friend{mutualFriendsCount !== 1 ? 's' : ''}
+                        </span>
+                    </div>
+                    <div onClick={(e) => e.stopPropagation()}>
+                        {getButton()}
+                    </div>
                 </div>
-                {getButton()}
-            </div>
         </div>
     );
 };

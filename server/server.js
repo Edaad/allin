@@ -36,8 +36,40 @@ app.use('/', playerRoutes);
 app.use('/', authRoutes);
 app.use('/', groupRoutes);
 app.use('/', groupMemberRoutes);
-app.use('/', notificationRoutes); // New route registration
-app.use('/', profileRoutes); // New route registration
+app.use('/', notificationRoutes); 
+app.use('/', profileRoutes); 
+
+// Debug route to list all registered routes
+app.get('/debug/routes', (req, res) => {
+    const routes = [];
+    
+    app._router.stack.forEach(middleware => {
+        if(middleware.route) { // routes registered directly on the app
+            routes.push({
+                path: middleware.route.path,
+                method: Object.keys(middleware.route.methods)[0].toUpperCase()
+            });
+        } else if(middleware.name === 'router') { // router middleware
+            middleware.handle.stack.forEach(handler => {
+                if(handler.route) {
+                    const method = Object.keys(handler.route.methods)[0].toUpperCase();
+                    routes.push({
+                        path: handler.route.path,
+                        method: method
+                    });
+                }
+            });
+        }
+    });
+    
+    res.json(routes);
+});
+
+
+// Test route to make sure server is running
+app.get('/api/test', (req, res) => {
+    res.json({ message: 'Server is running!' });
+});
 
 // Start the server
 app.listen(3001, () => {

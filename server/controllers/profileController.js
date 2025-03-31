@@ -53,11 +53,11 @@ const createProfile = async (req, res) => {
             return res.status(400).json({ message: 'user_id is required' });
         }
         
-        // Check if profile already exists
-        const existingProfile = await Profile.findOne({ user_id });
-        if (existingProfile) {
-            console.log('Profile already exists for user:', user_id);
-            return res.status(400).json({ message: 'Profile already exists for this user' });
+        //Check if user exists
+        const user = await User.findById(user_id);
+        if (!user) {
+            console.error('User not found for user_id:', user_id);
+            return res.status(404).json({ message: 'User not found' });
         }
         
         // Create new profile with default values if not provided
@@ -98,10 +98,11 @@ const createProfile = async (req, res) => {
                 errors: Object.values(err.errors).map(e => e.message) 
             });
         }
-        if (err.code === 11000) {
-            return res.status(400).json({ message: 'Profile already exists for this user' });
-        }
-        res.status(500).json({ message: 'Server error creating profile', error: err.message });
+        res.status(500).json({ 
+            message: 'Server error creating profile', 
+            error: err.message,
+            stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        });
     }
 };
 

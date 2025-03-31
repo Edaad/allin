@@ -18,8 +18,6 @@ router.get('/profiles/user/:userId', getProfileByUserId);
 // Get a profile by profile ID
 router.get('/profiles/:profileId', getProfile);
 
-
-
 // Create a new profile
 router.post('/profiles', createProfile);
 
@@ -34,5 +32,13 @@ router.patch('/profiles/:profileId/preferences', updatePokerPreferences);
 
 // Update social links
 router.patch('/profiles/:profileId/social', updateSocialLinks);
+
+
+
+router.post('/profiles', (req, res, next) => {
+    console.log('Received profile creation request:', req.body);
+    next();
+}, createProfile);
+
 
 module.exports = router;
