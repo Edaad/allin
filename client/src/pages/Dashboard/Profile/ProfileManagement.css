@@ -1,0 +1,454 @@
+/* src/pages/Dashboard/Profile/ProfileManagement.css */
+.profile-management-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    font-size: 18px;
+    color: #666;
+}
+
+.error-message {
+    padding: 12px;
+    background-color: #ffefef;
+    color: #d32f2f;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    border-left: 4px solid #d32f2f;
+}
+
+.success-message {
+    padding: 12px;
+    background-color: #efffef;
+    color: #2e7d32;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    border-left: 4px solid #2e7d32;
+}
+
+/* Profile Header */
+.profile-header {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.profile-banner {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    background-color: #f0f2f5;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 60px;
+}
+
+.banner-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.banner-placeholder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background-color: #e0e0e0;
+    color: #666;
+}
+
+.upload-banner-button,
+.change-banner-button {
+    padding: 8px 16px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: none;
+    border-radius: 4px;
+    color: #333;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.upload-banner-button:hover,
+.change-banner-button:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.change-banner-button {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+}
+
+.profile-avatar-container {
+    position: absolute;
+    top: 130px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    object-fit: cover;
+    background-color: #fff;
+}
+
+.profile-avatar.identicon {
+    background-color: #fff;
+    padding: 4px;
+}
+
+.change-avatar-button {
+    padding: 6px 12px;
+    background-color: rgba(53, 115, 55, 0.1);
+    border: 1px solid rgba(53, 115, 55, 0.5);
+    border-radius: 4px;
+    color: rgb(53, 115, 55);
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.change-avatar-button:hover {
+    background-color: rgba(53, 115, 55, 0.2);
+}
+
+.profile-name-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.profile-name-container h2 {
+    margin: 0;
+    font-size: 24px;
+    color: #333;
+}
+
+.username {
+    margin: 5px 0 0;
+    font-size: 16px;
+    color: #666;
+}
+
+.edit-profile-button {
+    margin-top: 16px;
+    padding: 8px 20px;
+    background-color: rgb(53, 115, 55);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.edit-profile-button:hover {
+    background-color: rgba(53, 115, 55, 0.9);
+}
+
+/* Profile Form */
+.profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-top: 20px;
+}
+
+.form-section {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.form-section h3 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    font-size: 18px;
+    color: #333;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 8px;
+}
+
+.bio-textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+}
+
+.blinds-selection,
+.availability-selection {
+    margin-bottom: 20px;
+}
+
+.blinds-options,
+.availability-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.blinds-checkbox-label,
+.availability-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.blinds-checkbox-label input,
+.availability-checkbox-label input {
+    margin: 0;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.save-button {
+    padding: 10px 20px;
+    background-color: rgb(53, 115, 55);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.save-button:hover {
+    background-color: rgba(53, 115, 55, 0.9);
+}
+
+.save-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.cancel-button {
+    padding: 10px 20px;
+    background-color: transparent;
+    color: #666;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.cancel-button:hover {
+    background-color: #f0f0f0;
+}
+
+/* Profile Details */
+.profile-details {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-top: 20px;
+}
+
+.details-section {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.details-section h3 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    font-size: 18px;
+    color: #333;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 8px;
+}
+
+.bio-text {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #333;
+}
+
+.social-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.social-link {
+    display: inline-block;
+    padding: 6px 12px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.social-link:hover {
+    background-color: #e0e0e0;
+}
+
+.preference-item {
+    margin-bottom: 20px;
+}
+
+.preference-item h4 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    color: #444;
+}
+
+.blinds-tags,
+.availability-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.blinds-tag,
+.availability-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    background-color: rgba(53, 115, 55, 0.1);
+    border: 1px solid rgba(53, 115, 55, 0.3);
+    border-radius: 20px;
+    color: rgb(53, 115, 55);
+    font-size: 12px;
+}
+
+.no-data {
+    margin: 0;
+    font-size: 14px;
+    color: #888;
+    font-style: italic;
+}
+
+/* Hosted Games Table */
+.hosted-games {
+    overflow-x: auto;
+}
+
+.games-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.games-table th,
+.games-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.games-table th {
+    font-weight: 600;
+    color: #555;
+    background-color: #f5f5f5;
+}
+
+.games-table tr {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.games-table tr:hover {
+    background-color: #f5f5f5;
+}
+
+.status-tag {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 12px;
+    text-transform: capitalize;
+}
+
+.status-tag.upcoming {
+    background-color: rgba(33, 150, 243, 0.1);
+    color: #2196f3;
+    border: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+.status-tag.completed {
+    background-color: rgba(76, 175, 80, 0.1);
+    color: #4caf50;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .profile-banner {
+        height: 120px;
+        margin-bottom: 40px;
+    }
+    
+    .profile-avatar-container {
+        top: 80px;
+    }
+    
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .games-table {
+        font-size: 12px;
+    }
+    
+    .games-table th,
+    .games-table td {
+        padding: 8px 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .save-button,
+    .cancel-button {
+        width: 100%;
+    }
+}
