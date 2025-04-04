@@ -13,7 +13,8 @@ import { Account } from './pages/Dashboard/Account/Account';
 import { GameDashboard } from './pages/Dashboard/GameDashboard/GameDashboard';
 import { GroupDashboard } from './pages/Dashboard/GroupDashboard/GroupDashboard';
 import NotificationsPage from './pages/Dashboard/Notifications/NotificationsPage';
-
+import { ProfileManagement } from './pages/Dashboard/Profile/ProfileManagement';
+import { ProfileView } from './pages/Dashboard/Profile/ProfileView';
 function App() {
   return (
     <div className="App">
@@ -38,6 +39,8 @@ function App() {
             <Route path="/dashboard/:userId/bankroll" element={<Bankroll />} />
             <Route path="/dashboard/:userId/groups/:groupId" element={<GroupDashboard />} />
             <Route path="/dashboard/:userId/notifications" element={<NotificationsPage />} />
+            <Route path="/dashboard/:userId/profile" element={<ProfileManagement />} />
+            <Route path="/dashboard/:userId/profiles/:profileId" element={<ProfileView />} />
             {/* Add other specific routes here if needed */}
           </Route>
         </Routes>

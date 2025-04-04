@@ -159,11 +159,10 @@ const getGames = async (req, res) => {
                     record.invitation_status;
             });
 
-            // Get games with the filtered query
-            const games = await Game.find(query).populate(
-                "host_id",
-                "username"
-            );
+            // Get games with the filtered query, sorted by game date
+            const games = await Game.find(query)
+                .populate("host_id", "username")
+                .sort({ game_date: 1 }); // Sort by date, ascending order
 
             // Add player status to each game and filter out games the user has already interacted with
             const filteredGames = games
@@ -188,10 +187,9 @@ const getGames = async (req, res) => {
             res.json(filteredGames);
         } else {
             // If no userId provided, just return all games that match the query
-            const games = await Game.find(query).populate(
-                "host_id",
-                "username"
-            );
+            const games = await Game.find(query)
+                .populate("host_id", "username")
+                .sort({ game_date: 1 }); // Sort by date, ascending order
             res.json(games);
         }
     } catch (err) {
@@ -403,8 +401,10 @@ const getGamesForPlayer = async (req, res) => {
             }
         }
 
-        // Get all matching games
-        const games = await Game.find(query).populate("host_id", "username");
+        // Get all matching games, sorted by date
+        const games = await Game.find(query)
+            .populate("host_id", "username")
+            .sort({ game_date: 1 }); // Sort by date, ascending order
 
         // Add player status to each game (all should be 'accepted' in this case)
         const gamesWithStatus = games.map((game) => {
