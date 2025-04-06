@@ -159,6 +159,20 @@ const createUser = async (req, res) => {
         const newUser = new User({ email, username, names, password });
         await newUser.save();
         res.status(201).json(newUser);
+
+        //Createa  minimal profile for the new user
+        try {
+            const newProfile = new Profile({
+                user_id: savedUser._id
+                // All other fields will use default values from the schema
+            });
+            await newProfile.save();
+            console.log(`Created minimal profile for user ${savedUser.username}`);
+        } catch (profileErr) {
+            // Log the error but don't stop the user creation process
+            console.error('Error creating profile for new user:', profileErr);
+        }
+
     } catch (err) {
         console.error('Error creating user:', err);
         res.status(500).json({ message: 'Error creating user', error: err.message });

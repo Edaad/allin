@@ -51,23 +51,6 @@ export function ProfileView() {
                         // Create a default profile for the user
                         const newProfile = await axios.post(`${process.env.REACT_APP_API_URL}/profiles`, {
                             user_id: profileId,
-                            bio: '',
-                            profile_image: '',
-                            banner_image: '',
-                            social_links: {
-                                facebook: '',
-                                twitter: '',
-                                instagram: '',
-                                linkedin: ''
-                            },
-                            poker_preferences: {
-                                preferred_blinds: ['0.5/1'],
-                                availability: {
-                                    weekdays: false,
-                                    weeknights: false,
-                                    weekends: true
-                                }
-                            }
                         });
                         setProfile(newProfile.data);
                         setLoading(false);
