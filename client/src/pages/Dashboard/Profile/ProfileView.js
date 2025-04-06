@@ -43,10 +43,42 @@ export function ProfileView() {
                 const profileResponse = await axios.get(`${process.env.REACT_APP_API_URL}/profiles/user/${profileId}`);
                 setProfile(profileResponse.data);
                 setLoading(false);
-            } catch (err) {
-                console.error('Error fetching profile:', err);
-                setError('Failed to load profile data. The user may not have created a profile yet.');
-                setLoading(false);
+            } catch (profileErr) {
+                // If profile doesn't exist, create one
+                if (profileErr.response && profileErr.response.status === 404) {
+                    console.log('Profile not found, creating default profile');
+                    try {
+                        // Create a default profile for the user
+                        const newProfile = await axios.post(`${process.env.REACT_APP_API_URL}/profiles`, {
+                            user_id: profileId,
+                            bio: '',
+                            profile_image: '',
+                            banner_image: '',
+                            social_links: {
+                                facebook: '',
+                                twitter: '',
+                                instagram: '',
+                                linkedin: ''
+                            },
+                            poker_preferences: {
+                                preferred_blinds: ['0.5/1'],
+                                availability: {
+                                    weekdays: false,
+                                    weeknights: false,
+                                    weekends: true
+                                }
+                            }
+                        });
+                        setProfile(newProfile.data);
+                        setLoading(false);
+                    } catch (createErr) {
+                        console.error('Error creating profile:', createErr);
+                        setError('Failed to create profile for this user.');
+                        setLoading(false);
+                    }
+                } else {
+                    throw profileErr; // Re-throw if it's not a 404
+                }
             }
         };
 

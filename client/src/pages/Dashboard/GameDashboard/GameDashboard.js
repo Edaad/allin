@@ -497,7 +497,7 @@ export function GameDashboard() {
                                 {acceptedPlayers.length > 0 ? (
                                     <div className='all-profiles-container'>
                                         {acceptedPlayers.map(player => (
-                                            <Profile key={player._id} data={player.user_id} size={"compact"} />
+                                            <Profile key={player._id} data={player.user_id} size={"compact"} currentUser={user}/>
                                         ))}
                                     </div>
                                 ) : (
@@ -508,7 +508,7 @@ export function GameDashboard() {
                                         <h3>Pending Invitations</h3>
                                         <div className='all-profiles-container'>
                                             {pendingPlayers.map(player => (
-                                                <Profile key={player._id} data={player.user_id} size={"compact"} />
+                                                <Profile key={player._id} data={player.user_id} size={"compact"} currentUser={user}/>
                                             ))}
                                         </div>
                                     </>
@@ -520,7 +520,7 @@ export function GameDashboard() {
                                             {waitlistedPlayers.map((player, index) => (
                                                 <div key={player._id} className="waitlist-player">
                                                     <span className="waitlist-position">#{index + 1}</span>
-                                                    <Profile data={player.user_id} size="compact" />
+                                                    <Profile data={player.user_id} size="compact" currentUser={user}/>
                                                 </div>
                                             ))}
                                         </div>
@@ -539,6 +539,7 @@ export function GameDashboard() {
                                                             <Profile
                                                                 data={request.user_id}
                                                                 size="compact"
+                                                                currentUser={user}
                                                             />
                                                             <div className="join-request-actions">
                                                                 <button
