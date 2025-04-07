@@ -1,0 +1,33 @@
+.review-button {
+    background: none;
+    font-size: 15px;
+    font-weight: 600;
+    color: #3498db;  /* Blue color to distinguish from red "Leave Game" button */
+    border: solid 2px #3498db;
+    transition: background-color 0.5s ease, color 0.5s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.review-button:hover {
+    background-color: #3498db;
+    color: white;
+}
+
+.review-button.reviewed {
+    background: none;
+    color: #2ecc71;  /* Green for reviewed state */
+    border-color: #2ecc71;
+}
+
+.review-button.reviewed:hover {
+    background-color: #2ecc71;
+    color: white;
+}
+
+.review-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}

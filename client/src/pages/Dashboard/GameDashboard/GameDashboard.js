@@ -10,6 +10,8 @@ import Select from '../../../components/Select/Select';
 import InvitePlayers from '../../../components/InvitePlayers/InvitePlayers';
 import Profile from '../../../components/Profile/Profile';
 import RejectModal from '../../../components/RejectModal/RejectModal';
+import ReviewButton from '../../../components/ReviewButton/ReviewButton';
+import ReviewModal from '../../../components/ReviewModal/ReviewModal';
 
 export function GameDashboard() {
     const [user, setUser] = useState(null);
@@ -31,6 +33,8 @@ export function GameDashboard() {
     const [players, setPlayers] = useState([]);
     const [joinRequests, setJoinRequests] = useState([]);
     const [isLoadingRequests, setIsLoadingRequests] = useState(false);
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [showShareModal, setShowShareModal] = useState(false);
 
     const fetchJoinRequests = useCallback(async () => {
         if (!game || !user || !isHost) return;
@@ -99,8 +103,6 @@ export function GameDashboard() {
         setRejectModalOpen(true);
     };
 
-    // Add this function to handle requesting to join a game
-
     const handleRequestToJoin = async () => {
         try {
             const response = await axios.post(`${process.env.REACT_APP_API_URL}/players/request-to-join`, {
@@ -108,14 +110,12 @@ export function GameDashboard() {
                 gameId: gameId
             });
 
-            // Check if the response indicates waitlist status
             if (response.data.status === 'waitlist') {
                 alert(`The game is currently full. You've been added to the waitlist at position #${response.data.position || ''}.`);
             } else {
                 alert('Your request to join the game has been sent successfully.');
             }
 
-            // Refresh game data
             fetchGame();
         } catch (error) {
             console.error('Error requesting to join game:', error);
@@ -123,7 +123,6 @@ export function GameDashboard() {
         }
     };
 
-    // Fetch the user data
     useEffect(() => {
         const fetchUser = async () => {
             try {
@@ -142,7 +141,6 @@ export function GameDashboard() {
         fetchUser();
     }, [userId, navigate]);
 
-    // Wrap fetchPlayers in useCallback so its dependencies are explicit.
     const fetchPlayers = useCallback(async () => {
         try {
             const res = await axios.get(`${process.env.REACT_APP_API_URL}/players/game/${gameId}`);
@@ -152,26 +150,21 @@ export function GameDashboard() {
         }
     }, [gameId]);
 
-    // Wrap fetchGame in useCallback. It depends on gameId and fetchPlayers.
     const fetchGame = useCallback(async () => {
         try {
             const res = await axios.get(`${process.env.REACT_APP_API_URL}/games/${gameId}`);
             const gameData = res.data;
             setGame(gameData);
 
-            // Parse the game_date into a Date object
             const gameDate = new Date(gameData.game_date);
 
-            // Extract date components
             const year = gameDate.getFullYear();
             const month = String(gameDate.getMonth() + 1).padStart(2, '0');
             const day = String(gameDate.getDate()).padStart(2, '0');
 
-            // Extract time components
             const hours = String(gameDate.getHours()).padStart(2, '0');
             const minutes = String(gameDate.getMinutes()).padStart(2, '0');
 
-            // Format date and time
             const formattedDate = `${year}-${month}-${day}`;
             const formattedTime = `${hours}:${minutes}`;
 
@@ -183,27 +176,22 @@ export function GameDashboard() {
                 time: formattedTime,
                 notes: gameData.notes || '',
                 handed: gameData.handed,
-                isPublic: gameData.is_public // This is the key change
+                isPublic: gameData.is_public
             });
-            // Fetch players after fetching the game details
             fetchPlayers();
         } catch (error) {
             console.error('Error fetching game:', error);
         }
     }, [gameId, fetchPlayers]);
 
-
-    // Fetch game details when gameId changes
     useEffect(() => {
         fetchGame();
     }, [fetchGame]);
 
-    // Update host/player status when user, game, or players change
     useEffect(() => {
         if (user && game) {
             setIsHost(user._id === game.host_id._id);
 
-            // Check if user is already a player or has requested to join
             const isUserPlayer = players.some(
                 (player) => player.user_id._id === user._id &&
                     ['accepted', 'requested', 'waitlist'].includes(player.invitation_status)
@@ -229,7 +217,8 @@ export function GameDashboard() {
                 game_date: gameDateTime,
                 blinds: gameForm.blinds,
                 notes: gameForm.notes,
-                handed: gameForm.handed
+                handed: gameForm.handed,
+                is_public: gameForm.isPublic
             };
 
             await axios.put(`${process.env.REACT_APP_API_URL}/games/${gameId}`, updatedGame);
@@ -276,6 +265,21 @@ export function GameDashboard() {
         }
     };
 
+    const handleReviewClick = () => {
+        setShowReviewModal(true);
+    };
+
+    const handleReviewSubmitted = () => {
+        fetchGame();
+    };
+
+    const handleShareLink = () => {
+        const guestLink = `${window.location.origin}/guest/join/${gameId}`;
+        navigator.clipboard.writeText(guestLink);
+        setShowShareModal(true);
+        setTimeout(() => setShowShareModal(false), 3000); // Hide after 3 seconds
+    };
+
     const menus = [
         { title: 'Overview', page: 'overview' },
         { title: 'Games', page: 'games' },
@@ -293,11 +297,10 @@ export function GameDashboard() {
     const formattedDate = gameDate.toLocaleDateString();
     const formattedTime = gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    // Separate players into accepted and pending and waitlisted
     const acceptedPlayers = players.filter(player => player.invitation_status === 'accepted');
     const pendingPlayers = players.filter(player => player.invitation_status === 'pending');
     const waitlistedPlayers = players.filter(player => player.invitation_status === 'waitlist')
-        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at)); // Sort by creation date
+        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
     return (
         <div className="dashboard">
@@ -322,9 +325,18 @@ export function GameDashboard() {
                                 {!isHost && isPlayer && (
                                     <button className="leave-game" onClick={handleLeaveGame}>Leave Game</button>
                                 )}
-                                {/* Add Request to Join button for public games */}
                                 {!isHost && !isPlayer && game.is_public && (
-                                    <button className="request-button" onClick={handleRequestToJoin}>Request to Join</button>
+                                    <button className="request-button" onClick={handleRequestToJoin}>
+                                        {acceptedPlayers.length >= game.handed ? "Join Waitlist" : "Request to Join"}
+                                    </button>
+                                )}
+                                {!isHost && isPlayer && game.game_status === 'completed' && (
+                                    <ReviewButton
+                                        gameId={gameId}
+                                        gameStatus={game.game_status}
+                                        isHost={isHost}
+                                        onReviewClick={handleReviewClick}
+                                    />
                                 )}
                                 <button className="back" onClick={() => navigate(-1)}>Back</button>
                             </>
@@ -335,7 +347,17 @@ export function GameDashboard() {
                     <div className='summary-item'>
                         <div className='game-summary-header'>
                             <h2>Details</h2>
+                            {game.is_public && (
+                                <button className="share-link" onClick={handleShareLink}>
+                                    Share Game Link
+                                </button>
+                            )}
                         </div>
+                        {showShareModal && (
+                            <div className="share-modal">
+                                Link copied to clipboard!
+                            </div>
+                        )}
                         {editing ? (
                             <form className='host-form compact'>
                                 <Input
@@ -444,35 +466,67 @@ export function GameDashboard() {
                                 <div className='detail-item'>
                                     <span className='detail-label'>Game Type: </span>
                                     <span className='detail-value'>
+                                        <span className="icon-wrapper">
+                                            <i className="fa-solid fa-gamepad"></i>
+                                        </span>
                                         {game.is_public ? 'Public (open to join requests)' : 'Private (invite only)'}
                                     </span>
                                 </div>
                                 {isHost && (
                                     <div className='detail-item'>
                                         <span className='detail-label'>Handed: </span>
-                                        <span className='detail-value'>{game.handed} max</span>
+                                        <span className='detail-value'>
+                                            <span className="icon-wrapper">
+                                                <i className="fa-solid fa-users"></i>
+                                            </span>
+                                            {game.handed} max
+                                        </span>
                                     </div>
                                 )}
                                 <div className='detail-item'>
                                     <span className='detail-label'>Blinds: </span>
-                                    <span className='detail-value'>{game.blinds}</span>
+                                    <span className='detail-value'>
+                                        <span className="icon-wrapper">
+                                            <i className="fa-solid fa-dollar-sign"></i>
+                                        </span>
+                                        {game.blinds}
+                                    </span>
                                 </div>
                                 <div className='detail-item'>
                                     <span className='detail-label'>Location: </span>
-                                    <span className='detail-value'>{game.location}</span>
+                                    <span className='detail-value'>
+                                        <span className="icon-wrapper">
+                                            <i className="fa-solid fa-location-dot"></i>
+                                        </span>
+                                        {game.location}
+                                    </span>
                                 </div>
                                 <div className='detail-item'>
                                     <span className='detail-label'>Date: </span>
-                                    <span className='detail-value'>{formattedDate}</span>
+                                    <span className='detail-value'>
+                                        <span className="icon-wrapper">
+                                            <i className="fa-solid fa-calendar"></i>
+                                        </span>
+                                        {formattedDate}
+                                    </span>
                                 </div>
                                 <div className='detail-item'>
                                     <span className='detail-label'>Time: </span>
-                                    <span className='detail-value'>{formattedTime}</span>
+                                    <span className='detail-value'>
+                                        <span className="icon-wrapper">
+                                            <i className="fa-solid fa-clock"></i>
+                                        </span>
+                                        {formattedTime}
+                                    </span>
                                 </div>
                                 <div className='detail-item'>
                                     <span className='detail-label'>Notes: </span>
-                                    <br /><br />
-                                    <span className='detail-value notes-value'>{game.notes || 'No notes provided'}</span>
+                                    <span className='detail-value'>
+                                        <span className="icon-wrapper">
+                                            <i className="fa-solid fa-note-sticky"></i>
+                                        </span>
+                                        <span className='notes-value'>{game.notes || 'No notes provided'}</span>
+                                    </span>
                                 </div>
                             </div>
                         )}
@@ -497,7 +551,7 @@ export function GameDashboard() {
                                 {acceptedPlayers.length > 0 ? (
                                     <div className='all-profiles-container'>
                                         {acceptedPlayers.map(player => (
-                                            <Profile key={player._id} data={player.user_id} size={"compact"} />
+                                            <Profile key={player._id} data={player.user_id} size={"compact"} currentUser={user}/>
                                         ))}
                                     </div>
                                 ) : (
@@ -508,7 +562,7 @@ export function GameDashboard() {
                                         <h3>Pending Invitations</h3>
                                         <div className='all-profiles-container'>
                                             {pendingPlayers.map(player => (
-                                                <Profile key={player._id} data={player.user_id} size={"compact"} />
+                                                <Profile key={player._id} data={player.user_id} size={"compact"} currentUser={user}/>
                                             ))}
                                         </div>
                                     </>
@@ -520,14 +574,13 @@ export function GameDashboard() {
                                             {waitlistedPlayers.map((player, index) => (
                                                 <div key={player._id} className="waitlist-player">
                                                     <span className="waitlist-position">#{index + 1}</span>
-                                                    <Profile data={player.user_id} size="compact" />
+                                                    <Profile data={player.user_id} size="compact" currentUser={user}/>
                                                 </div>
                                             ))}
                                         </div>
                                     </>
                                 )}
 
-                                {/* Join Requests Section for Public Games */}
                                 {isHost && game.is_public && (
                                     <div className="join-requests-section">
                                         <h3>Join Requests {isLoadingRequests && <span className="loading-indicator">Loading...</span>}</h3>
@@ -539,6 +592,7 @@ export function GameDashboard() {
                                                             <Profile
                                                                 data={request.user_id}
                                                                 size="compact"
+                                                                currentUser={user}
                                                             />
                                                             <div className="join-request-actions">
                                                                 <button
@@ -570,6 +624,14 @@ export function GameDashboard() {
                             rejectReason={rejectReason}
                             setRejectReason={setRejectReason}
                             onSubmit={handleRejectRequest}
+                        />
+                    )}
+                    {showReviewModal && (
+                        <ReviewModal
+                            gameId={gameId}
+                            isOpen={showReviewModal}
+                            onClose={() => setShowReviewModal(false)}
+                            onReviewSubmitted={handleReviewSubmitted}
                         />
                     )}
                 </div>
