@@ -20,7 +20,7 @@
 .sidebar-logo {
     display: flex;
     align-items: center;
-    margin-left: 15px;
+    justify-content: center;
 }
 
 .menu {
@@ -49,6 +49,8 @@
     transition: background-color 0.2s ease;
     height: 40px;
     box-sizing: border-box;
+    position: relative; /* Ensure proper positioning context */
+    justify-content: space-between; /* Space between title and badge */
 }
 
 .menu-item:hover {
@@ -59,7 +61,6 @@
 .menu-item span.title {
     color: rgb(0, 0, 0);
     font-size: 16px;
-    margin-left: 10px;
     opacity: 1;
     transition: font-size 0.1s ease, opacity 0.2s ease;
 }
@@ -107,4 +108,36 @@
 .menu-item-icon {
     height: 15px;
     width: 15px;
+}
+
+/* Add this to your existing Sidebar.css file */
+
+.notification-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e74c3c; /* Red color for the badge */
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-left: auto; /* Push to the right side */
+    min-width: 20px;
+}
+
+.notification-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e74c3c; /* Red color for the badge */
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-left: auto; /* Push to the right side */
+    min-width: 20px;
 }
