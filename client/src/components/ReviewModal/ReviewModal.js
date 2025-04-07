@@ -60,12 +60,16 @@ const ReviewModal = ({ gameId, isOpen, onClose, existingReview, onReviewSubmitte
             setSubmitting(true);
             setError('');
 
+            // Get user ID from localStorage
+            const user = JSON.parse(localStorage.getItem('user'));
+
             await axios.post(
-                `${process.env.REACT_APP_API_URL}/api/reviews`,
+                `${process.env.REACT_APP_API_URL}/reviews`,
                 {
                     game_id: gameId,
                     rating,
-                    comment
+                    comment,
+                    reviewer_id: user._id // Add this line
                 },
                 { withCredentials: true }
             );
