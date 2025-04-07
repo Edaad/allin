@@ -1,0 +1,50 @@
+.review-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: #f0f0f0;
+    color: #333;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.review-button:hover {
+    background-color: #e0e0e0;
+}
+
+.review-button.reviewed {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.review-button.reviewed:hover {
+    background-color: #c8e6c9;
+}
+
+.review-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    border-left-color: #333;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

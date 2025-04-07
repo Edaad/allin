@@ -5,6 +5,7 @@ import axios from 'axios';
 import { minidenticon } from 'minidenticons';
 import './ProfileView.css';
 import Sidebar from '../../../components/Sidebar/Sidebar';
+import HostReviews from '../../../components/HostReviews/HostReviews';
 
 export function ProfileView() {
     const [currentUser, setCurrentUser] = useState(null);
@@ -31,14 +32,14 @@ export function ProfileView() {
     useEffect(() => {
         const fetchProfile = async () => {
             if (!currentUser || !profileId) return;
-            
+
             try {
                 setLoading(true);
-                
+
                 // First, get the user data
                 const userResponse = await axios.get(`${process.env.REACT_APP_API_URL}/users/${profileId}`);
                 setProfileUser(userResponse.data);
-                
+
                 // Then, get the profile data
                 const profileResponse = await axios.get(`${process.env.REACT_APP_API_URL}/profiles/user/${profileId}`);
                 setProfile(profileResponse.data);
@@ -65,18 +66,18 @@ export function ProfileView() {
     // Determine friendship status
     const getFriendshipStatus = () => {
         if (!currentUser || !profileUser) return 'none';
-        
+
         // Convert ObjectIds to strings for comparison
-        const friendIds = currentUser.friends.map(friend => 
+        const friendIds = currentUser.friends.map(friend =>
             typeof friend === 'string' ? friend : friend._id
         );
-        const pendingIds = currentUser.pendingRequests.map(req => 
+        const pendingIds = currentUser.pendingRequests.map(req =>
             typeof req === 'string' ? req : req._id
         );
-        const requestIds = currentUser.friendRequests.map(req => 
+        const requestIds = currentUser.friendRequests.map(req =>
             typeof req === 'string' ? req : req._id
         );
-        
+
         if (friendIds.includes(profileId)) return 'friends';
         if (pendingIds.includes(profileId)) return 'pending';
         if (requestIds.includes(profileId)) return 'request';
@@ -88,7 +89,7 @@ export function ProfileView() {
         try {
             setLoading(true);
             let endpoint = '';
-            
+
             if (action === 'add') {
                 endpoint = 'send-friend-request';
             } else if (action === 'remove') {
@@ -100,18 +101,18 @@ export function ProfileView() {
             } else if (action === 'cancel') {
                 endpoint = 'cancel-friend-request';
             }
-            
+
             await axios.post(`${process.env.REACT_APP_API_URL}/${endpoint}`, {
                 userId: currentUser._id,
                 friendId: profileId
             });
-            
+
             // Update current user in local storage
             const response = await axios.get(`${process.env.REACT_APP_API_URL}/users/${currentUser._id}`);
             const updatedUser = response.data;
             setCurrentUser(updatedUser);
             localStorage.setItem('user', JSON.stringify(updatedUser));
-            
+
             setLoading(false);
         } catch (err) {
             console.error(`Error handling friend action (${action}):`, err);
@@ -123,10 +124,10 @@ export function ProfileView() {
     // Render friendship status button/controls
     const renderFriendshipControls = () => {
         const status = getFriendshipStatus();
-        
+
         if (status === 'friends') {
             return (
-                <button 
+                <button
                     className="friendship-button unfriend-button"
                     onClick={() => handleFriendAction('remove')}
                 >
@@ -135,7 +136,7 @@ export function ProfileView() {
             );
         } else if (status === 'pending') {
             return (
-                <button 
+                <button
                     className="friendship-button cancel-button"
                     onClick={() => handleFriendAction('cancel')}
                 >
@@ -145,13 +146,13 @@ export function ProfileView() {
         } else if (status === 'request') {
             return (
                 <div className="friendship-action-buttons">
-                    <button 
+                    <button
                         className="friendship-button accept-button"
                         onClick={() => handleFriendAction('accept')}
                     >
                         Accept Friend Request
                     </button>
-                    <button 
+                    <button
                         className="friendship-button reject-button"
                         onClick={() => handleFriendAction('reject')}
                     >
@@ -161,7 +162,7 @@ export function ProfileView() {
             );
         } else {
             return (
-                <button 
+                <button
                     className="friendship-button add-button"
                     onClick={() => handleFriendAction('add')}
                 >
@@ -203,10 +204,10 @@ export function ProfileView() {
                         <div className="profile-header">
                             <div className="profile-banner">
                                 {profile?.banner_image ? (
-                                    <img 
-                                        src={profile.banner_image} 
-                                        alt="Profile banner" 
-                                        className="banner-image" 
+                                    <img
+                                        src={profile.banner_image}
+                                        alt="Profile banner"
+                                        className="banner-image"
                                     />
                                 ) : (
                                     <div className="banner-placeholder">
@@ -217,15 +218,15 @@ export function ProfileView() {
 
                             <div className="profile-avatar-container">
                                 {profile?.profile_image ? (
-                                    <img 
-                                        src={profile.profile_image} 
-                                        alt="Profile avatar" 
-                                        className="profile-avatar" 
+                                    <img
+                                        src={profile.profile_image}
+                                        alt="Profile avatar"
+                                        className="profile-avatar"
                                     />
                                 ) : (
-                                    <MinidenticonImg 
-                                        username={profileUser?.username || 'user'} 
-                                        className="profile-avatar identicon" 
+                                    <MinidenticonImg
+                                        username={profileUser?.username || 'user'}
+                                        className="profile-avatar identicon"
                                     />
                                 )}
                             </div>
@@ -268,12 +269,12 @@ export function ProfileView() {
                                                 LinkedIn
                                             </a>
                                         )}
-                                        {!profile.social_links.facebook && 
-                                         !profile.social_links.twitter && 
-                                         !profile.social_links.instagram && 
-                                         !profile.social_links.linkedin && (
-                                            <p className="no-data">No social links added yet.</p>
-                                        )}
+                                        {!profile.social_links.facebook &&
+                                            !profile.social_links.twitter &&
+                                            !profile.social_links.instagram &&
+                                            !profile.social_links.linkedin && (
+                                                <p className="no-data">No social links added yet.</p>
+                                            )}
                                     </div>
                                 </div>
                             )}
@@ -281,7 +282,7 @@ export function ProfileView() {
                             {profile?.poker_preferences && (
                                 <div className="details-section">
                                     <h3>Poker Preferences</h3>
-                                    
+
                                     <div className="preference-item">
                                         <h4>Preferred Blinds</h4>
                                         <div className="blinds-tags">
@@ -296,7 +297,7 @@ export function ProfileView() {
                                             )}
                                         </div>
                                     </div>
-                                    
+
                                     <div className="preference-item">
                                         <h4>Availability</h4>
                                         <div className="availability-tags">
@@ -309,11 +310,11 @@ export function ProfileView() {
                                             {profile.poker_preferences.availability?.weekends && (
                                                 <span className="availability-tag">Weekends</span>
                                             )}
-                                            {!profile.poker_preferences.availability?.weekdays && 
-                                             !profile.poker_preferences.availability?.weeknights && 
-                                             !profile.poker_preferences.availability?.weekends && (
-                                                <p className="no-data">No availability set.</p>
-                                            )}
+                                            {!profile.poker_preferences.availability?.weekdays &&
+                                                !profile.poker_preferences.availability?.weeknights &&
+                                                !profile.poker_preferences.availability?.weekends && (
+                                                    <p className="no-data">No availability set.</p>
+                                                )}
                                         </div>
                                     </div>
                                 </div>
@@ -351,6 +352,11 @@ export function ProfileView() {
                                         </table>
                                     </div>
                                 </div>
+                            )}
+
+                            {/* Host Reviews Section */}
+                            {profileUser && profileUser._id && (
+                                <HostReviews hostId={profileId} />
                             )}
                         </div>
                     </div>
