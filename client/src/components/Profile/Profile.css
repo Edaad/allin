@@ -73,7 +73,11 @@
 }
 
 .profile-mutual-friends-compact {
-    display: none;
+    display: block;
+    /* Change from 'none' to 'block' */
+    font-size: 0.8rem;
+    color: #777;
+    margin-top: 2px;
 }
 
 /* Regular Profile Button */
@@ -90,8 +94,10 @@
     position: absolute;
     right: 0;
     white-space: nowrap;
-    top: 55%; /* Center vertically */
-    transform: translateY(-50%); /* Adjust for perfect centering */
+    top: 55%;
+    /* Center vertically */
+    transform: translateY(-50%);
+    /* Adjust for perfect centering */
 }
 
 /* Show the button when hovering over the regular profile */
@@ -189,8 +195,10 @@
     border-radius: 4px;
     color: #333;
     transition: background-color 0.2s;
-    top: 55%; /* Center vertically */
-    transform: translateY(-50%); /* Adjust for perfect centering */
+    top: 55%;
+    /* Center vertically */
+    transform: translateY(-50%);
+    /* Adjust for perfect centering */
 }
 
 /* Show the button when hovering over the compact profile */
@@ -220,7 +228,8 @@
 .request-button-container .profile-button-compact {
     position: static;
     margin-right: 0;
-    transform: none; /* Remove transform for buttons inside container */
+    transform: none;
+    /* Remove transform for buttons inside container */
 }
 
 /* Handle Text Overflow */
