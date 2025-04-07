@@ -91,6 +91,8 @@ function GameCard({ game, user, customActions }) {
                 return <span className="status-badge pending">Invitation Pending</span>;
             case 'requested':
                 return <span className="status-badge requested">Request Pending</span>;
+            case 'waitlist_requested':
+                return <span className="status-badge requested">Waitlist Request Pending</span>;
             case 'waitlist':
                 return (
                     <span className="status-badge waitlist">
