@@ -42,9 +42,7 @@ const ReviewButton = ({ gameId, gameStatus, isHost, onReviewClick }) => {
             onClick={() => onReviewClick(gameId, hasReviewed)}
             disabled={loading}
         >
-            {loading ? (
-                <span className="loading-spinner"></span>
-            ) : hasReviewed ? (
+            {hasReviewed ? (
                 <>
                     <i className="fas fa-check-circle"></i>
                     <span>Reviewed Host</span>
