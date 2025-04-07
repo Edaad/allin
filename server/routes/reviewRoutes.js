@@ -1,23 +1,30 @@
 const express = require('express');
 const router = express.Router();
-const reviewController = require('../controllers/reviewController');
+const {
+    createReview,
+    getHostReviews,
+    getReviewById,
+    getReviewStatus,
+    getUserReviews,
+    deleteReview
+} = require('../controllers/reviewController');
 
 // Create/update a review
-router.post('/', reviewController.createReview);
+router.post('/reviews', createReview);
 
 // Get reviews for a host (public route)
-router.get('/host/:hostId', reviewController.getHostReviews);
+router.get('/reviews/host/:hostId', getHostReviews);
 
 // Get a specific review (public route)
-router.get('/:reviewId', reviewController.getReviewById);
+router.get('/reviews/:reviewId', getReviewById);
 
 // Check if user has reviewed a game
-router.get('/game/:gameId/status', reviewController.getReviewStatus);
+router.get('/reviews/game/:gameId/status', getReviewStatus);
 
 // Get all reviews by a user (public route)
-router.get('/user/:userId', reviewController.getUserReviews);
+router.get('/reviews/user/:userId', getUserReviews);
 
 // Delete a review
-router.delete('/:reviewId', reviewController.deleteReview);
+router.delete('/reviews/:reviewId', deleteReview);
 
 module.exports = router;
