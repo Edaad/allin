@@ -17,6 +17,25 @@ const profileRoutes = require('./routes/profileRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const guestProfileRoutes = require('./routes/guestProfileRoutes');
 
+// CORS should be one of the first middleware
+// This helps ensure that CORS headers are properly set before processing requests
+app.use(cors({
+    origin: ['https://all-in-4ce60.web.app', 'http://localhost:3000'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'X-Requested-With'],
+    exposedHeaders: ['Content-Range', 'X-Content-Range'],
+    maxAge: 600, // Cache preflight requests for 10 minutes
+    preflightContinue: false,
+    optionsSuccessStatus: 204
+}));
+
+// Handle OPTIONS requests explicitly
+app.options('*', cors());
+
+// Parse JSON bodies
+app.use(express.json());
+
 // Middleware for logging
 app.use((req, res, next) => {
     console.log(`${new Date().toISOString()} ${req.method} ${req.url}`);
@@ -28,21 +47,6 @@ app.use((err, req, res, next) => {
     console.error('Error:', err);
     res.status(500).json({ message: err.message });
 });
-
-// Middleware
-app.use(cors({
-    origin: ['https://all-in-4ce60.web.app', 'http://localhost:3000'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
-    exposedHeaders: ['Content-Range', 'X-Content-Range'],
-    maxAge: 600
-}));
-
-// Add OPTIONS handling for preflight requests
-app.options('*', cors());
-
-app.use(express.json());
 
 // Database connection
 mongoose.connect(process.env.MONGO_URI, {
@@ -64,6 +68,11 @@ app.use('/', notificationRoutes);
 app.use('/', profileRoutes);
 app.use('/reviews', reviewRoutes);
 app.use('/', guestProfileRoutes);
+
+// Add a test endpoint for CORS verification
+app.get('/test-cors', (req, res) => {
+    res.json({ message: 'CORS is working correctly' });
+});
 
 // Start the server
 const PORT = process.env.PORT || 3001;
