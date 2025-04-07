@@ -2,7 +2,6 @@ const Review = require('../models/review');
 const Game = require('../models/game');
 const Player = require('../models/player');
 const User = require('../models/user');
-const notificationService = require('../services/notificationService');
 
 // Create or update a review
 const createReview = async (req, res) => {
@@ -69,15 +68,23 @@ const createReview = async (req, res) => {
             await review.save();
 
             // Create notification for host
-            await notificationService.createNotification({
-                user_id: game.host_id,
-                type: 'host_review_received',
-                title: 'New Host Review',
-                message: `You received a new review for "${game.game_name}"`,
-                referenced_id: review._id,
-                referenced_model: 'Review',
-                link: `/profile/${reviewer_id}`
-            });
+            try {
+                // Create a new notification directly
+                const notification = new Notification({
+                    user_id: game.host_id,
+                    type: 'host_review_received',
+                    title: 'New Host Review',
+                    message: `You received a new review for "${game.game_name}"`,
+                    referenced_id: review._id,
+                    referenced_model: 'Review',
+                    link: `/profile/${reviewer_id}`
+                });
+
+                await notification.save();
+            } catch (notificationError) {
+                // Log but don't fail if notification creation fails
+                console.error("Error creating notification:", notificationError);
+            }
 
             return res.status(201).json({ message: 'Review created successfully', review });
         }
