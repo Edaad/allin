@@ -18,7 +18,12 @@ const profileRoutes = require('./routes/profileRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: ['http://localhost:3000', 'https://your-production-frontend-domain.com'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 // Database connection
@@ -39,7 +44,7 @@ app.use('/', groupRoutes);
 app.use('/', groupMemberRoutes);
 app.use('/', notificationRoutes);
 app.use('/', profileRoutes);
-app.use('/api/reviews', reviewRoutes);
+app.use('/', reviewRoutes); // Changed from '/api/reviews' to '/' for consistency
 
 // Debug route to list all registered routes
 app.get('/debug/routes', (req, res) => {
