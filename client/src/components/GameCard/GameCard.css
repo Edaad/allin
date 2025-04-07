@@ -15,12 +15,17 @@
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
 }
 
+.game-card.no-border {
+    border: none;
+    margin-bottom: 0;
+}
+
 .game-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 2px solid #e0e0e0;
     padding-bottom: 8px;
 }
 
