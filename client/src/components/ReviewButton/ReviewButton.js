@@ -6,12 +6,16 @@ const ReviewButton = ({ gameId, gameStatus, isHost, onReviewClick }) => {
     const [hasReviewed, setHasReviewed] = useState(false);
     const [loading, setLoading] = useState(true);
 
-    // Convert checkReviewStatus to useCallback to prevent recreating on every render
+    // Update the checkReviewStatus function
     const checkReviewStatus = useCallback(async () => {
         try {
             setLoading(true);
+
+            // Get user ID from localStorage
+            const user = JSON.parse(localStorage.getItem('user'));
+
             const response = await axios.get(
-                `${process.env.REACT_APP_API_URL}/reviews/game/${gameId}/status`,
+                `${process.env.REACT_APP_API_URL}/reviews/game/${gameId}/status?userId=${user._id}`,
                 { withCredentials: true }
             );
             setHasReviewed(response.data.hasReviewed);
@@ -20,7 +24,7 @@ const ReviewButton = ({ gameId, gameStatus, isHost, onReviewClick }) => {
         } finally {
             setLoading(false);
         }
-    }, [gameId]); // Add gameId as dependency
+    }, [gameId]);
 
     useEffect(() => {
         // Only check review status if game is completed and user is not the host
