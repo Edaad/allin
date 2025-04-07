@@ -7,6 +7,12 @@ const Game = require('../models/game');
 /**
  * Get a user's profile
  */
+
+/**
+ * 
+ * testing to see if i can make a change
+ */
+
 const getProfile = async (req, res) => {
     try {
         const { profileId } = req.params;
