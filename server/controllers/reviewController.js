@@ -7,11 +7,10 @@ const notificationService = require('../services/notificationService');
 // Create or update a review
 const createReview = async (req, res) => {
     try {
-        const { game_id, rating, comment } = req.body;
-        const reviewer_id = req.user.id;
+        const { game_id, rating, comment, reviewer_id } = req.body;
 
         // Validate input
-        if (!game_id || !rating || !comment) {
+        if (!game_id || !rating || !comment || !reviewer_id) {
             return res.status(400).json({ message: 'Missing required fields' });
         }
 
@@ -163,7 +162,19 @@ const getReviewById = async (req, res) => {
 const getReviewStatus = async (req, res) => {
     try {
         const { gameId } = req.params;
-        const userId = req.user.id;
+
+        // Get user ID from cookies or token instead of req.user
+        // This depends on how authentication is handled in your app
+
+        // Option 1: If your userId is in the query params
+        const userId = req.query.userId;
+
+        // Option 2: If you have a cookie or token
+        // const userId = req.cookies.userId || req.headers.authorization;
+
+        if (!userId) {
+            return res.status(401).json({ message: 'Authentication required' });
+        }
 
         const review = await Review.findOne({
             reviewer_id: userId,
