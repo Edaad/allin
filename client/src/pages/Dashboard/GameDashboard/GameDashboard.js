@@ -34,6 +34,7 @@ export function GameDashboard() {
     const [joinRequests, setJoinRequests] = useState([]);
     const [isLoadingRequests, setIsLoadingRequests] = useState(false);
     const [showReviewModal, setShowReviewModal] = useState(false);
+    const [showShareModal, setShowShareModal] = useState(false);
 
     const fetchJoinRequests = useCallback(async () => {
         if (!game || !user || !isHost) return;
@@ -272,6 +273,13 @@ export function GameDashboard() {
         fetchGame();
     };
 
+    const handleShareLink = () => {
+        const guestLink = `${window.location.origin}/guest/join/${gameId}`;
+        navigator.clipboard.writeText(guestLink);
+        setShowShareModal(true);
+        setTimeout(() => setShowShareModal(false), 3000); // Hide after 3 seconds
+    };
+
     const menus = [
         { title: 'Overview', page: 'overview' },
         { title: 'Games', page: 'games' },
@@ -339,7 +347,17 @@ export function GameDashboard() {
                     <div className='summary-item'>
                         <div className='summary-header'>
                             <h2>Details</h2>
+                            {game.is_public && (
+                                <button className="share-link" onClick={handleShareLink}>
+                                    Share Game Link
+                                </button>
+                            )}
                         </div>
+                        {showShareModal && (
+                            <div className="share-modal">
+                                Link copied to clipboard!
+                            </div>
+                        )}
                         {editing ? (
                             <form className='host-form compact'>
                                 <Input
@@ -448,35 +466,67 @@ export function GameDashboard() {
                                 <div className='detail-item'>
                                     <span className='detail-label'>Game Type: </span>
                                     <span className='detail-value'>
+                                        <span className="icon-wrapper">
+                                            <i className="fa-solid fa-gamepad"></i>
+                                        </span>
                                         {game.is_public ? 'Public (open to join requests)' : 'Private (invite only)'}
                                     </span>
                                 </div>
                                 {isHost && (
                                     <div className='detail-item'>
                                         <span className='detail-label'>Handed: </span>
-                                        <span className='detail-value'>{game.handed} max</span>
+                                        <span className='detail-value'>
+                                            <span className="icon-wrapper">
+                                                <i className="fa-solid fa-users"></i>
+                                            </span>
+                                            {game.handed} max
+                                        </span>
                                     </div>
                                 )}
                                 <div className='detail-item'>
                                     <span className='detail-label'>Blinds: </span>
-                                    <span className='detail-value'>{game.blinds}</span>
+                                    <span className='detail-value'>
+                                        <span className="icon-wrapper">
+                                            <i className="fa-solid fa-dollar-sign"></i>
+                                        </span>
+                                        {game.blinds}
+                                    </span>
                                 </div>
                                 <div className='detail-item'>
                                     <span className='detail-label'>Location: </span>
-                                    <span className='detail-value'>{game.location}</span>
+                                    <span className='detail-value'>
+                                        <span className="icon-wrapper">
+                                            <i className="fa-solid fa-location-dot"></i>
+                                        </span>
+                                        {game.location}
+                                    </span>
                                 </div>
                                 <div className='detail-item'>
                                     <span className='detail-label'>Date: </span>
-                                    <span className='detail-value'>{formattedDate}</span>
+                                    <span className='detail-value'>
+                                        <span className="icon-wrapper">
+                                            <i className="fa-solid fa-calendar"></i>
+                                        </span>
+                                        {formattedDate}
+                                    </span>
                                 </div>
                                 <div className='detail-item'>
                                     <span className='detail-label'>Time: </span>
-                                    <span className='detail-value'>{formattedTime}</span>
+                                    <span className='detail-value'>
+                                        <span className="icon-wrapper">
+                                            <i className="fa-solid fa-clock"></i>
+                                        </span>
+                                        {formattedTime}
+                                    </span>
                                 </div>
                                 <div className='detail-item'>
                                     <span className='detail-label'>Notes: </span>
-                                    <br /><br />
-                                    <span className='detail-value notes-value'>{game.notes || 'No notes provided'}</span>
+                                    <span className='detail-value'>
+                                        <span className="icon-wrapper">
+                                            <i className="fa-solid fa-note-sticky"></i>
+                                        </span>
+                                        <span className='notes-value'>{game.notes || 'No notes provided'}</span>
+                                    </span>
                                 </div>
                             </div>
                         )}

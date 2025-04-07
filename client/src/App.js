@@ -15,6 +15,8 @@ import { GroupDashboard } from './pages/Dashboard/GroupDashboard/GroupDashboard'
 import NotificationsPage from './pages/Dashboard/Notifications/NotificationsPage';
 import { ProfileManagement } from './pages/Dashboard/Profile/ProfileManagement';
 import { ProfileView } from './pages/Dashboard/Profile/ProfileView';
+import { GuestJoinPage } from './pages/GuestJoin/GuestJoinPage';
+
 function App() {
   return (
     <div className="App">
@@ -24,6 +26,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/signin" element={<SignIn />} />
+          <Route path="/guest/join/:gameId" element={<GuestJoinPage />} />
 
           {/* Protected Routes */}
           <Route element={<ProtectedRoutes />}>

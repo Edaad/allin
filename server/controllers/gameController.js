@@ -189,8 +189,15 @@ const getGames = async (req, res) => {
             // If no userId provided, just return all games that match the query
             const games = await Game.find(query)
                 .populate("host_id", "username")
-                .sort({ game_date: 1 }); // Sort by date, ascending order
-            res.json(games);
+                .sort({ game_date: 1 }) // Sort by date, ascending order
+                .distinct('_id'); // Add distinct to ensure unique games
+            
+            // Fetch complete game documents for the unique IDs
+            const uniqueGames = await Game.find({ _id: { $in: games } })
+                .populate("host_id", "username")
+                .sort({ game_date: 1 });
+                
+            res.json(uniqueGames);
         }
     } catch (err) {
         console.error("Error fetching games:", err);

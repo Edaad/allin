@@ -15,6 +15,19 @@ const groupMemberRoutes = require('./routes/groupMemberRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
+const guestProfileRoutes = require('./routes/guestProfileRoutes');
+
+// Middleware for logging
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} ${req.method} ${req.url}`);
+    next();
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Error:', err);
+    res.status(500).json({ message: err.message });
+});
 
 // Middleware
 app.use(cors({
@@ -43,7 +56,8 @@ app.use('/', groupRoutes);
 app.use('/', groupMemberRoutes);
 app.use('/', notificationRoutes);
 app.use('/', profileRoutes);
-app.use('/reviews', reviewRoutes);// New route registration
+app.use('/reviews', reviewRoutes);
+app.use('/', guestProfileRoutes);
 
 // Start the server
 app.listen(3001, () => {
