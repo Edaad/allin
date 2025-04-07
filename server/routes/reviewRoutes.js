@@ -10,21 +10,21 @@ const {
 } = require('../controllers/reviewController');
 
 // Create/update a review
-router.post('/reviews', createReview);
+router.post('/', createReview);
 
 // Get reviews for a host (public route)
-router.get('/reviews/host/:hostId', getHostReviews);
-
-// Get a specific review (public route)
-router.get('/reviews/:reviewId', getReviewById);
-
-// Check if user has reviewed a game
-router.get('/reviews/game/:gameId/status', getReviewStatus);
+router.get('/host/:hostId', getHostReviews);
 
 // Get all reviews by a user (public route)
-router.get('/reviews/user/:userId', getUserReviews);
+router.get('/user/:userId', getUserReviews);
+
+// Check if user has reviewed a game
+router.get('/game/:gameId/status', getReviewStatus);
+
+// Get a specific review (public route) - Move this after more specific routes
+router.get('/:reviewId', getReviewById);
 
 // Delete a review
-router.delete('/reviews/:reviewId', deleteReview);
+router.delete('/:reviewId', deleteReview);
 
 module.exports = router;
