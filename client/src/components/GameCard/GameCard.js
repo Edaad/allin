@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './GameCard.css';
+import ReviewButton from '../ReviewButton/ReviewButton';
+import ReviewModal from '../ReviewModal/ReviewModal';
 
 function GameCard({ game, user, customActions }) {
     const navigate = useNavigate();
     const [showReason, setShowReason] = useState(false);
     const [isRequesting, setIsRequesting] = useState(false);
     const [playerStatus, setPlayerStatus] = useState(game.playerStatus || 'none');
+    const [showReviewModal, setShowReviewModal] = useState(false);
 
     // Format date to be more readable
     const formatDate = (dateString) => {
@@ -46,6 +49,15 @@ function GameCard({ game, user, customActions }) {
             console.error('Error requesting to join game:', error);
             setIsRequesting(false);
         }
+    };
+
+    const handleReviewClick = (gameId, hasReviewed) => {
+        setShowReviewModal(true);
+    };
+
+    const handleReviewSubmitted = () => {
+        // Refresh game data if needed
+        // You might want to call a prop method to refresh parent component data
     };
 
     // Render the appropriate status badge or action button based on player status
@@ -131,6 +143,12 @@ function GameCard({ game, user, customActions }) {
                     }
                     <div className="game-card-footer">
                         {customActions || renderStatusBadge()}
+                        <ReviewButton
+                            gameId={game._id}
+                            gameStatus={game.game_status}
+                            isHost={user._id === game.host_id}
+                            onReviewClick={handleReviewClick}
+                        />
                     </div>
                 </div>
             </div>
@@ -148,6 +166,15 @@ function GameCard({ game, user, customActions }) {
                     <p className="info-value"><span>Blinds: {game.blinds}</span> <span>Players: {game.handed}</span></p>
                 </div>
             </div>
+
+            {showReviewModal && (
+                <ReviewModal
+                    gameId={game._id}
+                    isOpen={showReviewModal}
+                    onClose={() => setShowReviewModal(false)}
+                    onReviewSubmitted={handleReviewSubmitted}
+                />
+            )}
         </div>
     );
 }
