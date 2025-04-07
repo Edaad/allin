@@ -90,6 +90,8 @@
     position: absolute;
     right: 0;
     white-space: nowrap;
+    top: 55%; /* Center vertically */
+    transform: translateY(-50%); /* Adjust for perfect centering */
 }
 
 /* Show the button when hovering over the regular profile */
@@ -187,6 +189,8 @@
     border-radius: 4px;
     color: #333;
     transition: background-color 0.2s;
+    top: 55%; /* Center vertically */
+    transform: translateY(-50%); /* Adjust for perfect centering */
 }
 
 /* Show the button when hovering over the compact profile */
@@ -205,6 +209,10 @@
     flex-direction: column;
     gap: 5px;
     margin-top: 5px;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 /* Adjustments for action buttons within request-button-container */
@@ -212,6 +220,7 @@
 .request-button-container .profile-button-compact {
     position: static;
     margin-right: 0;
+    transform: none; /* Remove transform for buttons inside container */
 }
 
 /* Handle Text Overflow */
@@ -241,8 +250,10 @@
     }
 
     .profile-button,
-    .profile-button-compact {
+    .profile-button-compact,
+    .request-button-container {
         position: static;
         margin-top: 5px;
+        transform: none;
     }
 }
