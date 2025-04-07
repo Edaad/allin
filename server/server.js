@@ -43,7 +43,7 @@ app.use('/', groupRoutes);
 app.use('/', groupMemberRoutes);
 app.use('/', notificationRoutes);
 app.use('/', profileRoutes);
-app.use('/', reviewRoutes);// New route registration
+app.use('/reviews', reviewRoutes);// New route registration
 
 // Start the server
 app.listen(3001, () => {
