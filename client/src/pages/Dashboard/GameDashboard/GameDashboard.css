@@ -39,7 +39,7 @@
 }
 
 /* Summary header styles */
-.summary-header {
+.game-summary-header {
     display: flex;
     align-items: center;
 }
@@ -366,4 +366,3 @@
     color: #777;
     font-size: 14px;
 }
-
