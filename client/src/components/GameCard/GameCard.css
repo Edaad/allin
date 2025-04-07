@@ -7,7 +7,7 @@
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
     position: relative;
-    border: #CCCBCB solid 1px;
+    border: #e0e0e0 solid 1px;
 }
 
 .game-card:hover {
