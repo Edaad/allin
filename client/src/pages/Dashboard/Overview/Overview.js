@@ -263,6 +263,7 @@ export function Overview() {
 												key={userGames.upcoming._id}
 												game={userGames.upcoming}
 												user={user}
+												showBorder={false}
 											/>
 										) : (
 											<p className="no-games-message">
@@ -298,6 +299,7 @@ export function Overview() {
 												key={userGames.past._id}
 												game={userGames.past}
 												user={user}
+												showBorder={false}
 											/>
 										) : (
 											<p className="no-games-message">
@@ -340,6 +342,7 @@ export function Overview() {
 													key={invitation._id}
 													game={invitation}
 													user={user}
+													showBorder={false}
 													customActions={
 														<div className="card-actions">
 															<button
