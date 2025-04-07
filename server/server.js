@@ -1,5 +1,4 @@
 // server.js
-
 const express = require('express');
 require('dotenv').config();
 const mongoose = require('mongoose');
@@ -18,12 +17,7 @@ const profileRoutes = require('./routes/profileRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 
 // Middleware
-app.use(cors({
-    origin: ['http://localhost:3000', 'https://your-production-frontend-domain.com'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(cors());
 app.use(express.json());
 
 // Database connection
@@ -44,55 +38,9 @@ app.use('/', groupRoutes);
 app.use('/', groupMemberRoutes);
 app.use('/', notificationRoutes);
 app.use('/', profileRoutes);
-app.use('/', reviewRoutes); // Changed from '/api/reviews' to '/' for consistency
-
-// Debug route to list all registered routes
-app.get('/debug/routes', (req, res) => {
-    const routes = [];
-
-    app._router.stack.forEach(middleware => {
-        if (middleware.route) { // routes registered directly on the app
-            routes.push({
-                path: middleware.route.path,
-                method: Object.keys(middleware.route.methods)[0].toUpperCase()
-            });
-        } else if (middleware.name === 'router') { // router middleware
-            middleware.handle.stack.forEach(handler => {
-                if (handler.route) {
-                    const method = Object.keys(handler.route.methods)[0].toUpperCase();
-                    routes.push({
-                        path: handler.route.path,
-                        method: method
-                    });
-                }
-            });
-        }
-    });
-
-    res.json(routes);
-});
-
-
-// Test route to make sure server is running
-app.get('/api/test', (req, res) => {
-    res.json({ message: 'Server is running!' });
-});
-
-const scheduleGameStatusUpdates = require('./services/gameStatusScheduler');
-const { updateGameStatuses } = require('./services/gameStatusUpdater');
+app.use('/', reviewRoutes);// New route registration
 
 // Start the server
-app.listen(3001, async () => {
+app.listen(3001, () => {
     console.log('Server is running on port 3001');
-
-    // Update game statuses immediately when server starts
-    try {
-        console.log('Running initial game status update...');
-        await updateGameStatuses();
-    } catch (error) {
-        console.error('Initial game status update failed:', error);
-    }
-
-    // Schedule regular updates
-    scheduleGameStatusUpdates();
 });
