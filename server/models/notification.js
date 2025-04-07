@@ -21,7 +21,10 @@ const notificationSchema = new mongoose.Schema({
 
             // Friend-related notifications
             'friend_request_received', 'friend_request_accepted', 'friend_request_declined',
-            'friend_removed'
+            'friend_removed',
+
+            // Review-related notifications
+            'host_review_received'
         ]
     },
     title: { type: String, required: true },

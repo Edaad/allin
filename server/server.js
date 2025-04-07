@@ -13,8 +13,9 @@ const playerRoutes = require('./routes/playerRoutes');
 const authRoutes = require('./routes/authRoutes');
 const groupRoutes = require('./routes/groupRoutes');
 const groupMemberRoutes = require('./routes/groupMemberRoutes');
-const notificationRoutes = require('./routes/notificationRoutes'); 
+const notificationRoutes = require('./routes/notificationRoutes');
 const profileRoutes = require('./routes/profileRoutes');
+const reviewRoutes = require('./routes/reviewRoutes');
 
 // Middleware
 app.use(cors());
@@ -36,22 +37,23 @@ app.use('/', playerRoutes);
 app.use('/', authRoutes);
 app.use('/', groupRoutes);
 app.use('/', groupMemberRoutes);
-app.use('/', notificationRoutes); 
-app.use('/', profileRoutes); 
+app.use('/', notificationRoutes);
+app.use('/', profileRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // Debug route to list all registered routes
 app.get('/debug/routes', (req, res) => {
     const routes = [];
-    
+
     app._router.stack.forEach(middleware => {
-        if(middleware.route) { // routes registered directly on the app
+        if (middleware.route) { // routes registered directly on the app
             routes.push({
                 path: middleware.route.path,
                 method: Object.keys(middleware.route.methods)[0].toUpperCase()
             });
-        } else if(middleware.name === 'router') { // router middleware
+        } else if (middleware.name === 'router') { // router middleware
             middleware.handle.stack.forEach(handler => {
-                if(handler.route) {
+                if (handler.route) {
                     const method = Object.keys(handler.route.methods)[0].toUpperCase();
                     routes.push({
                         path: handler.route.path,
@@ -61,7 +63,7 @@ app.get('/debug/routes', (req, res) => {
             });
         }
     });
-    
+
     res.json(routes);
 });
 
