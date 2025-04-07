@@ -2,6 +2,8 @@ const Review = require('../models/review');
 const Game = require('../models/game');
 const Player = require('../models/player');
 const User = require('../models/user');
+const Notification = require('../models/notification');
+const mongoose = require('mongoose');
 
 // Create or update a review
 const createReview = async (req, res) => {
@@ -123,7 +125,7 @@ const getHostReviews = async (req, res) => {
 
         // Calculate average rating
         const aggregateResult = await Review.aggregate([
-            { $match: { host_id: mongoose.Types.ObjectId(hostId) } },
+            { $match: { host_id: new mongoose.Types.ObjectId(hostId) } },
             { $group: { _id: null, averageRating: { $avg: "$rating" } } }
         ]);
 
@@ -223,10 +225,13 @@ const getUserReviews = async (req, res) => {
 const deleteReview = async (req, res) => {
     try {
         const { reviewId } = req.params;
-        const userId = req.user.id;
+        const userId = req.query.userId; // Get from query params like other methods
+
+        if (!userId) {
+            return res.status(401).json({ message: 'Authentication required' });
+        }
 
         const review = await Review.findById(reviewId);
-
         if (!review) {
             return res.status(404).json({ message: 'Review not found' });
         }
@@ -236,7 +241,7 @@ const deleteReview = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized to delete this review' });
         }
 
-        await review.remove();
+        await review.deleteOne(); // Using remove() is deprecated, use deleteOne()
         res.status(200).json({ message: 'Review deleted successfully' });
     } catch (err) {
         console.error('Error deleting review:', err);
