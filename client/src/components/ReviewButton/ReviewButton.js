@@ -11,7 +11,7 @@ const ReviewButton = ({ gameId, gameStatus, isHost, onReviewClick }) => {
         try {
             setLoading(true);
             const response = await axios.get(
-                `${process.env.REACT_APP_API_URL}/api/reviews/game/${gameId}/status`,
+                `${process.env.REACT_APP_API_URL}/reviews/game/${gameId}/status`,
                 { withCredentials: true }
             );
             setHasReviewed(response.data.hasReviewed);

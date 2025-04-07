@@ -19,7 +19,7 @@ const HostReviews = ({ hostId }) => {
             setError('');
 
             const response = await axios.get(
-                `${process.env.REACT_APP_API_URL}/api/reviews/host/${hostId}?page=${currentPage}&limit=5`
+                `${process.env.REACT_APP_API_URL}/reviews/host/${hostId}?page=${currentPage}&limit=5`
             );
 
             setReviews(response.data.reviews);
