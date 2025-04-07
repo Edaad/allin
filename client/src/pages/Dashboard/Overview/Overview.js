@@ -418,7 +418,7 @@ export function Overview() {
 															setFriendRequests(
 																res.data
 																	.friendRequests ||
-																	[]
+																[]
 															);
 														};
 													fetchUserData();
@@ -441,79 +441,50 @@ export function Overview() {
 												size="compact"
 												currentUser={user}
 												refreshData={() => {
-													const fetchUserData =
-														async () => {
-															const res =
-																await axios.get(
-																	`${process.env.REACT_APP_API_URL}/users/${userId}`
-																);
-															setUser(res.data);
-															setFriends(
-																res.data.friends
-															);
+													const fetchUserData = async () => {
+														const res = await axios.get(
+															`${process.env.REACT_APP_API_URL}/users/${userId}`
+														);
+														setUser(res.data);
+														setFriends(res.data.friends);
 
-															// Refetch suggestions
-															const suggestionsResponse =
-																axios.get(
-																	`${process.env.REACT_APP_API_URL}/users`,
-																	{
-																		params: {
-																			userId: user._id,
-																			tab: "All",
-																		},
-																	}
-																);
-															suggestionsResponse.then(
-																(response) => {
-																	const newSuggestions =
-																		response.data
-																			.filter(
-																				(
-																					u
-																				) =>
-																					u.mutualFriendsCount >=
-																						1 &&
-																					!res.data.friends.some(
-																						(
-																							f
-																						) =>
-																							f._id ===
-																							u._id
-																					) &&
-																					!res.data.friendRequests.some(
-																						(
-																							f
-																						) =>
-																							f._id ===
-																							u._id
-																					) &&
-																					!res.data.pendingRequests.some(
-																						(
-																							f
-																						) =>
-																							f._id ===
-																							u._id
-																					)
+														// Refetch suggestions
+														const suggestionsResponse = axios.get(
+															`${process.env.REACT_APP_API_URL}/users`,
+															{
+																params: {
+																	userId: user._id,
+																	tab: "All",
+																},
+															}
+														);
+														suggestionsResponse.then(
+															(response) => {
+																const newSuggestions = response.data
+																	.filter(
+																		(u) =>
+																			u.mutualFriendsCount >= 1 &&
+																			!res.data.friends.some(
+																				(f) => f._id === u._id
+																			) &&
+																			!res.data.friendRequests.some(
+																				(f) => f._id === u._id
+																			) &&
+																			!res.data.pendingRequests.some(
+																				(f) => f._id === u._id
 																			)
-																			.sort(
-																				(
-																					a,
-																					b
-																				) =>
-																					b.mutualFriendsCount -
-																					a.mutualFriendsCount
-																			)
-																			.slice(
-																				0,
-																				5
-																			);
+																	)
+																	.sort(
+																		(a, b) =>
+																			b.mutualFriendsCount -
+																			a.mutualFriendsCount
+																	)
+																	.slice(0, 5);
 
-																	setSuggestedFriends(
-																		newSuggestions
-																	);
-																}
-															);
-														};
+																setSuggestedFriends(newSuggestions);
+															}
+														);
+													};
 													fetchUserData();
 												}}
 											/>

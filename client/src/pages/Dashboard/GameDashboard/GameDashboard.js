@@ -345,7 +345,7 @@ export function GameDashboard() {
                 </div>
                 <div className='game-dashboard-container'>
                     <div className='summary-item'>
-                        <div className='summary-header'>
+                        <div className='game-summary-header'>
                             <h2>Details</h2>
                             {game.is_public && (
                                 <button className="share-link" onClick={handleShareLink}>
@@ -532,7 +532,7 @@ export function GameDashboard() {
                         )}
                     </div>
                     <div className='summary-item players-item'>
-                        <div className='summary-header'>
+                        <div className='game-summary-header'>
                             <h2>Players</h2>
                         </div>
                         {editing ? (

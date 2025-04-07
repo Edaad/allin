@@ -27,7 +27,7 @@
 }
 
 /* Summary header styles */
-.summary-header {
+.game-summary-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -415,7 +415,7 @@
     color: white;
     padding: 12px 24px;
     border-radius: 4px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     z-index: 1000;
     animation: slideIn 0.3s ease-out;
     font-weight: 500;
@@ -426,6 +426,7 @@
         transform: translateX(100%);
         opacity: 0;
     }
+
     to {
         transform: translateX(0);
         opacity: 1;
