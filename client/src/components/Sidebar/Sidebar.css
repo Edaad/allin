@@ -4,14 +4,10 @@
     width: 150px;
     background-color: #ffffff;
     height: 100%;
-    /* Ensures the sidebar covers the full height of the viewport */
     padding: 0 20px;
-    /* Combined padding for horizontal and vertical spacing */
     position: fixed;
     top: 0;
-    /* Aligns the sidebar with the top of the viewport */
     left: 0;
-    /* Ensures the sidebar is aligned to the left of the viewport */
     transition: width 0.3s ease;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.25);
     border: #CCCBCB solid 1px;
@@ -49,8 +45,6 @@
     transition: background-color 0.2s ease;
     height: 40px;
     box-sizing: border-box;
-    position: relative; /* Ensure proper positioning context */
-    justify-content: space-between; /* Space between title and badge */
 }
 
 .menu-item:hover {
@@ -85,6 +79,7 @@
 }
 
 .signout-button {
+    color: red;
     font-size: 15px;
     width: 90px;
     margin-top: 15px;
@@ -93,14 +88,12 @@
     padding: 8px 10px;
     border-radius: 4px;
     cursor: pointer;
-    /* transition: color 0.2s ease font-weight 0.2 ease; */
     background: none;
     border: none;
     transition: color 0.2s ease, font-weight 0.2s ease;
 }
 
 .signout-button:hover {
-    color: red;
     cursor: pointer;
     font-weight: 600;
 }
@@ -110,34 +103,17 @@
     width: 15px;
 }
 
-/* Add this to your existing Sidebar.css file */
-
 .notification-badge {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #e74c3c; /* Red color for the badge */
-    color: white;
-    font-size: 12px;
-    font-weight: 600;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    margin-left: auto; /* Push to the right side */
-    min-width: 20px;
-}
-
-.notification-badge {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #e74c3c; /* Red color for the badge */
+    background-color: #e74c3c; 
     color: white;
     font-size: 14px;
     font-weight: 600;
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    margin-left: auto; /* Push to the right side */
+    margin-left: auto; 
     min-width: 20px;
 }
