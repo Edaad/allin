@@ -189,11 +189,11 @@ export function GameDashboard() {
     }, [fetchGame]);
 
     useEffect(() => {
-        if (user && game) {
+        if (user && game && game.host_id) {
             setIsHost(user._id === game.host_id._id);
 
             const isUserPlayer = players.some(
-                (player) => player.user_id._id === user._id &&
+                (player) => player.user_id && player.user_id._id === user._id &&
                     ['accepted', 'requested', 'waitlist'].includes(player.invitation_status)
             );
             setIsPlayer(isUserPlayer);
