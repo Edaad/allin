@@ -22,19 +22,21 @@ export function GameDashboard() {
     const [isHost, setIsHost] = useState(false);
     const [isPlayer, setIsPlayer] = useState(false);
     const [gameForm, setGameForm] = useState({
-        name: '',
-        blinds: '',
-        location: '',
-        date: '',
-        time: '',
-        handed: '',
-        notes: ''
+        name: "",
+        blinds: "",
+        location: "",
+        date: "",
+        time: "",
+        handed: "",
+        notes: "",
     });
     const [players, setPlayers] = useState([]);
     const [joinRequests, setJoinRequests] = useState([]);
     const [isLoadingRequests, setIsLoadingRequests] = useState(false);
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [showShareModal, setShowShareModal] = useState(false);
+    const [selectedGroup, setSelectedGroup] = useState(null);
+    const [userGroups, setUserGroups] = useState([]);
 
     const fetchJoinRequests = useCallback(async () => {
         if (!game || !user || !isHost) return;
@@ -214,15 +216,34 @@ export function GameDashboard() {
                 location: gameData.location,
                 date: formattedDate,
                 time: formattedTime,
-                notes: gameData.notes || '',
+                notes: gameData.notes || "",
                 handed: gameData.handed,
-                isPublic: gameData.is_public
+                isPublic: gameData.is_public,
             });
             fetchPlayers();
         } catch (error) {
-            console.error('Error fetching game:', error);
+            console.error("Error fetching game:", error);
         }
     }, [gameId, fetchPlayers]);
+
+    const fetchUserGroups = useCallback(async () => {
+        if (!user) return;
+        try {
+            const response = await axios.get(
+                `${process.env.REACT_APP_API_URL}/groups/user/${user._id}`,
+                { params: { membership_status: "accepted" } }
+            );
+            setUserGroups(response.data);
+        } catch (error) {
+            console.error("Error fetching user groups:", error);
+        }
+    }, [user]);
+
+    useEffect(() => {
+        if (user) {
+            fetchUserGroups();
+        }
+    }, [user, fetchUserGroups]);
 
     useEffect(() => {
         fetchGame();
@@ -408,51 +429,110 @@ export function GameDashboard() {
 
     return (
         <div className="dashboard">
-            <Sidebar menus={menus} setPage={() => { }} page="host" username={user.username} />
-            <div className='logged-content-container game-dashboard'>
-                <div className='dashboard-heading'>
+            <Sidebar
+                menus={menus}
+                setPage={() => { }}
+                page="host"
+                username={user.username}
+            />
+            <div className="logged-content-container game-dashboard">
+                <div className="dashboard-heading">
                     <h1>
                         {game.game_name}
-                        {game.is_public && <span className="game-type-tag public">Public</span>}
-                        {!game.is_public && <span className="game-type-tag private">Private</span>}
+                        {game.is_public && (
+                            <span className="game-type-tag public">Public</span>
+                        )}
+                        {!game.is_public && (
+                            <span className="game-type-tag private">
+                                Private
+                            </span>
+                        )}
                     </h1>
-                    <div className='buttons'>
+                    <div className="buttons">
                         {editing ? (
                             <>
-                                {isHost && <button className="save" onClick={handleUpdate}>Save</button>}
-                                {isHost && <button className="cancel" onClick={() => setEditing(false)}>Cancel</button>}
+                                {isHost && (
+                                    <button
+                                        className="save"
+                                        onClick={handleUpdate}
+                                    >
+                                        Save
+                                    </button>
+                                )}
+                                {isHost && (
+                                    <button
+                                        className="cancel"
+                                        onClick={() => setEditing(false)}
+                                    >
+                                        Cancel
+                                    </button>
+                                )}
                             </>
                         ) : (
                             <>
-                                {isHost && <button className="edit" onClick={handleEdit}>Edit & Invite</button>}
-                                {isHost && <button className="delete" onClick={handleDelete}>Delete</button>}
-                                {!isHost && isPlayer && (
-                                    <button className="leave-game" onClick={handleLeaveGame}>Leave Game</button>
-                                )}
-                                {!isHost && !isPlayer && game.is_public && (
-                                    <button className="request-button" onClick={handleRequestToJoin}>
-                                        {acceptedPlayers.length >= game.handed ? "Join Waitlist" : "Request to Join"}
+                                {isHost && (
+                                    <button
+                                        className="edit"
+                                        onClick={handleEdit}
+                                    >
+                                        Edit & Invite
                                     </button>
                                 )}
-                                {!isHost && isPlayer && game.game_status === 'completed' && (
-                                    <ReviewButton
-                                        gameId={gameId}
-                                        gameStatus={game.game_status}
-                                        isHost={isHost}
-                                        onReviewClick={handleReviewClick}
-                                    />
+                                {isHost && (
+                                    <button
+                                        className="delete"
+                                        onClick={handleDelete}
+                                    >
+                                        Delete
+                                    </button>
                                 )}
-                                <button className="back" onClick={() => navigate(-1)}>Back</button>
+                                {!isHost && isPlayer && (
+                                    <button
+                                        className="leave-game"
+                                        onClick={handleLeaveGame}
+                                    >
+                                        Leave Game
+                                    </button>
+                                )}
+                                {!isHost && !isPlayer && game.is_public && (
+                                    <button
+                                        className="request-button"
+                                        onClick={handleRequestToJoin}
+                                    >
+                                        {acceptedPlayers.length >= game.handed
+                                            ? "Join Waitlist"
+                                            : "Request to Join"}
+                                    </button>
+                                )}
+                                {!isHost &&
+                                    isPlayer &&
+                                    game.game_status === "completed" && (
+                                        <ReviewButton
+                                            gameId={gameId}
+                                            gameStatus={game.game_status}
+                                            isHost={isHost}
+                                            onReviewClick={handleReviewClick}
+                                        />
+                                    )}
+                                <button
+                                    className="back"
+                                    onClick={() => navigate(-1)}
+                                >
+                                    Back
+                                </button>
                             </>
                         )}
                     </div>
                 </div>
-                <div className='game-dashboard-container'>
-                    <div className='summary-item'>
-                        <div className='summary-header'>
+                <div className="game-dashboard-container">
+                    <div className="summary-item">
+                        <div className="game-summary-header">
                             <h2>Details</h2>
                             {game.is_public && (
-                                <button className="share-link" onClick={handleShareLink}>
+                                <button
+                                    className="share-link"
+                                    onClick={handleShareLink}
+                                >
                                     Share Game Link
                                 </button>
                             )}
@@ -463,16 +543,16 @@ export function GameDashboard() {
                             </div>
                         )}
                         {editing ? (
-                            <form className='host-form compact'>
+                            <form className="host-form compact">
                                 <Input
-                                    name='name'
-                                    type='text'
-                                    label='Name'
+                                    name="name"
+                                    type="text"
+                                    label="Name"
                                     placeholder={`Give your game a name e.g.${user.username}'s poker night`}
                                     value={gameForm.name}
                                     onChange={handleInputChange}
                                 />
-                                <div className='input-double'>
+                                <div className="input-double">
                                     <Select
                                         name="blinds"
                                         label="Blinds"
@@ -480,9 +560,9 @@ export function GameDashboard() {
                                         value={gameForm.blinds}
                                         onChange={handleInputChange}
                                         options={[
-                                            { value: '1/2', label: '$1/$2' },
-                                            { value: '2/5', label: '$2/$5' },
-                                            { value: '5/10', label: '$5/$10' },
+                                            { value: "1/2", label: "$1/$2" },
+                                            { value: "2/5", label: "$2/$5" },
+                                            { value: "5/10", label: "$5/$10" },
                                         ]}
                                     />
                                     <Select
@@ -492,94 +572,138 @@ export function GameDashboard() {
                                         value={gameForm.handed}
                                         onChange={handleInputChange}
                                         options={[
-                                            { value: '2', label: '2 max' },
-                                            { value: '3', label: '3 max' },
-                                            { value: '4', label: '4 max' },
-                                            { value: '5', label: '5 max' },
-                                            { value: '6', label: '6 max' },
-                                            { value: '7', label: '7 max' },
-                                            { value: '8', label: '8 max' },
-                                            { value: '9', label: '9 max' },
-                                            { value: '10', label: '10 max' },
+                                            { value: "2", label: "2 max" },
+                                            { value: "3", label: "3 max" },
+                                            { value: "4", label: "4 max" },
+                                            { value: "5", label: "5 max" },
+                                            { value: "6", label: "6 max" },
+                                            { value: "7", label: "7 max" },
+                                            { value: "8", label: "8 max" },
+                                            { value: "9", label: "9 max" },
+                                            { value: "10", label: "10 max" },
                                         ]}
                                     />
                                 </div>
                                 <div className="game-privacy-option">
-                                    <label className="input-label">Game Privacy</label>
+                                    <label className="input-label">
+                                        Game Privacy
+                                        {selectedGroup && (
+                                            <span className="privacy-locked-note">
+                                                (Locked to match group privacy)
+                                            </span>
+                                        )}
+                                    </label>
                                     <div className="radio-group">
-                                        <label className="radio-label">
+                                        <label
+                                            className={`radio-label ${selectedGroup ? "disabled" : ""
+                                                }`}
+                                        >
                                             <input
                                                 type="radio"
                                                 name="isPublic"
                                                 value="false"
                                                 checked={!gameForm.isPublic}
-                                                onChange={() => setGameForm({ ...gameForm, isPublic: false })}
+                                                onChange={() => {
+                                                    if (!selectedGroup) {
+                                                        setGameForm({
+                                                            ...gameForm,
+                                                            isPublic: false,
+                                                        });
+                                                    }
+                                                }}
+                                                disabled={
+                                                    selectedGroup !== null
+                                                }
                                             />
                                             Private (invite only)
                                         </label>
-                                        <label className="radio-label">
+                                        <label
+                                            className={`radio-label ${selectedGroup ? "disabled" : ""
+                                                }`}
+                                        >
                                             <input
                                                 type="radio"
                                                 name="isPublic"
                                                 value="true"
                                                 checked={gameForm.isPublic}
-                                                onChange={() => setGameForm({ ...gameForm, isPublic: true })}
+                                                onChange={() => {
+                                                    if (!selectedGroup) {
+                                                        setGameForm({
+                                                            ...gameForm,
+                                                            isPublic: true,
+                                                        });
+                                                    }
+                                                }}
+                                                disabled={
+                                                    selectedGroup !== null
+                                                }
                                             />
                                             Public (open to join requests)
                                         </label>
                                     </div>
                                 </div>
                                 <Input
-                                    name='location'
-                                    type='text'
-                                    label='Location'
-                                    placeholder='Enter the address of your game'
+                                    name="location"
+                                    type="text"
+                                    label="Location"
+                                    placeholder="Enter the address of your game"
                                     value={gameForm.location}
                                     onChange={handleInputChange}
                                 />
-                                <div className='input-double'>
+                                <div className="input-double">
                                     <Input
-                                        name='date'
-                                        type='date'
-                                        label='Date'
+                                        name="date"
+                                        type="date"
+                                        label="Date"
                                         value={gameForm.date}
                                         onChange={handleInputChange}
                                     />
                                     <Input
-                                        name='time'
-                                        type='time'
-                                        label='Time'
+                                        name="time"
+                                        type="time"
+                                        label="Time"
                                         value={gameForm.time}
                                         onChange={handleInputChange}
                                     />
                                 </div>
-                                <div className='textarea-container'>
-                                    <label htmlFor='notes' className='input-label'>Notes</label>
+                                <div className="textarea-container">
+                                    <label
+                                        htmlFor="notes"
+                                        className="input-label"
+                                    >
+                                        Notes
+                                    </label>
                                     <textarea
-                                        name='notes'
-                                        id='notes'
-                                        rows='5'
+                                        name="notes"
+                                        id="notes"
+                                        rows="5"
                                         value={gameForm.notes}
                                         onChange={handleInputChange}
-                                        placeholder='Enter any additional notes about the game...'
+                                        placeholder="Enter any additional notes about the game..."
                                     />
                                 </div>
                             </form>
                         ) : (
-                            <div className='game-details'>
-                                <div className='detail-item'>
-                                    <span className='detail-label'>Game Type: </span>
-                                    <span className='detail-value'>
+                            <div className="game-details">
+                                <div className="detail-item">
+                                    <span className="detail-label">
+                                        Game Type:{" "}
+                                    </span>
+                                    <span className="detail-value">
                                         <span className="icon-wrapper">
                                             <i className="fa-solid fa-gamepad"></i>
                                         </span>
-                                        {game.is_public ? 'Public (open to join requests)' : 'Private (invite only)'}
+                                        {game.is_public
+                                            ? "Public (open to join requests)"
+                                            : "Private (invite only)"}
                                     </span>
                                 </div>
                                 {isHost && (
-                                    <div className='detail-item'>
-                                        <span className='detail-label'>Handed: </span>
-                                        <span className='detail-value'>
+                                    <div className="detail-item">
+                                        <span className="detail-label">
+                                            Handed:{" "}
+                                        </span>
+                                        <span className="detail-value">
                                             <span className="icon-wrapper">
                                                 <i className="fa-solid fa-users"></i>
                                             </span>
@@ -587,56 +711,77 @@ export function GameDashboard() {
                                         </span>
                                     </div>
                                 )}
-                                <div className='detail-item'>
-                                    <span className='detail-label'>Blinds: </span>
-                                    <span className='detail-value'>
+                                <div className="detail-item">
+                                    <span className="detail-label">
+                                        Blinds:{" "}
+                                    </span>
+                                    <span className="detail-value">
                                         <span className="icon-wrapper">
                                             <i className="fa-solid fa-dollar-sign"></i>
                                         </span>
                                         {game.blinds}
                                     </span>
                                 </div>
-                                <div className='detail-item'>
-                                    <span className='detail-label'>Location: </span>
-                                    <span className='detail-value'>
+                                <div className="detail-item">
+                                    <span className="detail-label">
+                                        Location:{" "}
+                                    </span>
+                                    <span className="detail-value">
                                         <span className="icon-wrapper">
                                             <i className="fa-solid fa-location-dot"></i>
                                         </span>
                                         {game.location}
                                     </span>
                                 </div>
-                                <div className='detail-item'>
-                                    <span className='detail-label'>Date: </span>
-                                    <span className='detail-value'>
+                                <div className="detail-item">
+                                    <span className="detail-label">Date: </span>
+                                    <span className="detail-value">
                                         <span className="icon-wrapper">
                                             <i className="fa-solid fa-calendar"></i>
                                         </span>
                                         {formattedDate}
                                     </span>
                                 </div>
-                                <div className='detail-item'>
-                                    <span className='detail-label'>Time: </span>
-                                    <span className='detail-value'>
+                                <div className="detail-item">
+                                    <span className="detail-label">Time: </span>
+                                    <span className="detail-value">
                                         <span className="icon-wrapper">
                                             <i className="fa-solid fa-clock"></i>
                                         </span>
                                         {formattedTime}
                                     </span>
                                 </div>
-                                <div className='detail-item'>
-                                    <span className='detail-label'>Notes: </span>
-                                    <span className='detail-value'>
+                                <div className="detail-item">
+                                    <span className="detail-label">
+                                        Notes:{" "}
+                                    </span>
+                                    <span className="detail-value">
                                         <span className="icon-wrapper">
                                             <i className="fa-solid fa-note-sticky"></i>
                                         </span>
-                                        <span className='notes-value'>{game.notes || 'No notes provided'}</span>
+                                        <span className="notes-value">
+                                            {game.notes || "No notes provided"}
+                                        </span>
                                     </span>
                                 </div>
+                                {game.group_id && (
+                                    <div className="detail-item">
+                                        <span className="detail-label">
+                                            Group:{" "}
+                                        </span>
+                                        <span className="detail-value">
+                                            <span className="icon-wrapper">
+                                                <i className="fa-solid fa-users-rectangle"></i>
+                                            </span>
+                                            {game.group_id.group_name}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
-                    <div className='summary-item players-item'>
-                        <div className='summary-header'>
+                    <div className="summary-item players-item">
+                        <div className="game-summary-header">
                             <h2>Players</h2>
                         </div>
                         {editing ? (
@@ -648,14 +793,21 @@ export function GameDashboard() {
                                     fetchPlayers={fetchPlayers}
                                 />
                             ) : (
-                                <div>You are not authorized to edit players.</div>
+                                <div>
+                                    You are not authorized to edit players.
+                                </div>
                             )
                         ) : (
-                            <div className='players-list'>
+                            <div className="players-list">
                                 {acceptedPlayers.length > 0 ? (
-                                    <div className='all-profiles-container'>
-                                        {acceptedPlayers.map(player => (
-                                            <Profile key={player._id} data={player.user_id} size={"compact"} />
+                                    <div className="all-profiles-container">
+                                        {acceptedPlayers.map((player) => (
+                                            <Profile
+                                                key={player._id}
+                                                data={player.user_id}
+                                                size={"compact"}
+                                                currentUser={user}
+                                            />
                                         ))}
                                     </div>
                                 ) : (
@@ -664,9 +816,14 @@ export function GameDashboard() {
                                 {pendingPlayers.length > 0 && (
                                     <>
                                         <h3>Pending Invitations</h3>
-                                        <div className='all-profiles-container'>
-                                            {pendingPlayers.map(player => (
-                                                <Profile key={player._id} data={player.user_id} size={"compact"} />
+                                        <div className="all-profiles-container">
+                                            {pendingPlayers.map((player) => (
+                                                <Profile
+                                                    key={player._id}
+                                                    data={player.user_id}
+                                                    size={"compact"}
+                                                    currentUser={user}
+                                                />
                                             ))}
                                         </div>
                                     </>
@@ -675,36 +832,79 @@ export function GameDashboard() {
                                     <>
                                         <h3>Waitlist</h3>
                                         <div className="all-profiles-container">
-                                            {waitlistedPlayers.map((player, index) => (
-                                                <div key={player._id} className="waitlist-player">
-                                                    <span className="waitlist-position">#{index + 1}</span>
-                                                    <Profile data={player.user_id} size="compact" />
-                                                </div>
-                                            ))}
+                                            {waitlistedPlayers.map(
+                                                (player, index) => (
+                                                    <div
+                                                        key={player._id}
+                                                        className="waitlist-player"
+                                                    >
+                                                        <span className="waitlist-position">
+                                                            #{index + 1}
+                                                        </span>
+                                                        <Profile
+                                                            data={
+                                                                player.user_id
+                                                            }
+                                                            size="compact"
+                                                            currentUser={user}
+                                                        />
+                                                    </div>
+                                                )
+                                            )}
                                         </div>
                                     </>
                                 )}
 
                                 {isHost && game.is_public && (
                                     <div className="join-requests-section">
-                                        <h3>Join Requests {isLoadingRequests && <span className="loading-indicator">Loading...</span>}</h3>
+                                        <h3>
+                                            Join Requests{" "}
+                                            {isLoadingRequests && (
+                                                <span className="loading-indicator">
+                                                    Loading...
+                                                </span>
+                                            )}
+                                        </h3>
                                         {joinRequests.length > 0 ? (
                                             <ul className="join-requests-list">
-                                                {joinRequests.map(request => (
-                                                    <li key={request._id} className="join-request-item">
+                                                {joinRequests.map((request) => (
+                                                    <li
+                                                        key={request._id}
+                                                        className="join-request-item"
+                                                    >
                                                         <div className="join-request-profile">
                                                             <Profile
-                                                                data={request.user_id}
+                                                                data={
+                                                                    request.user_id
+                                                                }
                                                                 size="compact"
+                                                                currentUser={
+                                                                    user
+                                                                }
                                                             />
                                                             <div className="join-request-actions">
                                                                 <button
                                                                     className="accept-button small"
-                                                                    onClick={() => handleAcceptRequest(request.user_id._id)}
+                                                                    onClick={() =>
+                                                                        handleAcceptRequest(
+                                                                            request
+                                                                                .user_id
+                                                                                ._id
+                                                                        )
+                                                                    }
                                                                 >
                                                                     Accept
                                                                 </button>
-                                                                <button className="decline-button small" onClick={() => openRejectModal(request.user_id._id)}>
+                                                                <button
+                                                                    className="decline-button small"
+                                                                    onClick={() =>
+                                                                        openRejectModal(
+                                                                            request
+                                                                                .user_id
+                                                                                ._id
+                                                                        )
+                                                                    }
+                                                                >
                                                                     Decline
                                                                 </button>
                                                             </div>
@@ -713,7 +913,9 @@ export function GameDashboard() {
                                                 ))}
                                             </ul>
                                         ) : (
-                                            <p className="no-requests-message">No pending join requests</p>
+                                            <p className="no-requests-message">
+                                                No pending join requests
+                                            </p>
                                         )}
                                     </div>
                                 )}
