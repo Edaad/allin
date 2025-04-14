@@ -17,7 +17,8 @@ const gameSchema = new mongoose.Schema({
 	blinds: { type: String, required: true },
 	handed: { type: Number, required: true },
 	notes: { type: String, default: "" },
-	is_public: { type: Boolean, default: false }, // New field for public/private games
+	is_public: { type: Boolean, default: false },
+	group_id: { type: mongoose.Schema.Types.ObjectId, ref: "Group" }, // New optional field
 	created_at: { type: Date, default: Date.now },
 	updated_at: { type: Date, default: Date.now },
 	waitlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
@@ -25,7 +26,8 @@ const gameSchema = new mongoose.Schema({
 
 // Index for faster querying by host and status
 gameSchema.index({ host_id: 1, game_status: 1 });
-gameSchema.index({ is_public: 1, game_status: 1 }); // New index for querying public games
+gameSchema.index({ is_public: 1, game_status: 1 });
+gameSchema.index({ group_id: 1 }); // Add index for group queries
 
 // Middleware to remove related players when a game is deleted
 gameSchema.pre("remove", async function (next) {
