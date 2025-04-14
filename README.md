@@ -47,6 +47,8 @@ https://github.com/user-attachments/assets/e23376f4-d770-448f-8fa1-64c74088dbef
 4. Create a `.env` file in the `server` directory and add the following environment variables:
     ```env
     MONGODB_URI=your-mongodb-uri
+    PORT=3001
+    NODE_ENV=development
     ```
 
 5. Start the backend server:
