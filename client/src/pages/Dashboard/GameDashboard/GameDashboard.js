@@ -61,10 +61,15 @@ export function GameDashboard() {
 
     const handleAcceptRequest = async (requesterId) => {
         try {
+            const request = joinRequests.find(req => 
+                (req.is_guest ? req.guest_id._id : req.user_id._id) === requesterId
+            );
+            
             await axios.post(`${process.env.REACT_APP_API_URL}/players/accept-invitation`, {
                 userId: user._id,  // Host ID
                 gameId: gameId,
-                requesterId: requesterId
+                requesterId: requesterId,
+                isGuest: request?.is_guest || false
             });
             fetchJoinRequests();
             fetchPlayers();
@@ -80,11 +85,16 @@ export function GameDashboard() {
         }
 
         try {
+            const request = joinRequests.find(req => 
+                (req.is_guest ? req.guest_id._id : req.user_id._id) === selectedRequesterId
+            );
+
             await axios.post(`${process.env.REACT_APP_API_URL}/players/reject-request`, {
                 hostId: user._id,
                 gameId: gameId,
                 requesterId: selectedRequesterId,
-                reason: rejectReason,  // Send reason to backend
+                reason: rejectReason,
+                isGuest: request?.is_guest || false
             });
             setRejectModalOpen(false);
             setRejectReason('');
@@ -551,7 +561,13 @@ export function GameDashboard() {
                                 {acceptedPlayers.length > 0 ? (
                                     <div className='all-profiles-container'>
                                         {acceptedPlayers.map(player => (
-                                            <Profile key={player._id} data={player.user_id} size={"compact"} currentUser={user}/>
+                                            <Profile 
+                                                key={player._id} 
+                                                data={player.is_guest ? player.guest_id : player.user_id} 
+                                                size={"compact"} 
+                                                currentUser={user}
+                                                isGuest={player.is_guest}
+                                            />
                                         ))}
                                     </div>
                                 ) : (
@@ -562,7 +578,13 @@ export function GameDashboard() {
                                         <h3>Pending Invitations</h3>
                                         <div className='all-profiles-container'>
                                             {pendingPlayers.map(player => (
-                                                <Profile key={player._id} data={player.user_id} size={"compact"} currentUser={user}/>
+                                                <Profile 
+                                                    key={player._id} 
+                                                    data={player.is_guest ? player.guest_id : player.user_id} 
+                                                    size={"compact"} 
+                                                    currentUser={user}
+                                                    isGuest={player.is_guest}
+                                                />
                                             ))}
                                         </div>
                                     </>
@@ -574,7 +596,12 @@ export function GameDashboard() {
                                             {waitlistedPlayers.map((player, index) => (
                                                 <div key={player._id} className="waitlist-player">
                                                     <span className="waitlist-position">#{index + 1}</span>
-                                                    <Profile data={player.user_id} size="compact" currentUser={user}/>
+                                                    <Profile 
+                                                        data={player.is_guest ? player.guest_id : player.user_id} 
+                                                        size="compact" 
+                                                        currentUser={user}
+                                                        isGuest={player.is_guest}
+                                                    />
                                                 </div>
                                             ))}
                                         </div>
@@ -586,28 +613,39 @@ export function GameDashboard() {
                                         <h3>Join Requests {isLoadingRequests && <span className="loading-indicator">Loading...</span>}</h3>
                                         {joinRequests.length > 0 ? (
                                             <ul className="join-requests-list">
-                                                {joinRequests.map(request => (
-                                                    <li key={request._id} className="join-request-item">
-                                                        <div className="join-request-profile">
-                                                            <Profile
-                                                                data={request.user_id}
-                                                                size="compact"
-                                                                currentUser={user}
-                                                            />
-                                                            <div className="join-request-actions">
-                                                                <button
-                                                                    className="accept-button small"
-                                                                    onClick={() => handleAcceptRequest(request.user_id._id)}
-                                                                >
-                                                                    Accept
-                                                                </button>
-                                                                <button className="decline-button small" onClick={() => openRejectModal(request.user_id._id)}>
-                                                                    Decline
-                                                                </button>
+                                                {joinRequests.map(request => {
+                                                    const isGuestRequest = request.is_guest;
+                                                    const profileData = isGuestRequest ? request.guest_id : request.user_id;
+                                                    const requesterId = isGuestRequest ? request.guest_id._id : request.user_id._id;
+                                                    
+                                                    return (
+                                                        <li key={request._id} className="join-request-item">
+                                                            <div className="join-request-profile">
+                                                                {profileData && (
+                                                                    <Profile
+                                                                        data={profileData}
+                                                                        size="compact"
+                                                                        currentUser={user}
+                                                                    />
+                                                                )}
+                                                                <div className="join-request-actions">
+                                                                    <button
+                                                                        className="accept-button small"
+                                                                        onClick={() => handleAcceptRequest(requesterId)}
+                                                                    >
+                                                                        Accept
+                                                                    </button>
+                                                                    <button 
+                                                                        className="decline-button small" 
+                                                                        onClick={() => openRejectModal(requesterId)}
+                                                                    >
+                                                                        Decline
+                                                                    </button>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    </li>
-                                                ))}
+                                                        </li>
+                                                    );
+                                                })}
                                             </ul>
                                         ) : (
                                             <p className="no-requests-message">No pending join requests</p>

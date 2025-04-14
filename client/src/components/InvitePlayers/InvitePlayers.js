@@ -40,33 +40,41 @@ export default function InvitePlayers({ user, gameId, players, fetchPlayers }) {
         }
     };
 
-    const handleCancelInvite = async (inviteeId) => {
+    const handleCancelInvite = async (inviteeId, isGuest = false) => {
         try {
             const data = {
                 gameId: gameId,
                 inviterId: user._id,
                 inviteeId: inviteeId,
+                isGuest: isGuest
             };
-            await axios.post(`${process.env.REACT_APP_API_URL}/players/cancel-invitation`, data);
+            await axios.post(
+                `${process.env.REACT_APP_API_URL}/players/cancel-invitation`,
+                data
+            );
             fetchPlayers();
         } catch (error) {
-            console.error('Error canceling invitation:', error);
-            setError('Failed to cancel invitation.');
+            console.error("Error canceling invitation:", error);
+            setError("Failed to cancel invitation.");
         }
     };
 
-    const handleRemovePlayer = async (inviteeId) => {
+    const handleRemovePlayer = async (inviteeId, isGuest = false) => {
         try {
             const data = {
                 gameId: gameId,
                 inviterId: user._id,
                 inviteeId: inviteeId,
+                isGuest: isGuest
             };
-            await axios.post(`${process.env.REACT_APP_API_URL}/players/remove-player`, data);
+            await axios.post(
+                `${process.env.REACT_APP_API_URL}/players/remove-player`,
+                data
+            );
             fetchPlayers();
         } catch (error) {
-            console.error('Error removing player:', error);
-            setError('Failed to remove player.');
+            console.error("Error removing player:", error);
+            setError("Failed to remove player.");
         }
     };
 

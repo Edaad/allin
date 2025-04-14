@@ -79,7 +79,8 @@ const createGuestProfileAndJoinGame = async (req, res) => {
             game_id: gameId,
             invitation_status: invitationStatus,
             is_guest: true,
-            guest_id: guestProfile._id
+            guest_id: guestProfile._id,
+            // DO NOT set user_id at all for guest players
         });
         console.log("Creating new player record:", newPlayer);
         await newPlayer.save();
@@ -209,4 +210,4 @@ module.exports = {
     createGuestProfileAndJoinGame,
     acceptGuestJoinRequest,
     rejectGuestJoinRequest
-}; 
+};

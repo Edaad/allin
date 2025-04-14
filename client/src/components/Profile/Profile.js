@@ -16,7 +16,15 @@ const Profile = ({
 	onAction,
 }) => {
 	const navigate = useNavigate();
-	if (!data || !data.username) {
+	if (!data) {
+		return null;
+	}
+
+	// Determine if this is a guest profile or a regular user profile
+	const isGuest = !data.username && data.name;
+	
+	// If it's neither a valid user nor a guest, return null
+	if (!isGuest && !data.username) {
 		return null;
 	}
 
@@ -64,6 +72,11 @@ const Profile = ({
 	};
 
 	const handleProfileClick = () => {
+		// Don't navigate for guest profiles
+		if (isGuest) {
+			return;
+		}
+		
 		// Don't navigate to profile view if clicking on your own profile
 		if (currentUser._id === data._id) {
 			navigate(`/dashboard/${currentUser._id}/profile`);
@@ -86,6 +99,11 @@ const Profile = ({
 					{action === "cancelInvitation" ? "Cancel" : "Remove"}
 				</button>
 			);
+			}
+
+		// Don't show friend buttons for guests
+		if (isGuest) {
+			return null;
 		}
 
 		// Proceed with friend request buttons only if 'currentUser' is provided
@@ -173,15 +191,15 @@ const Profile = ({
 		<div
 			className={`profile-container${
 				size === "compact" ? "-compact" : ""
-			}`}
+			} ${isGuest ? "guest-profile" : ""}`}
 			onClick={handleProfileClick}
-			style={{ cursor: "pointer" }}
+			style={{ cursor: isGuest ? "default" : "pointer" }}
 		>
 			<MinidenticonImg
 				className={`profile-picture${
 					size === "compact" ? "-compact" : ""
 				}`}
-				username={data.username}
+				username={isGuest ? data.name : data.username}
 			/>
 			<div
 				className={`profile-details-wrapper${
@@ -193,29 +211,59 @@ const Profile = ({
 						size === "compact" ? "-compact" : ""
 					}`}
 				>
-					<span
-						className={`profile-username${
-							size === "compact" ? "-compact" : ""
-						}`}
-					>
-						{data.username}
-					</span>
-					<span
-						className={`profile-name${
-							size === "compact" ? "-compact" : ""
-						}`}
-					>
-						{data.names.firstName} {data.names.lastName}
-					</span>
-					{/* Display the mutual friends count */}
-					<span
-						className={`profile-mutual-friends${
-							size === "compact" ? "-compact" : ""
-						}`}
-					>
-						{mutualFriendsCount} Mutual Friend
-						{mutualFriendsCount !== 1 ? "s" : ""}
-					</span>
+					{isGuest ? (
+						<>
+							<span
+								className={`profile-username${
+									size === "compact" ? "-compact" : ""
+								}`}
+							>
+								{data.name} <span className="guest-tag">(Guest)</span>
+							</span>
+							<span
+								className={`profile-name${
+									size === "compact" ? "-compact" : ""
+								}`}
+							>
+								{data.phone}
+							</span>
+							{data.email && (
+								<span
+									className={`profile-email${
+										size === "compact" ? "-compact" : ""
+									}`}
+								>
+									{data.email}
+								</span>
+							)}
+						</>
+					) : (
+						<>
+							<span
+								className={`profile-username${
+									size === "compact" ? "-compact" : ""
+								}`}
+							>
+								{data.username}
+							</span>
+							<span
+								className={`profile-name${
+									size === "compact" ? "-compact" : ""
+								}`}
+							>
+								{data.names.firstName} {data.names.lastName}
+							</span>
+							{/* Display the mutual friends count */}
+							<span
+								className={`profile-mutual-friends${
+									size === "compact" ? "-compact" : ""
+								}`}
+							>
+								{mutualFriendsCount} Mutual Friend
+								{mutualFriendsCount !== 1 ? "s" : ""}
+							</span>
+						</>
+					)}
 				</div>
 				<div onClick={(e) => e.stopPropagation()}>{getButton()}</div>
 			</div>

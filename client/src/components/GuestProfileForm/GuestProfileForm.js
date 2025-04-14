@@ -31,7 +31,7 @@ const GuestProfileForm = ({ gameId, onSuccess, onError, onClose }) => {
         });
 
         try {
-            // Log the URL being called
+            // Fix: Use the correct API endpoint path that matches the server route
             const url = `${process.env.REACT_APP_API_URL}/guest/join-game`;
             console.log('Making request to:', url);
 
@@ -99,13 +99,14 @@ const GuestProfileForm = ({ gameId, onSuccess, onError, onClose }) => {
                 </div>
 
                 <div className="form-group">
-                    <label htmlFor="email">Email (Optional)</label>
+                    <label htmlFor="email">Email *</label>
                     <input
                         type="email"
                         id="email"
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
+                        required
                         placeholder="Enter your email"
                     />
                 </div>
@@ -144,4 +145,4 @@ const GuestProfileForm = ({ gameId, onSuccess, onError, onClose }) => {
     );
 };
 
-export default GuestProfileForm; 
+export default GuestProfileForm;
