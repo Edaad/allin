@@ -1,0 +1,82 @@
+/* src/components/FriendSuggestions/FriendSuggestions.css */
+.friend-suggestions-container {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.friend-suggestions-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.friend-suggestions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.friend-suggestion-item {
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.friend-suggestion-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.mutual-friends-info {
+    padding-left: 70px; /* Align with the profile content */
+    margin-top: 4px;
+    font-size: 13px;
+    color: #666;
+}
+
+.mutual-count {
+    font-weight: 500;
+    color: #555;
+}
+
+.mutual-friends-preview {
+    margin-top: 2px;
+}
+
+.mutual-friend-name {
+    color: #444;
+    font-weight: 500;
+}
+
+.friend-suggestions-loading,
+.friend-suggestions-error,
+.friend-suggestions-empty {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.friend-suggestions-error {
+    color: #d32f2f;
+    background-color: #ffebee;
+}
+
+@media (max-width: 768px) {
+    .friend-suggestions-container {
+        padding: 12px;
+    }
+    
+    .mutual-friends-info {
+        padding-left: 50px;
+    }
+}

@@ -10,6 +10,7 @@ import Sidebar from '../../../components/Sidebar/Sidebar';
 import Profile from '../../../components/Profile/Profile';
 import GroupCard from '../../../components/GroupCard/GroupCard';
 import CreateGroupModal from '../../../components/CreateGroupModal/CreateGroupModal';
+import FriendSuggestions from '../../../components/FriendSuggestions/FriendSuggestion';
 
 export function Community() {
     const [user, setUser] = useState(null);
@@ -175,8 +176,12 @@ export function Community() {
         <div className="dashboard">
             {user && <Sidebar menus={menus} setPage={setPage} page={page} username={user.username} />}
             <div className='logged-content-container'>
-                {user ? <div className='dashboard-heading'><h1>Community</h1></div> : <h1>Loading...</h1>}
-
+                {user ? (
+                <>
+                    <div className='dashboard-heading'><h1>Community</h1></div>
+                    {activeTab === 'All' && <FriendSuggestions user={user} updateUserState={updateUserState} />}
+                </>
+            ) : <h1>Loading...</h1>}
                 <div className="tab-container">
                     <button onClick={() => setActiveTab('All')} className={`tab${activeTab === 'All' ? '-selected' : ''}`}>All</button>
                     <button onClick={() => setActiveTab('Friends')} className={`tab${activeTab === 'Friends' ? '-selected' : ''}`}>Friends</button>
