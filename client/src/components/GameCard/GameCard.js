@@ -60,6 +60,11 @@ function GameCard({ game, user, customActions, showBorder = true }) {
 
 	// Render the appropriate status badge or action button based on player status
 	const renderStatusBadge = () => {
+		// First check if user is the host of this game
+		if (user._id === game.host_id?._id) {
+			return <span className="status-badge host">Host</span>;
+		}
+
 		// If game is public and player hasn't made any action yet
 		if (game.is_public && (playerStatus === "none" || !playerStatus)) {
 			// Check if the game is full by comparing accepted players to game.handed
@@ -180,6 +185,14 @@ function GameCard({ game, user, customActions, showBorder = true }) {
 						<span>Players: {game.handed}</span>
 					</p>
 				</div>
+
+				{game.group_id && (
+					<div className="game-info-row">
+						<p className="info-value">
+							<span>Group: {game.group_id.group_name}</span>
+						</p>
+					</div>
+				)}
 			</div>
 		</div>
 	);

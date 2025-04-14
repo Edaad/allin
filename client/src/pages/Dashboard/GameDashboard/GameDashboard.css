@@ -357,6 +357,23 @@
     cursor: pointer;
 }
 
+.radio-label.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.radio-label.disabled input {
+    cursor: not-allowed;
+}
+
+.privacy-locked-note {
+    font-size: 0.9rem;
+    color: #666;
+    font-style: italic;
+    margin-left: 8px;
+    font-weight: normal;
+}
+
 /* Request to Join button */
 .game-dashboard .buttons .request-button {
     background: none;
