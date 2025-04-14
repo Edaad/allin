@@ -382,7 +382,6 @@ export function ProfileManagement() {
 									</button>
 								)}
 							</div>
-
 							<div className="profile-avatar-container">
 								{profile?.profile_image ? (
 									<img
@@ -396,21 +395,7 @@ export function ProfileManagement() {
 										className="profile-avatar identicon"
 									/>
 								)}
-								<button
-									className="change-avatar-button"
-									onClick={() => {
-										const url = window.prompt(
-											"Enter image URL for profile:"
-										);
-										if (url)
-											handleImageUpload("profile", url);
-									}}
-								>
-									{profile?.profile_image
-										? "Change"
-										: "Upload"}{" "}
-									Avatar
-								</button>
+
 							</div>
 
 							<div className="profile-name-container">
