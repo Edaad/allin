@@ -22,7 +22,7 @@ const playerSchema = new mongoose.Schema({
     },
     invitation_status: {
         type: String,
-        enum: ['pending', 'accepted', 'rejected', 'requested', 'waitlist'],
+        enum: ['pending', 'accepted', 'rejected', 'requested', 'waitlist', 'waitlist_requested'], // Added 'waitlist' status
         default: 'pending'
     },
     rejection_reason: { type: String, default: null },

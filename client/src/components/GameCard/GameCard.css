@@ -7,7 +7,7 @@
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
     position: relative;
-    border: #CCCBCB solid 1px;
+    border: #e0e0e0 solid 1px;
 }
 
 .game-card:hover {
@@ -15,12 +15,17 @@
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
 }
 
+.game-card.no-border {
+    border: none;
+    margin-bottom: 0;
+}
+
 .game-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 2px solid #e0e0e0;
     padding-bottom: 8px;
 }
 
@@ -130,6 +135,11 @@
 
 .status-badge.completed {
     background-color: #34495e;
+    color: white;
+}
+
+.status-badge.host {
+    background-color: #3498db;
     color: white;
 }
 

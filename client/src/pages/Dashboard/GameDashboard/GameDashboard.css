@@ -27,7 +27,7 @@
 }
 
 /* Summary header styles */
-.summary-header {
+.game-summary-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -133,7 +133,6 @@
 
 .dashboard-heading .buttons button {
     padding: 8px 12px;
-    border: none;
     border-radius: 4px;
     cursor: pointer;
 }
@@ -356,6 +355,23 @@
 
 .radio-label input {
     cursor: pointer;
+}
+
+.radio-label.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.radio-label.disabled input {
+    cursor: not-allowed;
+}
+
+.privacy-locked-note {
+    font-size: 0.9rem;
+    color: #666;
+    font-style: italic;
+    margin-left: 8px;
+    font-weight: normal;
 }
 
 /* Request to Join button */

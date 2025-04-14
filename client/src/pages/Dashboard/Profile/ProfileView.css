@@ -169,26 +169,6 @@
     background-color: #f0f0f0;
 }
 
-.accept-button {
-    background-color: rgb(53, 115, 55);
-    color: white;
-    border: none;
-}
-
-.accept-button:hover {
-    background-color: rgba(53, 115, 55, 0.9);
-}
-
-.reject-button {
-    background-color: transparent;
-    color: #666;
-    border: 1px solid #ccc;
-}
-
-.reject-button:hover {
-    background-color: #f0f0f0;
-}
-
 /* Profile Details */
 .profile-details {
     display: flex;
