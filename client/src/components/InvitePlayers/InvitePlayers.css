@@ -12,10 +12,20 @@
     font-size: 1.5rem;
 }
 
+.invite-players-container h3 {
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin: 0;
+    color: #343434;
+}
+
 /* Error message styling */
 .error-message {
-    color: red;
-    font-weight: bold;
+    color: #e74c3c;
+    padding: 10px;
+    background-color: #fadbd8;
+    border-radius: 4px;
+    margin-bottom: 15px;
 }
 
 /* List of friends to invite */
@@ -98,8 +108,6 @@
 }
 
 .invitation-item,
-
-
 .invitation-item .profile-container-compact,
 .accepted-item .profile-container-compact {
     width: 100%;
@@ -144,6 +152,60 @@
 
 .no-waitlist-message {
     font-style: italic;
-    color: #777;
+    color: #7f8c8d;
+    padding: 5px 0;
     margin-top: 5px;
+}
+
+/* Style for the Invite All button */
+.invite-all-button {
+    margin-bottom: 15px;
+    background: none;
+    font-size: 15px;
+    font-weight: 600;
+    color: #3498db;
+    border: solid 2px;
+    border-color: #3498db;
+    border-radius: 2px;
+    padding: 10px 15px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    cursor: pointer;
+}
+
+.invite-all-button:hover:not(:disabled) {
+    background-color: #3498db;
+    color: white;
+}
+
+.invite-all-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Style for the Invite People list */
+.invite-people-list {
+    max-height: 300px;
+    overflow-y: auto;
+    margin: 10px 0;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+/* Style for messages */
+.no-invitations-message,
+.no-players-message,
+.no-waitlist-message {
+    font-style: italic;
+    color: #7f8c8d;
+    padding: 5px 0;
+}
+
+.loading-message {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+    color: #555;
+    font-size: 16px;
 }

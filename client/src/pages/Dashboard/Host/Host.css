@@ -90,3 +90,20 @@
 .radio-label input {
     cursor: pointer;
 }
+
+.privacy-locked-note {
+    font-size: 0.9rem;
+    color: #666;
+    font-style: italic;
+    margin-left: 8px;
+    font-weight: normal;
+}
+
+.radio-label.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.radio-label.disabled input {
+    cursor: not-allowed;
+}

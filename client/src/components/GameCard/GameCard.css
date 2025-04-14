@@ -138,6 +138,11 @@
     color: white;
 }
 
+.status-badge.host {
+    background-color: #3498db;
+    color: white;
+}
+
 .status-badge-container {
     display: flex;
     align-items: center;
