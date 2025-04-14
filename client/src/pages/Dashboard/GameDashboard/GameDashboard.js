@@ -35,6 +35,15 @@ export function GameDashboard() {
     const [isLoadingRequests, setIsLoadingRequests] = useState(false);
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [showShareModal, setShowShareModal] = useState(false);
+    const [hostProfile, setHostProfile] = useState(null);
+    const [hostStats, setHostStats] = useState({
+        gamesPlayed: 0,
+        gamesHosted: 0,
+        memberSince: '',
+        rating: 0
+    });
+    const [hostReviews, setHostReviews] = useState([]);
+    const [showMoreReviews, setShowMoreReviews] = useState(false);
 
     const fetchJoinRequests = useCallback(async () => {
         if (!game || !user || !isHost) return;
@@ -184,9 +193,68 @@ export function GameDashboard() {
         }
     }, [gameId, fetchPlayers]);
 
+    const fetchHostInfo = useCallback(async () => {
+        if (!game || !game.host_id) return;
+
+        try {
+            const hostId = typeof game.host_id === 'object' ? game.host_id._id : game.host_id;
+
+            const profileResponse = await axios.get(`${process.env.REACT_APP_API_URL}/users/${hostId}`);
+            setHostProfile(profileResponse.data);
+
+            if (profileResponse.data.createdAt) {
+                const memberDate = new Date(profileResponse.data.createdAt);
+                setHostStats(prev => ({
+                    ...prev,
+                    memberSince: memberDate.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long'
+                    })
+                }));
+            }
+
+            const statsResponse = await axios.get(`${process.env.REACT_APP_API_URL}/games`, {
+                params: { host_id: hostId }
+            });
+
+            if (statsResponse.data) {
+                setHostStats(prev => ({
+                    ...prev,
+                    gamesHosted: statsResponse.data.length
+                }));
+            }
+
+            const playedResponse = await axios.get(`${process.env.REACT_APP_API_URL}/games/player/${hostId}`);
+            if (playedResponse.data) {
+                setHostStats(prev => ({
+                    ...prev,
+                    gamesPlayed: playedResponse.data.length
+                }));
+            }
+
+            const reviewsResponse = await axios.get(`${process.env.REACT_APP_API_URL}/reviews/host/${hostId}`);
+            if (reviewsResponse.data) {
+                setHostReviews(reviewsResponse.data.reviews || []);
+                setHostStats(prev => ({
+                    ...prev,
+                    rating: reviewsResponse.data.averageRating || 0
+                }));
+            }
+
+        } catch (error) {
+            console.error('Error fetching host information:', error);
+        }
+    }, [game]);
+
     useEffect(() => {
         fetchGame();
     }, [fetchGame]);
+
+    useEffect(() => {
+        if (game) {
+            fetchHostInfo();
+        }
+    }, [game, fetchHostInfo]);
 
     useEffect(() => {
         if (user && game) {
@@ -278,6 +346,14 @@ export function GameDashboard() {
         navigator.clipboard.writeText(guestLink);
         setShowShareModal(true);
         setTimeout(() => setShowShareModal(false), 3000); // Hide after 3 seconds
+    };
+
+    const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
     };
 
     const menus = [
@@ -531,90 +607,192 @@ export function GameDashboard() {
                             </div>
                         )}
                     </div>
-                    <div className='summary-item players-item'>
-                        <div className='summary-header'>
-                            <h2>Players</h2>
-                        </div>
-                        {editing ? (
-                            isHost ? (
-                                <InvitePlayers
-                                    user={user}
-                                    gameId={gameId}
-                                    players={players}
-                                    fetchPlayers={fetchPlayers}
-                                />
-                            ) : (
-                                <div>You are not authorized to edit players.</div>
-                            )
-                        ) : (
-                            <div className='players-list'>
-                                {acceptedPlayers.length > 0 ? (
-                                    <div className='all-profiles-container'>
-                                        {acceptedPlayers.map(player => (
-                                            <Profile key={player._id} data={player.user_id} size={"compact"} />
-                                        ))}
+                    <div className="right-column">
+                        {/* {!editing && !isHost && hostProfile && (
+                            <div className='summary-item host-section'>
+                                <div className="summary-header">
+                                    <h2>About the Host</h2>
+                                </div>
+
+                                <div className="host-profile">
+                                    <div className="host-details">
+                                        <div className="host-avatar">
+                                            {hostProfile.profile_image ? (
+                                                <img src={hostProfile.profile_image} alt={`${hostProfile.username}'s avatar`} />
+                                            ) : (
+                                                <div className="avatar-placeholder">
+                                                    {hostProfile.username ? hostProfile.username.charAt(0).toUpperCase() : '?'}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="host-info">
+                                            <h3>{hostProfile.username}</h3>
+                                            <div className="host-stats">
+                                                <div className="stat-item">
+                                                    <span className="stat-label">Member Since</span>
+                                                    <span className="stat-value">{hostStats.memberSince}</span>
+                                                </div>
+                                                <div className="stat-item">
+                                                    <span className="stat-label">Games Hosted</span>
+                                                    <span className="stat-value">{hostStats.gamesHosted}</span>
+                                                </div>
+                                                <div className="stat-item">
+                                                    <span className="stat-label">Games Played</span>
+                                                    <span className="stat-value">{hostStats.gamesPlayed}</span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
+
+                                    {hostStats.rating > 0 && (
+                                        <div className="host-reviews-section">
+                                            <div className="rating-header">
+                                                <div className="rating-display">
+                                                    <span className="rating-number">{hostStats.rating.toFixed(1)}</span>
+                                                    <div className="star-display">
+                                                        {[1, 2, 3, 4, 5].map((star) => (
+                                                            <span
+                                                                key={star}
+                                                                className={`star ${star <= Math.round(hostStats.rating) ? 'filled' : ''}`}
+                                                            >
+                                                                ★
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <span className="review-count">
+                                                    {hostReviews.length} {hostReviews.length === 1 ? 'review' : 'reviews'}
+                                                </span>
+                                            </div>
+
+                                            {hostReviews.length > 0 && (
+                                                <div className="reviews-list">
+                                                    {hostReviews.slice(0, showMoreReviews ? undefined : 2).map((review) => (
+                                                        <div key={review._id} className="review-item">
+                                                            <div className="review-header">
+                                                                <span className="reviewer-name">
+                                                                    {review.reviewer_id?.username || 'Anonymous'}
+                                                                </span>
+                                                                <div className="review-rating">
+                                                                    {[...Array(5)].map((_, i) => (
+                                                                        <span
+                                                                            key={i}
+                                                                            className={`review-star ${i < review.rating ? 'filled' : ''}`}
+                                                                        >
+                                                                            ★
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                            <div className="review-date">
+                                                                {formatDate(review.created_at)}
+                                                            </div>
+                                                            <div className="review-comment">
+                                                                {review.comment}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+
+                                                    {hostReviews.length > 2 && (
+                                                        <button
+                                                            className="show-more-reviews"
+                                                            onClick={() => setShowMoreReviews(!showMoreReviews)}
+                                                        >
+                                                            {showMoreReviews ? 'Show Less' : `Show All ${hostReviews.length} Reviews`}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )} */}
+                        <div className='summary-item players-section'>
+                            <div className='summary-header'>
+                                <h2>Players</h2>
+                            </div>
+                            {editing ? (
+                                isHost ? (
+                                    <InvitePlayers
+                                        user={user}
+                                        gameId={gameId}
+                                        players={players}
+                                        fetchPlayers={fetchPlayers}
+                                    />
                                 ) : (
-                                    <div>No accepted players</div>
-                                )}
-                                {pendingPlayers.length > 0 && (
-                                    <>
-                                        <h3>Pending Invitations</h3>
+                                    <div>You are not authorized to edit players.</div>
+                                )
+                            ) : (
+                                <div className='players-list'>
+                                    {acceptedPlayers.length > 0 ? (
                                         <div className='all-profiles-container'>
-                                            {pendingPlayers.map(player => (
+                                            {acceptedPlayers.map(player => (
                                                 <Profile key={player._id} data={player.user_id} size={"compact"} />
                                             ))}
                                         </div>
-                                    </>
-                                )}
-                                {waitlistedPlayers.length > 0 && (
-                                    <>
-                                        <h3>Waitlist</h3>
-                                        <div className="all-profiles-container">
-                                            {waitlistedPlayers.map((player, index) => (
-                                                <div key={player._id} className="waitlist-player">
-                                                    <span className="waitlist-position">#{index + 1}</span>
-                                                    <Profile data={player.user_id} size="compact" />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </>
-                                )}
-
-                                {isHost && game.is_public && (
-                                    <div className="join-requests-section">
-                                        <h3>Join Requests {isLoadingRequests && <span className="loading-indicator">Loading...</span>}</h3>
-                                        {joinRequests.length > 0 ? (
-                                            <ul className="join-requests-list">
-                                                {joinRequests.map(request => (
-                                                    <li key={request._id} className="join-request-item">
-                                                        <div className="join-request-profile">
-                                                            <Profile
-                                                                data={request.user_id}
-                                                                size="compact"
-                                                            />
-                                                            <div className="join-request-actions">
-                                                                <button
-                                                                    className="accept-button small"
-                                                                    onClick={() => handleAcceptRequest(request.user_id._id)}
-                                                                >
-                                                                    Accept
-                                                                </button>
-                                                                <button className="decline-button small" onClick={() => openRejectModal(request.user_id._id)}>
-                                                                    Decline
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </li>
+                                    ) : (
+                                        <div>No accepted players</div>
+                                    )}
+                                    {pendingPlayers.length > 0 && (
+                                        <>
+                                            <h3>Pending Invitations</h3>
+                                            <div className='all-profiles-container'>
+                                                {pendingPlayers.map(player => (
+                                                    <Profile key={player._id} data={player.user_id} size={"compact"} />
                                                 ))}
-                                            </ul>
-                                        ) : (
-                                            <p className="no-requests-message">No pending join requests</p>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                                            </div>
+                                        </>
+                                    )}
+                                    {waitlistedPlayers.length > 0 && (
+                                        <>
+                                            <h3>Waitlist</h3>
+                                            <div className="all-profiles-container">
+                                                {waitlistedPlayers.map((player, index) => (
+                                                    <div key={player._id} className="waitlist-player">
+                                                        <span className="waitlist-position">#{index + 1}</span>
+                                                        <Profile data={player.user_id} size="compact" />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
+
+                                    {isHost && game.is_public && (
+                                        <div className="join-requests-section">
+                                            <h3>Join Requests {isLoadingRequests && <span className="loading-indicator">Loading...</span>}</h3>
+                                            {joinRequests.length > 0 ? (
+                                                <ul className="join-requests-list">
+                                                    {joinRequests.map(request => (
+                                                        <li key={request._id} className="join-request-item">
+                                                            <div className="join-request-profile">
+                                                                <Profile
+                                                                    data={request.user_id}
+                                                                    size="compact"
+                                                                />
+                                                                <div className="join-request-actions">
+                                                                    <button
+                                                                        className="accept-button small"
+                                                                        onClick={() => handleAcceptRequest(request.user_id._id)}
+                                                                    >
+                                                                        Accept
+                                                                    </button>
+                                                                    <button className="decline-button small" onClick={() => openRejectModal(request.user_id._id)}>
+                                                                        Decline
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            ) : (
+                                                <p className="no-requests-message">No pending join requests</p>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
                     </div>
                     {isRejectModalOpen && (
                         <RejectModal

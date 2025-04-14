@@ -19,11 +19,11 @@
 
 /* Adjust widths for the summary items */
 .game-dashboard-container .summary-item:nth-child(1) {
-    width: 70%;
+    width: 60%;
 }
 
-.game-dashboard-container .summary-item:nth-child(2) {
-    width: 30%;
+.game-dashboard-container .summary-item.players-section {
+    width: unset;
 }
 
 /* Summary header styles */
@@ -416,7 +416,7 @@
     color: white;
     padding: 12px 24px;
     border-radius: 4px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     z-index: 1000;
     animation: slideIn 0.3s ease-out;
     font-weight: 500;
@@ -427,8 +427,227 @@
         transform: translateX(100%);
         opacity: 0;
     }
+
     to {
         transform: translateX(0);
         opacity: 1;
     }
+}
+
+/* Host Information Section */
+.host-info-section {
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.host-profile {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.host-details {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.host-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: #555;
+}
+
+.host-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(53, 115, 55, 0.1);
+    color: rgb(53, 115, 55);
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.host-info {
+    flex: 1;
+}
+
+.host-info h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.host-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    min-width: 80px;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #666;
+    display: block;
+}
+
+.stat-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Reviews section */
+.host-reviews-section {
+    margin-top: 15px;
+}
+
+.rating-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.rating-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.rating-number {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.star-display {
+    display: flex;
+    align-items: center;
+}
+
+.star {
+    color: #ddd;
+    font-size: 18px;
+}
+
+.star.filled {
+    color: #ffc107;
+}
+
+.review-count {
+    font-size: 14px;
+    color: #666;
+}
+
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.review-item {
+    padding: 12px;
+    background-color: #f9f9f9;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.reviewer-name {
+    font-weight: 600;
+    color: #333;
+}
+
+.review-rating {
+    display: flex;
+}
+
+.review-star {
+    color: #ddd;
+    font-size: 14px;
+}
+
+.review-star.filled {
+    color: #ffc107;
+}
+
+.review-date {
+    font-size: 12px;
+    color: #777;
+    margin-bottom: 8px;
+}
+
+.review-comment {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #444;
+}
+
+.show-more-reviews {
+    margin-top: 10px;
+    background: none;
+    border: none;
+    color: #4a6eb5;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 0;
+    text-align: left;
+    text-decoration: underline;
+}
+
+.show-more-reviews:hover {
+    color: #3d5c99;
+}
+
+/* Right column container for host and players sections */
+.right-column {
+    display: flex;
+    flex-direction: column;
+    width: 40%;
+    flex-shrink: 0;
+    /* Prevents the column from shrinking */
+}
+
+/* Host section styling */
+.host-section {
+    margin-bottom: 0;
+}
+
+/* Players section styling */
+.players-section {
+    flex: 1;
+    height: 100%;
+    overflow-y: auto;
+    /* Allows scrolling if content is too tall */
 }
