@@ -16,7 +16,7 @@ const profileRoutes = require("./routes/profileRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const guestProfileRoutes = require("./routes/guestProfileRoutes");
 
-// Middleware
+// Configure CORS first
 app.use(
 	cors({
 		origin: ["https://all-in-4ce60.web.app", "http://localhost:3000"],
@@ -32,27 +32,9 @@ app.use(
 	})
 );
 
-// Add request logging for local development
-if (process.env.NODE_ENV === "development") {
-	app.use((req, res, next) => {
-		console.log(`${new Date().toISOString()} ${req.method} ${req.url}`);
-		next();
-	});
-}
-
 app.use(express.json());
 
-// Database connection
-mongoose
-	.connect(process.env.MONGO_URI)
-	.then(() => {
-		console.log("Connected to MongoDB");
-	})
-	.catch((err) => {
-		console.error("Error connecting to MongoDB:", err);
-	});
-
-// Use routes
+// Then register routes
 app.use("/", userRoutes);
 app.use("/", gameRoutes);
 app.use("/", playerRoutes);
@@ -63,6 +45,27 @@ app.use("/", notificationRoutes);
 app.use("/", profileRoutes);
 app.use("/reviews", reviewRoutes);
 app.use("/", guestProfileRoutes);
+
+// Add explicit handling for OPTIONS requests
+app.options('*', cors());
+
+// Add request logging for local development
+if (process.env.NODE_ENV === "development") {
+	app.use((req, res, next) => {
+		console.log(`${new Date().toISOString()} ${req.method} ${req.url}`);
+		next();
+	});
+}
+
+// Database connection
+mongoose
+	.connect(process.env.MONGO_URI)
+	.then(() => {
+		console.log("Connected to MongoDB");
+	})
+	.catch((err) => {
+		console.error("Error connecting to MongoDB:", err);
+	});
 
 // Health check endpoint
 app.get("/health", (req, res) => {
