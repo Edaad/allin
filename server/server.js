@@ -19,7 +19,11 @@ const guestProfileRoutes = require("./routes/guestProfileRoutes");
 // Middleware
 app.use(
 	cors({
-		origin: ["https://all-in-4ce60.web.app", "http://localhost:3000"],
+		origin: [
+			"https://all-in-4ce60.web.app",
+			"http://localhost:3000",
+			"https://allin-production.up.railway.app" // Add your production API URL
+		],
 		credentials: true,
 		methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
 		allowedHeaders: [
