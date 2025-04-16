@@ -45,6 +45,9 @@ export const useGameData = (user, initialTab = "Public Games") => {
     // Using a ref to track previous tab to prevent unnecessary re-fetching
     const prevTabRef = useRef(tab);
 
+    // Track if this is first load
+    const isInitialLoadRef = useRef(true);
+
     // Default filters for each tab
     const [tabFilters, setTabFilters] = useState({
         "Public Games": {
@@ -235,8 +238,8 @@ export const useGameData = (user, initialTab = "Public Games") => {
         }
     }, [tab, user, filterParams, fetchWaitlistPosition]);
 
-    // Handle tab change
-    const handleTabChange = (newTab) => {
+    // Memoize handleTabChange to prevent it from causing infinite loops
+    const handleTabChange = useCallback((newTab) => {
         // Clear games immediately when changing tabs to prevent seeing old data
         setGames([]);
         setTab(newTab);
@@ -244,10 +247,10 @@ export const useGameData = (user, initialTab = "Public Games") => {
         // Apply stored filters for the new tab
         const tabFilter = tabFilters[newTab] || {};
         setFilterParams(formatFiltersForAPI(tabFilter));
-    };
+    }, [tabFilters]);
 
-    // Handle filter application
-    const handleApplyFilters = (filters) => {
+    // Memoize handleApplyFilters to ensure consistent behavior
+    const handleApplyFilters = useCallback((filters) => {
         // Store filters for the current tab
         setTabFilters(prev => ({
             ...prev,
@@ -255,10 +258,10 @@ export const useGameData = (user, initialTab = "Public Games") => {
         }));
 
         setFilterParams(formatFiltersForAPI(filters));
-    };
+    }, [tab]);
 
-    // Handle invitation acceptance
-    const handleAcceptInvitation = async (gameId) => {
+    // Memoize invitation handlers
+    const handleAcceptInvitation = useCallback(async (gameId) => {
         if (!user) return;
 
         try {
@@ -282,10 +285,9 @@ export const useGameData = (user, initialTab = "Public Games") => {
         } catch (error) {
             console.error("Error accepting invitation:", error);
         }
-    };
+    }, [user, fetchGames]);
 
-    // Handle invitation declining
-    const handleDeclineInvitation = async (gameId) => {
+    const handleDeclineInvitation = useCallback(async (gameId) => {
         if (!user) return;
 
         const confirmDecline = window.confirm(
@@ -308,11 +310,13 @@ export const useGameData = (user, initialTab = "Public Games") => {
         } catch (error) {
             console.error("Error declining invitation:", error);
         }
-    };
+    }, [user, fetchGames]);
 
     // Initialize default filters and fetch games when user is loaded
     useEffect(() => {
-        if (user) {
+        if (user && isInitialLoadRef.current) {
+            isInitialLoadRef.current = false;
+
             // Apply default filters for the current tab
             const tabFilter = tabFilters[tab] || {};
             setFilterParams(formatFiltersForAPI(tabFilter));
@@ -321,11 +325,11 @@ export const useGameData = (user, initialTab = "Public Games") => {
             fetchGames();
             prevTabRef.current = tab;
         }
-    }, [user]); // Only when user changes or is first loaded
+    }, [user, tabFilters, tab, fetchGames]);  // Include dependencies but use isInitialLoadRef to prevent re-runs
 
     // Fetch games when tab or filters change
     useEffect(() => {
-        if (user && (prevTabRef.current !== tab || Object.keys(filterParams).length > 0)) {
+        if (user && !isInitialLoadRef.current && (prevTabRef.current !== tab || Object.keys(filterParams).length > 0)) {
             fetchGames();
             prevTabRef.current = tab;
         }
@@ -339,7 +343,7 @@ export const useGameData = (user, initialTab = "Public Games") => {
         if (tabParam && ["Public Games", "Requested Games", "Invitations", "Upcoming Games", "Past Games"].includes(tabParam)) {
             handleTabChange(tabParam);
         }
-    }, []);
+    }, [handleTabChange]);  // Now handleTabChange is memoized so this is safe
 
     return {
         tab,
