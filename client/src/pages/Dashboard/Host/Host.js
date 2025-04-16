@@ -12,7 +12,7 @@ export function Host() {
 	const [user, setUser] = useState(null);
 	const { userId } = useParams();
 	const navigate = useNavigate();
-	const [page, setPage] = useState("host");
+	const page = "host"; // Replace with a constant value
 	const [hosting, setHosting] = useState(false);
 	const [tab, setTab] = useState("Upcoming games");
 	const [games, setGames] = useState([]);
@@ -150,15 +150,6 @@ export function Host() {
 		navigate(`/dashboard/${user._id}/host/game/${gameId}`);
 	};
 
-	const menus = [
-		{ title: "Overview", page: "overview" },
-		{ title: "Games", page: "games" },
-		{ title: "Host", page: "host" },
-		{ title: "Community", page: "community" },
-		{ title: "Bankroll", page: "bankroll" },
-		{ title: "Notifications", page: "notifications" },
-	];
-
 	const headers = [
 		"Name",
 		"Host",
@@ -187,8 +178,6 @@ export function Host() {
 	return (
 		<div className="dashboard">
 			<Sidebar
-				menus={menus}
-				setPage={setPage}
 				page={page}
 				username={user.username}
 			/>
@@ -269,9 +258,8 @@ export function Host() {
 								</label>
 								<div className="radio-group">
 									<label
-										className={`radio-label ${
-											selectedGroup ? "disabled" : ""
-										}`}
+										className={`radio-label ${selectedGroup ? "disabled" : ""
+											}`}
 									>
 										<input
 											type="radio"
@@ -290,9 +278,8 @@ export function Host() {
 										Private (invite only)
 									</label>
 									<label
-										className={`radio-label ${
-											selectedGroup ? "disabled" : ""
-										}`}
+										className={`radio-label ${selectedGroup ? "disabled" : ""
+											}`}
 									>
 										<input
 											type="radio"
@@ -354,9 +341,8 @@ export function Host() {
 				)}
 				<div className="tab-container">
 					<button
-						className={`tab${
-							tab === "Upcoming games" ? "-selected" : ""
-						}`}
+						className={`tab${tab === "Upcoming games" ? "-selected" : ""
+							}`}
 						onClick={() => {
 							setTab("Upcoming games");
 						}}
@@ -364,9 +350,8 @@ export function Host() {
 						Upcoming games
 					</button>
 					<button
-						className={`tab${
-							tab === "Past games" ? "-selected" : ""
-						}`}
+						className={`tab${tab === "Past games" ? "-selected" : ""
+							}`}
 						onClick={() => {
 							setTab("Past games");
 						}}

@@ -1,0 +1,81 @@
+.players-list-component {
+    width: 100%;
+}
+
+.all-profiles-container {
+    margin: 0;
+}
+
+/* Adjust the profile component within the players list */
+.all-profiles-container .profile {
+    margin-bottom: 10px;
+}
+
+/* Join requests section */
+.join-requests-section {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.join-requests-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.join-request-item {
+    display: flex;
+    margin-bottom: 5px;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.join-request-profile {
+    display: flex;
+    align-items: center;
+    width: 75%;
+}
+
+.join-request-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    justify-content: flex-end;
+    align-items: flex-end;
+}
+
+.accept-button.small,
+.decline-button.small {
+    font-size: 12px;
+    padding: 5px 10px;
+    min-width: 64px;
+}
+
+.loading-indicator {
+    font-size: 14px;
+    color: #7f8c8d;
+    margin-left: 10px;
+    font-weight: normal;
+}
+
+.no-requests-message {
+    font-style: italic;
+    color: #7f8c8d;
+}
+
+/* Waitlist styles */
+.waitlist-player {
+    display: flex;
+    align-items: center;
+    border-radius: 4px;
+}
+
+.waitlist-position {
+    min-width: 25px;
+    margin-right: 10px;
+    font-weight: bold;
+    color: #777;
+    font-size: 14px;
+}

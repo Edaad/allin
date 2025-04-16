@@ -3,16 +3,14 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../Dashboard.css";
 import "./GameDashboard.css";
-import "../Host/Host.css";
 import { minidenticon } from "minidenticons";
 import Sidebar from "../../../components/Sidebar/Sidebar";
-import Input from "../../../components/Input/Input";
-import Select from "../../../components/Select/Select";
-import InvitePlayers from "../../../components/InvitePlayers/InvitePlayers";
-import Profile from "../../../components/Profile/Profile";
 import RejectModal from "../../../components/RejectModal/RejectModal";
 import ReviewButton from "../../../components/ReviewButton/ReviewButton";
 import ReviewModal from "../../../components/ReviewModal/ReviewModal";
+import GameDetails from "../../../components/GameDetails/GameDetails";
+import HostInfo from "../../../components/HostInfo/HostInfo";
+import PlayersList from "../../../components/PlayersList/PlayersList";
 
 export function GameDashboard() {
     const [user, setUser] = useState(null);
@@ -39,7 +37,7 @@ export function GameDashboard() {
     const [selectedGroup, setSelectedGroup] = useState(null);
     const [userGroups, setUserGroups] = useState([]);
 
-    // Add state for host information
+    // State for host information
     const [hostProfile, setHostProfile] = useState(null);
     const [hostStats, setHostStats] = useState({
         memberSince: "",
@@ -47,7 +45,6 @@ export function GameDashboard() {
         gamesPlayed: 0,
     });
     const [hostReviews, setHostReviews] = useState([]);
-    const [showMoreReviews, setShowMoreReviews] = useState(false);
     const [averageRating, setAverageRating] = useState(0);
 
     // Function to fetch host information
@@ -261,21 +258,14 @@ export function GameDashboard() {
 
     const fetchPlayers = useCallback(async () => {
         try {
-            console.log(`Fetching players for game ${gameId}...`);
             const res = await axios.get(
                 `${process.env.REACT_APP_API_URL}/players/game/${gameId}`
             );
-
-            console.log("Players fetched:", res.data);
 
             // Make sure the data is properly populated
             const populatedData = res.data.map((player) => {
                 // If user_id is just an ID (not populated), provide a default object
                 if (player.user_id && typeof player.user_id !== "object") {
-                    console.warn(
-                        `Player ${player._id} has unpopulated user_id:`,
-                        player.user_id
-                    );
                     return {
                         ...player,
                         user_id: { _id: player.user_id },
@@ -503,15 +493,6 @@ export function GameDashboard() {
         setTimeout(() => setShowShareModal(false), 3000); // Hide after 3 seconds
     };
 
-    const menus = [
-        { title: "Overview", page: "overview" },
-        { title: "Games", page: "games" },
-        { title: "Host", page: "host" },
-        { title: "Community", page: "community" },
-        { title: "Bankroll", page: "bankroll" },
-        { title: "Notifications", page: "notifications" },
-    ];
-
     if (!game || !user) {
         return <div>Loading...</div>;
     }
@@ -526,18 +507,10 @@ export function GameDashboard() {
     const acceptedPlayers = players.filter(
         (player) => player.invitation_status === "accepted"
     );
-    const pendingPlayers = players.filter(
-        (player) => player.invitation_status === "pending"
-    );
-    const waitlistedPlayers = players
-        .filter((player) => player.invitation_status === "waitlist")
-        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
     return (
         <div className="dashboard">
             <Sidebar
-                menus={menus}
-                setPage={() => { }}
                 page="host"
                 username={user.username}
             />
@@ -634,616 +607,49 @@ export function GameDashboard() {
                     <div className="summary-item">
                         {/* Host Information Section - Only show when not editing and not the host */}
                         {!editing && !isHost && hostProfile && (
-                            <div className="host-info-wrapper">
-                                <h2>Host Details</h2>
-
-                                <div className="host-info">
-                                    <div className="host-header">
-                                        <div className="host-avatar">
-                                            <img
-                                                src={generateAvatar(
-                                                    hostProfile.username
-                                                )}
-                                                alt={`${hostProfile.username}'s avatar`}
-                                                className="avatar-image"
-                                            />
-                                        </div>
-                                        <div className="host-details">
-                                            <h3 className="host-name">
-                                                {hostProfile.username}
-                                            </h3>
-                                            <div className="host-stats">
-                                                <div className="stat-item">
-                                                    <span className="stat-label">
-                                                        Member Since
-                                                    </span>
-                                                    <span className="stat-value">
-                                                        {
-                                                            hostStats.memberSince
-                                                        }
-                                                    </span>
-                                                </div>
-                                                <div className="stat-item">
-                                                    <span className="stat-label">
-                                                        Games Hosted
-                                                    </span>
-                                                    <span className="stat-value">
-                                                        {
-                                                            hostStats.gamesHosted
-                                                        }
-                                                    </span>
-                                                </div>
-                                                <div className="stat-item">
-                                                    <span className="stat-label">
-                                                        Games Played
-                                                    </span>
-                                                    <span className="stat-value">
-                                                        {
-                                                            hostStats.gamesPlayed
-                                                        }
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            {averageRating > 0 && (
-                                                <div className="host-rating">
-                                                    <div className="rating-display">
-                                                        <span className="rating-number">
-                                                            {averageRating.toFixed(
-                                                                1
-                                                            )}
-                                                        </span>
-                                                        <div className="star-rating">
-                                                            {[1, 2, 3, 4, 5].map(
-                                                                (star) => (
-                                                                    <span
-                                                                        key={
-                                                                            star
-                                                                        }
-                                                                        className={`star ${star <=
-                                                                            Math.round(
-                                                                                averageRating
-                                                                            )
-                                                                            ? "filled"
-                                                                            : ""
-                                                                            }`}
-                                                                    >
-                                                                        ★
-                                                                    </span>
-                                                                )
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                    <span className="review-count">
-                                                        {hostReviews.length}{" "}
-                                                        {hostReviews.length ===
-                                                            1
-                                                            ? "review"
-                                                            : "reviews"}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {hostReviews.length > 0 && (
-                                        <div className="host-reviews">
-                                            <div className="reviews-header">
-                                                <div className="reviews-rating-summary">
-                                                    <div className="rating-display">
-                                                        <span className="rating-number">
-                                                            {averageRating.toFixed(
-                                                                1
-                                                            )}
-                                                        </span>
-                                                        <div className="star-rating">
-                                                            {[1, 2, 3, 4, 5].map(
-                                                                (star) => (
-                                                                    <span
-                                                                        key={
-                                                                            star
-                                                                        }
-                                                                        className={`star ${star <=
-                                                                            Math.round(
-                                                                                averageRating
-                                                                            )
-                                                                            ? "filled"
-                                                                            : ""
-                                                                            }`}
-                                                                    >
-                                                                        ★
-                                                                    </span>
-                                                                )
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                    {/* <span className="review-count">
-                                                        {hostReviews.length}{" "}
-                                                        {hostReviews.length ===
-                                                            1
-                                                            ? "review"
-                                                            : "reviews"}
-                                                    </span> */}
-                                                </div>
-                                                <h4 style={{ marginTop: "20px" }}>Recent Reviews</h4>
-                                            </div>
-                                            <div className="reviews-list">
-                                                {/* Show only top 1 review instead of 2 */}
-                                                {hostReviews
-                                                    .slice(
-                                                        0,
-                                                        showMoreReviews
-                                                            ? undefined
-                                                            : 2
-                                                    )
-                                                    .map((review) => (
-                                                        <div
-                                                            key={review._id}
-                                                            className="review-item"
-                                                        >
-                                                            <div className="review-header">
-                                                                <span className="reviewer-name">
-                                                                    {review
-                                                                        .reviewer_id
-                                                                        ?.username ||
-                                                                        "Anonymous"}
-                                                                </span>
-                                                                <div className="review-stars">
-                                                                    {[
-                                                                        ...Array(
-                                                                            5
-                                                                        ),
-                                                                    ].map(
-                                                                        (
-                                                                            _,
-                                                                            i
-                                                                        ) => (
-                                                                            <span
-                                                                                key={
-                                                                                    i
-                                                                                }
-                                                                                className={`review-star ${i <
-                                                                                    review.rating
-                                                                                    ? "filled"
-                                                                                    : ""
-                                                                                    }`}
-                                                                            >
-                                                                                ★
-                                                                            </span>
-                                                                        )
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                            <div className="review-date">
-                                                                {formatDate(
-                                                                    review.created_at
-                                                                )}
-                                                            </div>
-                                                            <div className="review-comment">
-                                                                {
-                                                                    review.comment
-                                                                }
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                            </div>
-                                            {/* Change button text to reflect showing only 1 review now */}
-                                            {hostReviews.length > 1 && (
-                                                <button
-                                                    className="show-more-reviews"
-                                                    onClick={() =>
-                                                        setShowMoreReviews(
-                                                            !showMoreReviews
-                                                        )
-                                                    }
-                                                >
-                                                    {showMoreReviews
-                                                        ? "Show Less"
-                                                        : `See All ${hostReviews.length} Reviews`}
-                                                </button>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="section-divider"></div>
-                            </div>
+                            <HostInfo
+                                hostProfile={hostProfile}
+                                hostStats={hostStats}
+                                hostReviews={hostReviews}
+                                averageRating={averageRating}
+                                generateAvatar={generateAvatar}
+                                formatDate={formatDate}
+                            />
                         )}
 
-                        <div className="game-summary-header">
-                            <h2>Game Details</h2>
-                            {game.is_public && (
-                                <button
-                                    className="share-link"
-                                    onClick={handleShareLink}
-                                >
-                                    Share Game Link
-                                </button>
-                            )}
-                        </div>
-                        {showShareModal && (
-                            <div className="share-modal">
-                                Link copied to clipboard!
-                            </div>
-                        )}
-                        {editing ? (
-                            <form className="host-form compact">
-                                <Input
-                                    name="name"
-                                    type="text"
-                                    label="Name"
-                                    placeholder={`Give your game a name e.g.${user.username}'s poker night`}
-                                    value={gameForm.name}
-                                    onChange={handleInputChange}
-                                />
-                                <div className="input-double">
-                                    <Select
-                                        name="blinds"
-                                        label="Blinds"
-                                        placeholder="Select your game blinds"
-                                        value={gameForm.blinds}
-                                        onChange={handleInputChange}
-                                        options={[
-                                            { value: "1/2", label: "$1/$2" },
-                                            { value: "2/5", label: "$2/$5" },
-                                            { value: "5/10", label: "$5/$10" },
-                                        ]}
-                                    />
-                                    <Select
-                                        name="handed"
-                                        label="Handed"
-                                        placeholder="Select the player max"
-                                        value={gameForm.handed}
-                                        onChange={handleInputChange}
-                                        options={[
-                                            { value: "2", label: "2 max" },
-                                            { value: "3", label: "3 max" },
-                                            { value: "4", label: "4 max" },
-                                            { value: "5", label: "5 max" },
-                                            { value: "6", label: "6 max" },
-                                            { value: "7", label: "7 max" },
-                                            { value: "8", label: "8 max" },
-                                            { value: "9", label: "9 max" },
-                                            { value: "10", label: "10 max" },
-                                        ]}
-                                    />
-                                </div>
-                                <div className="game-privacy-option">
-                                    <label className="input-label">
-                                        Game Privacy
-                                        {selectedGroup && (
-                                            <span className="privacy-locked-note">
-                                                (Locked to match group privacy)
-                                            </span>
-                                        )}
-                                    </label>
-                                    <div className="radio-group">
-                                        <label
-                                            className={`radio-label ${selectedGroup ? "disabled" : ""
-                                                }`}
-                                        >
-                                            <input
-                                                type="radio"
-                                                name="isPublic"
-                                                value="false"
-                                                checked={!gameForm.isPublic}
-                                                onChange={() => {
-                                                    if (!selectedGroup) {
-                                                        setGameForm({
-                                                            ...gameForm,
-                                                            isPublic: false,
-                                                        });
-                                                    }
-                                                }}
-                                                disabled={
-                                                    selectedGroup !== null
-                                                }
-                                            />
-                                            Private (invite only)
-                                        </label>
-                                        <label
-                                            className={`radio-label ${selectedGroup ? "disabled" : ""
-                                                }`}
-                                        >
-                                            <input
-                                                type="radio"
-                                                name="isPublic"
-                                                value="true"
-                                                checked={gameForm.isPublic}
-                                                onChange={() => {
-                                                    if (!selectedGroup) {
-                                                        setGameForm({
-                                                            ...gameForm,
-                                                            isPublic: true,
-                                                        });
-                                                    }
-                                                }}
-                                                disabled={
-                                                    selectedGroup !== null
-                                                }
-                                            />
-                                            Public (open to join requests)
-                                        </label>
-                                    </div>
-                                </div>
-                                <Input
-                                    name="location"
-                                    type="text"
-                                    label="Location"
-                                    placeholder="Enter the address of your game"
-                                    value={gameForm.location}
-                                    onChange={handleInputChange}
-                                />
-                                <div className="input-double">
-                                    <Input
-                                        name="date"
-                                        type="date"
-                                        label="Date"
-                                        value={gameForm.date}
-                                        onChange={handleInputChange}
-                                    />
-                                    <Input
-                                        name="time"
-                                        type="time"
-                                        label="Time"
-                                        value={gameForm.time}
-                                        onChange={handleInputChange}
-                                    />
-                                </div>
-                                <div className="textarea-container">
-                                    <label
-                                        htmlFor="notes"
-                                        className="input-label"
-                                    >
-                                        Notes
-                                    </label>
-                                    <textarea
-                                        name="notes"
-                                        id="notes"
-                                        rows="5"
-                                        value={gameForm.notes}
-                                        onChange={handleInputChange}
-                                        placeholder="Enter any additional notes about the game..."
-                                    />
-                                </div>
-                            </form>
-                        ) : (
-                            <div className="game-details">
-                                <div className="detail-item">
-                                    <span className="detail-label">
-                                        Game Type:{" "}
-                                    </span>
-                                    <span className="detail-value">
-                                        <span className="icon-wrapper">
-                                            <i className="fa-solid fa-gamepad"></i>
-                                        </span>
-                                        {game.is_public
-                                            ? "Public (open to join requests)"
-                                            : "Private (invite only)"}
-                                    </span>
-                                </div>
-                                {isHost && (
-                                    <div className="detail-item">
-                                        <span className="detail-label">
-                                            Handed:{" "}
-                                        </span>
-                                        <span className="detail-value">
-                                            <span className="icon-wrapper">
-                                                <i className="fa-solid fa-users"></i>
-                                            </span>
-                                            {game.handed} max
-                                        </span>
-                                    </div>
-                                )}
-                                <div className="detail-item">
-                                    <span className="detail-label">
-                                        Blinds:{" "}
-                                    </span>
-                                    <span className="detail-value">
-                                        <span className="icon-wrapper">
-                                            <i className="fa-solid fa-dollar-sign"></i>
-                                        </span>
-                                        {game.blinds}
-                                    </span>
-                                </div>
-                                <div className="detail-item">
-                                    <span className="detail-label">
-                                        Location:{" "}
-                                    </span>
-                                    <span className="detail-value">
-                                        <span className="icon-wrapper">
-                                            <i className="fa-solid fa-location-dot"></i>
-                                        </span>
-                                        {game.location}
-                                    </span>
-                                </div>
-                                <div className="detail-item">
-                                    <span className="detail-label">Date: </span>
-                                    <span className="detail-value">
-                                        <span className="icon-wrapper">
-                                            <i className="fa-solid fa-calendar"></i>
-                                        </span>
-                                        {formattedDate}
-                                    </span>
-                                </div>
-                                <div className="detail-item">
-                                    <span className="detail-label">Time: </span>
-                                    <span className="detail-value">
-                                        <span className="icon-wrapper">
-                                            <i className="fa-solid fa-clock"></i>
-                                        </span>
-                                        {formattedTime}
-                                    </span>
-                                </div>
-                                <div className="detail-item">
-                                    <span className="detail-label">
-                                        Notes:{" "}
-                                    </span>
-                                    <span className="detail-value">
-                                        <span className="icon-wrapper">
-                                            <i className="fa-solid fa-note-sticky"></i>
-                                        </span>
-                                        <span className="notes-value">
-                                            {game.notes || "No notes provided"}
-                                        </span>
-                                    </span>
-                                </div>
-                                {game.group_id && (
-                                    <div className="detail-item">
-                                        <span className="detail-label">
-                                            Group:{" "}
-                                        </span>
-                                        <span className="detail-value">
-                                            <span className="icon-wrapper">
-                                                <i className="fa-solid fa-users-rectangle"></i>
-                                            </span>
-                                            {game.group_id.group_name}
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                        {/* Game Details Section */}
+                        <GameDetails
+                            game={game}
+                            gameForm={gameForm}
+                            handleInputChange={handleInputChange}
+                            editing={editing}
+                            isHost={isHost}
+                            selectedGroup={selectedGroup}
+                            setGameForm={setGameForm}
+                            handleShareLink={handleShareLink}
+                            showShareModal={showShareModal}
+                            formattedDate={formattedDate}
+                            formattedTime={formattedTime}
+                        />
                     </div>
                     <div className="summary-item players-item">
-                        <div className="game-summary-header">
-                            <h2>Players</h2>
-                        </div>
-                        {editing ? (
-                            isHost ? (
-                                <InvitePlayers
-                                    user={user}
-                                    gameId={gameId}
-                                    players={players}
-                                    fetchPlayers={fetchPlayers}
-                                />
-                            ) : (
-                                <div>
-                                    You are not authorized to edit players.
-                                </div>
-                            )
-                        ) : (
-                            <div className="players-list">
-                                {acceptedPlayers.length > 0 ? (
-                                    <div className="all-profiles-container">
-                                        {acceptedPlayers.map((player) => (
-                                            <Profile
-                                                key={player._id}
-                                                data={player.user_id}
-                                                size={"compact"}
-                                                currentUser={user}
-                                            />
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div>No accepted players</div>
-                                )}
-                                {pendingPlayers.length > 0 && (
-                                    <>
-                                        <h3>Pending Invitations</h3>
-                                        <div className="all-profiles-container">
-                                            {pendingPlayers.map((player) => (
-                                                <Profile
-                                                    key={player._id}
-                                                    data={player.user_id}
-                                                    size={"compact"}
-                                                    currentUser={user}
-                                                />
-                                            ))}
-                                        </div>
-                                    </>
-                                )}
-                                {waitlistedPlayers.length > 0 && (
-                                    <>
-                                        <h3>Waitlist</h3>
-                                        <div className="all-profiles-container">
-                                            {waitlistedPlayers.map(
-                                                (player, index) => (
-                                                    <div
-                                                        key={player._id}
-                                                        className="waitlist-player"
-                                                    >
-                                                        <span className="waitlist-position">
-                                                            #{index + 1}
-                                                        </span>
-                                                        <Profile
-                                                            data={
-                                                                player.user_id
-                                                            }
-                                                            size="compact"
-                                                            currentUser={user}
-                                                        />
-                                                    </div>
-                                                )
-                                            )}
-                                        </div>
-                                    </>
-                                )}
-
-                                {isHost && game.is_public && (
-                                    <div className="join-requests-section">
-                                        <h3>
-                                            Join Requests{" "}
-                                            {isLoadingRequests && (
-                                                <span className="loading-indicator">
-                                                    Loading...
-                                                </span>
-                                            )}
-                                        </h3>
-                                        {joinRequests.length > 0 ? (
-                                            <ul className="join-requests-list">
-                                                {joinRequests.map((request) => (
-                                                    <li
-                                                        key={request._id}
-                                                        className="join-request-item"
-                                                    >
-                                                        <div className="join-request-profile">
-                                                            <Profile
-                                                                data={
-                                                                    request.user_id
-                                                                }
-                                                                size="compact"
-                                                                currentUser={
-                                                                    user
-                                                                }
-                                                            />
-                                                            <div className="join-request-actions">
-                                                                <button
-                                                                    className="accept-button small"
-                                                                    onClick={() =>
-                                                                        handleAcceptRequest(
-                                                                            request
-                                                                                .user_id
-                                                                                ._id
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Accept
-                                                                </button>
-                                                                <button
-                                                                    className="decline-button small"
-                                                                    onClick={() =>
-                                                                        openRejectModal(
-                                                                            request
-                                                                                .user_id
-                                                                                ._id
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Decline
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        ) : (
-                                            <p className="no-requests-message">
-                                                No pending join requests
-                                            </p>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                        {/* Players List Section */}
+                        <PlayersList
+                            players={players}
+                            editing={editing}
+                            isHost={isHost}
+                            user={user}
+                            gameId={gameId}
+                            fetchPlayers={fetchPlayers}
+                            game={game}
+                            joinRequests={joinRequests}
+                            handleAcceptRequest={handleAcceptRequest}
+                            openRejectModal={openRejectModal}
+                            isLoadingRequests={isLoadingRequests}
+                        />
                     </div>
+
+                    {/* Modals */}
                     {isRejectModalOpen && (
                         <RejectModal
                             open={isRejectModalOpen}
@@ -1265,6 +671,6 @@ export function GameDashboard() {
             </div>
         </div>
     );
-}
+};
 
 export default GameDashboard;
