@@ -31,27 +31,30 @@ https://github.com/user-attachments/assets/e23376f4-d770-448f-8fa1-64c74088dbef
 1. Clone the repository:
     ```bash
     git clone https://github.com/your-username/allin.git
-    cd allin
     ```
+2. Navigate to the project directory:
+   ```bash
+   cd allin
+   ```
 
-2. Navigate to the server directory:
+4. Navigate to the server directory:
     ```bash
     cd server
     ```
 
-3. Install the dependencies:
+5. Install the dependencies:
     ```bash
     npm install
     ```
 
-4. Create a `.env` file in the `server` directory and add the following environment variables:
+6. Create a `.env` file in the `server` directory and add the following environment variables:
     ```env
     MONGODB_URI=your-mongodb-uri
     PORT=3001
     NODE_ENV=development
     ```
 
-5. Start the backend server:
+7. Start the backend server:
     ```bash
     npm start
     ```
