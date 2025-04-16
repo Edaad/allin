@@ -13,7 +13,7 @@ export function ProfileView() {
     const [profileUser, setProfileUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [page, setPage] = useState('community');
+    const page = 'community'; // Replace with constant
 
     const { userId, profileId } = useParams();
     const navigate = useNavigate();
@@ -187,15 +187,6 @@ export function ProfileView() {
         }
     };
 
-    const menus = [
-        { title: 'Overview', page: 'overview' },
-        { title: 'Games', page: 'games' },
-        { title: 'Host', page: 'host' },
-        { title: 'Community', page: 'community' },
-        { title: 'Bankroll', page: 'bankroll' },
-        { title: 'Notifications', page: 'notifications' }
-    ];
-
     // Format date function
     const formatDate = (dateString) => {
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -204,7 +195,7 @@ export function ProfileView() {
 
     return (
         <div className="dashboard">
-            {currentUser && <Sidebar menus={menus} setPage={setPage} page={page} username={currentUser.username} />}
+            {currentUser && <Sidebar page={page} username={currentUser.username} />}
             <div className="logged-content-container">
                 <div className="dashboard-heading">
                     <h1>User Profile</h1>

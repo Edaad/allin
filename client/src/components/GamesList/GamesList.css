@@ -1,0 +1,22 @@
+.games-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+
+.games-list-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 50px;
+    font-size: 18px;
+    color: #666;
+}
+
+.games-list-empty {
+    text-align: center;
+    padding: 50px;
+    color: #666;
+    font-style: italic;
+}

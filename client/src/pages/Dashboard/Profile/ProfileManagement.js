@@ -14,7 +14,7 @@ export function ProfileManagement() {
 	const [error, setError] = useState(null);
 	const [success, setSuccess] = useState(null);
 	const [editing, setEditing] = useState(false);
-	const [page, setPage] = useState("account");
+	const page = "account"; // Use constant instead of state
 
 	// Form states
 	const [form, setForm] = useState({
@@ -245,8 +245,7 @@ export function ProfileManagement() {
 
 			setProfile(response.data.profile);
 			setSuccess(
-				`${
-					type === "profile" ? "Profile" : "Banner"
+				`${type === "profile" ? "Profile" : "Banner"
 				} image updated successfully!`
 			);
 			setLoading(false);
@@ -293,15 +292,6 @@ export function ProfileManagement() {
 		setError(null);
 	};
 
-	const menus = [
-		{ title: "Overview", page: "overview" },
-		{ title: "Games", page: "games" },
-		{ title: "Host", page: "host" },
-		{ title: "Community", page: "community" },
-		{ title: "Bankroll", page: "bankroll" },
-		{ title: "Notifications", page: "notifications" },
-	];
-
 	const BLINDS_OPTIONS = [
 		"0.05/0.1",
 		"0.1/0.2",
@@ -316,8 +306,6 @@ export function ProfileManagement() {
 		<div className="dashboard">
 			{user && (
 				<Sidebar
-					menus={menus}
-					setPage={setPage}
 					page={page}
 					username={user.username}
 				/>
@@ -653,7 +641,7 @@ export function ProfileManagement() {
 										<div className="blinds-tags">
 											{profile?.poker_preferences
 												?.preferred_blinds?.length >
-											0 ? (
+												0 ? (
 												profile.poker_preferences.preferred_blinds.map(
 													(blind) => (
 														<span
@@ -678,22 +666,22 @@ export function ProfileManagement() {
 										<div className="availability-tags">
 											{profile?.poker_preferences
 												?.availability?.weekdays && (
-												<span className="availability-tag">
-													Weekdays
-												</span>
-											)}
+													<span className="availability-tag">
+														Weekdays
+													</span>
+												)}
 											{profile?.poker_preferences
 												?.availability?.weeknights && (
-												<span className="availability-tag">
-													Weeknights
-												</span>
-											)}
+													<span className="availability-tag">
+														Weeknights
+													</span>
+												)}
 											{profile?.poker_preferences
 												?.availability?.weekends && (
-												<span className="availability-tag">
-													Weekends
-												</span>
-											)}
+													<span className="availability-tag">
+														Weekends
+													</span>
+												)}
 											{!profile?.poker_preferences
 												?.availability?.weekdays &&
 												!profile?.poker_preferences

@@ -4,8 +4,9 @@ import "./Sidebar.css";
 import { minidenticon } from "minidenticons";
 import Logo from "../Logo/Logo";
 import axios from "axios";
+import { DASHBOARD_MENU_ITEMS } from "../../constants/menuConfig";
 
-const Sidebar = ({ menus, page, username }) => {
+const Sidebar = ({ page, username }) => {
 	const navigate = useNavigate();
 	const { userId } = useParams();
 	const [unreadCount, setUnreadCount] = useState(0);
@@ -59,18 +60,17 @@ const Sidebar = ({ menus, page, username }) => {
 				<Logo />
 			</div>
 			<ul className="menu">
-				{menus.map((Menu, index) => (
+				{DASHBOARD_MENU_ITEMS.map((menuItem, index) => (
 					<li
 						key={index}
-						className={`menu-item ${
-							page === Menu.page ? "bg-highlight" : ""
-						}`}
+						className={`menu-item ${page === menuItem.page ? "bg-highlight" : ""
+							}`}
 						onClick={() =>
-							navigate(`/dashboard/${userId}/${Menu.page}`)
+							navigate(`/dashboard/${userId}/${menuItem.page}`)
 						}
 					>
-						<span className="title">{Menu.title}</span>
-						{Menu.page === "notifications" && unreadCount > 0 && (
+						<span className="title">{menuItem.title}</span>
+						{menuItem.page === "notifications" && unreadCount > 0 && (
 							<span className="notification-badge">
 								{unreadCount}
 							</span>
@@ -88,9 +88,8 @@ const Sidebar = ({ menus, page, username }) => {
 						username={username}
 					/>
 					<span
-						className={`account-username ${
-							page === "account" ? "bg-highlight" : ""
-						}`}
+						className={`account-username ${page === "account" ? "bg-highlight" : ""
+							}`}
 					>
 						{username}
 					</span>

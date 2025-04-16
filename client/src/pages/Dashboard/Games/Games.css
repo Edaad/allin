@@ -13,7 +13,7 @@
     border-color: rgb(53, 115, 55);
     border-radius: 2px;
     padding: 11px;
-    transition: background-color 0.5s ease, color 0.5s ease;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .accept-button:hover {
@@ -30,8 +30,7 @@
     border-color: rgb(255, 0, 0);
     border-radius: 2px;
     padding: 11px;
-    transition: background-color 0.5s ease, color 0.5s ease;
-    /* width: 90px; */
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .decline-button:hover {
@@ -148,4 +147,42 @@
 .loading-container p {
     font-size: 18px;
     color: #555;
+}
+
+.games-content {
+    display: flex;
+    width: 100%;
+    gap: 30px;
+}
+
+.games-filter {
+    flex: 0 0 250px;
+}
+
+.games-list-wrapper {
+    flex: 1;
+}
+
+.card-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.card-actions .accept-button,
+.card-actions .decline-button {
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 4px;
+}
+
+/* Make the layout responsive */
+@media (max-width: 768px) {
+    .games-content {
+        flex-direction: column;
+    }
+
+    .games-filter {
+        flex: none;
+        width: 100%;
+    }
 }

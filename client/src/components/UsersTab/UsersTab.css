@@ -1,0 +1,13 @@
+.all-profiles-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.all-profiles-container p {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 20px;
+}

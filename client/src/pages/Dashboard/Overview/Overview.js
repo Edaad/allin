@@ -205,23 +205,12 @@ export function Overview() {
 		}
 	};
 
-	const menus = [
-		{ title: "Overview", page: "overview" },
-		{ title: "Games", page: "games" },
-		{ title: "Host", page: "host" },
-		{ title: "Community", page: "community" },
-		{ title: "Bankroll", page: "bankroll" },
-		{ title: "Notifications", page: "notifications" },
-	];
-
 	return (
 		<div className="dashboard">
 			{user && (
 				<Sidebar
-					menus={menus}
 					page={page}
 					username={user.username}
-					userId={user._id}
 				/>
 			)}
 			<div className="logged-content-container">
