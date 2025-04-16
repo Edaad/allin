@@ -83,3 +83,9 @@ https://github.com/user-attachments/assets/e23376f4-d770-448f-8fa1-64c74088dbef
 ### Accessing the Application
 - Open your browser and navigate to `http://localhost:3000` to access the frontend.
 - The backend server will be running on `http://localhost:3001`.
+
+### Troubleshooting
+- If you get a CORS error, make sure your backend allows requests from localhost:3000.
+- Double-check your .env files are placed in the correct folders (server and client respectively).
+- If ports 3000 or 3001 are in use, you can change them in the .env files and React config.
+
