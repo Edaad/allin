@@ -340,6 +340,103 @@ const removeFriend = async (req, res) => {
     }
 };
 
+/**
+ * Get friend suggestions for a user based on friends of friends
+ */
+const getFriendSuggestions = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        // Fetch the user with their friends
+        const user = await User.findById(userId).populate('friends');
+        
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        
+        // Get IDs of user's current friends
+        const friendIds = user.friends.map(friend => friend._id.toString());
+        
+        // Also exclude pending requests and received requests
+        const pendingRequestIds = user.pendingRequests.map(req => 
+            typeof req === 'string' ? req : req._id.toString()
+        );
+        const receivedRequestIds = user.friendRequests.map(req => 
+            typeof req === 'string' ? req : req._id.toString()
+        );
+        
+        // Create a set of all excluded IDs (user's own ID, friends, and pending/received requests)
+        const excludedIds = new Set([
+            user._id.toString(),
+            ...friendIds,
+            ...pendingRequestIds,
+            ...receivedRequestIds
+        ]);
+        
+        // Collect friends of friends
+        let potentialSuggestions = new Map(); // Map to track potential suggestions and mutual friend count
+        
+        // For each friend, get their friends
+        for (const friend of user.friends) {
+            // Fetch friend's friends
+            const friendWithTheirFriends = await User.findById(friend._id).populate('friends');
+            
+            if (friendWithTheirFriends && friendWithTheirFriends.friends.length > 0) {
+                // For each friend of friend
+                for (const friendOfFriend of friendWithTheirFriends.friends) {
+                    const fofId = friendOfFriend._id.toString();
+                    
+                    // Skip if this is the user themselves, already a friend, or in pending requests
+                    if (excludedIds.has(fofId)) {
+                        continue;
+                    }
+                    
+                    // Increment mutual friend count or initialize to 1
+                    if (potentialSuggestions.has(fofId)) {
+                        potentialSuggestions.set(fofId, {
+                            user: friendOfFriend,
+                            mutualCount: potentialSuggestions.get(fofId).mutualCount + 1,
+                            mutualFriends: [...potentialSuggestions.get(fofId).mutualFriends, friend]
+                        });
+                    } else {
+                        potentialSuggestions.set(fofId, {
+                            user: friendOfFriend,
+                            mutualCount: 1,
+                            mutualFriends: [friend]
+                        });
+                    }
+                }
+            }
+        }
+        
+        // Convert map to array and sort by mutual friend count (descending)
+        const suggestions = Array.from(potentialSuggestions.values())
+            .sort((a, b) => b.mutualCount - a.mutualCount)
+            .map(suggestion => {
+                const { user: suggestionUser, mutualCount, mutualFriends } = suggestion;
+                
+                // Format the response
+                return {
+                    _id: suggestionUser._id,
+                    username: suggestionUser.username,
+                    names: suggestionUser.names,
+                    email: suggestionUser.email,
+                    mutualFriendsCount: mutualCount,
+                    mutualFriends: mutualFriends.map(friend => ({
+                        _id: friend._id,
+                        username: friend.username
+                    })).slice(0, 3) // Limit to first 3 mutual friends
+                };
+            })
+            .slice(0, 10); // Limit to top 10 suggestions
+        
+        res.status(200).json(suggestions);
+    } catch (err) {
+        console.error('Error getting friend suggestions:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 module.exports = {
     getUsers,
     createUser,
@@ -349,5 +446,6 @@ module.exports = {
     cancelFriendRequest,
     signinUser,
     getUserById,
-    removeFriend
+    removeFriend,
+    getFriendSuggestions,
 };

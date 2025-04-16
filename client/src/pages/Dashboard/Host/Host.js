@@ -16,6 +16,9 @@ export function Host() {
 	const [hosting, setHosting] = useState(false);
 	const [tab, setTab] = useState("Upcoming games");
 	const [games, setGames] = useState([]);
+	const [userGroups, setUserGroups] = useState([]);
+	const [selectedGroup, setSelectedGroup] = useState(null);
+
 	const initialGameFormState = {
 		name: "",
 		blinds: "",
@@ -23,7 +26,8 @@ export function Host() {
 		date: "",
 		time: "",
 		handed: "",
-		isPublic: false, // New field for public/private games
+		isPublic: false,
+		group_id: "",
 	};
 	const [gameForm, setGameForm] = useState(initialGameFormState);
 
@@ -35,6 +39,20 @@ export function Host() {
 			navigate("/signin");
 		}
 	}, [userId, navigate]);
+
+	// Fetch user's groups
+	const fetchUserGroups = useCallback(async () => {
+		if (!user) return;
+		try {
+			const response = await axios.get(
+				`${process.env.REACT_APP_API_URL}/groups/user/${user._id}`,
+				{ params: { membership_status: "accepted" } }
+			);
+			setUserGroups(response.data);
+		} catch (error) {
+			console.error("Error fetching user groups:", error);
+		}
+	}, [user]);
 
 	// Wrap fetchGames with useCallback so its dependencies are explicit
 	const fetchGames = useCallback(async () => {
@@ -57,15 +75,41 @@ export function Host() {
 	useEffect(() => {
 		if (user) {
 			fetchGames();
+			fetchUserGroups(); // Fetch groups when user is loaded
 		}
-	}, [user, fetchGames]);
+	}, [user, fetchGames, fetchUserGroups]);
 
 	const handleInputChange = (e) => {
 		const { name, value } = e.target;
-		setGameForm({ ...gameForm, [name]: value });
+
+		if (name === "group_id") {
+			// If group is selected, find the group and set privacy based on group privacy
+			if (value) {
+				const selectedGroup = userGroups.find(
+					(group) => group._id === value
+				);
+				if (selectedGroup) {
+					setSelectedGroup(selectedGroup);
+					setGameForm((prev) => ({
+						...prev,
+						group_id: value,
+						isPublic: selectedGroup.is_public, // Set privacy to match group
+					}));
+				}
+			} else {
+				// If no group selected, allow manual privacy setting
+				setSelectedGroup(null);
+				setGameForm((prev) => ({
+					...prev,
+					group_id: value,
+				}));
+			}
+		} else {
+			// For other fields, just update normally
+			setGameForm((prev) => ({ ...prev, [name]: value }));
+		}
 	};
 
-	// In Host.js, modify the handleSubmit function
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		try {
@@ -80,14 +124,16 @@ export function Host() {
 				game_status: "upcoming",
 				blinds: gameForm.blinds,
 				handed: gameForm.handed,
-				is_public: gameForm.isPublic, // Added isPublic field
+				is_public: gameForm.isPublic,
+				group_id: gameForm.group_id || null, // Include group_id if selected
 			};
 
-			console.log("Submitting game with data:", newGame); // Add this line
+			console.log("Submitting game with data:", newGame);
 
 			await axios.post(`${process.env.REACT_APP_API_URL}/games`, newGame);
 			setHosting(false);
 			setGameForm(initialGameFormState);
+			setSelectedGroup(null);
 			fetchGames();
 		} catch (error) {
 			console.error("Error creating game:", error);
@@ -97,26 +143,46 @@ export function Host() {
 	const handleCancel = () => {
 		setHosting(false);
 		setGameForm(initialGameFormState);
+		setSelectedGroup(null);
 	};
 
 	const handleRowClick = (gameId) => {
 		navigate(`/dashboard/${user._id}/host/game/${gameId}`);
 	};
 
-    const menus = [
-        { title: 'Overview', page: 'overview' },
-        { title: 'Games', page: 'games' },
-        { title: 'Host', page: 'host' },
-        { title: 'Community', page: 'community' },
-        { title: 'Bankroll', page: 'bankroll' },
-        { title: 'Notifications', page: 'notifications' }
-    ];
+	const menus = [
+		{ title: "Overview", page: "overview" },
+		{ title: "Games", page: "games" },
+		{ title: "Host", page: "host" },
+		{ title: "Community", page: "community" },
+		{ title: "Bankroll", page: "bankroll" },
+		{ title: "Notifications", page: "notifications" },
+	];
 
-	const headers = ["Name", "Host", "Location", "Date", "Time", "Blinds"];
+	const headers = [
+		"Name",
+		"Host",
+		"Location",
+		"Date",
+		"Time",
+		"Blinds",
+		"Group",
+	];
 
 	if (!user) {
 		return <div>Loading...</div>;
 	}
+
+	// Create group options for dropdown
+	const groupOptions = [
+		{ value: "", label: "No group (personal game)" },
+		...userGroups.map((group) => ({
+			value: group._id,
+			label:
+				group.group_name +
+				(group.is_public ? " (Public)" : " (Private)"),
+		})),
+	];
 
 	return (
 		<div className="dashboard">
@@ -182,42 +248,65 @@ export function Host() {
 								/>
 							</div>
 
+							{/* Group selection dropdown - place before privacy options */}
+							<Select
+								name="group_id"
+								label="Group (Optional)"
+								placeholder="Select a group for this game"
+								value={gameForm.group_id}
+								onChange={handleInputChange}
+								options={groupOptions}
+							/>
+
 							<div className="game-privacy-option">
 								<label className="input-label">
 									Game Privacy
+									{selectedGroup && (
+										<span className="privacy-locked-note">
+											(Locked to match group privacy)
+										</span>
+									)}
 								</label>
 								<div className="radio-group">
-									<label className="radio-label">
+									<label
+										className={`radio-label ${
+											selectedGroup ? "disabled" : ""
+										}`}
+									>
 										<input
 											type="radio"
 											name="isPublic"
 											checked={!gameForm.isPublic}
 											onChange={() => {
-												console.log(
-													"Setting isPublic to false"
-												);
-												setGameForm({
-													...gameForm,
-													isPublic: false,
-												});
+												if (!selectedGroup) {
+													setGameForm({
+														...gameForm,
+														isPublic: false,
+													});
+												}
 											}}
+											disabled={selectedGroup !== null}
 										/>
 										Private (invite only)
 									</label>
-									<label className="radio-label">
+									<label
+										className={`radio-label ${
+											selectedGroup ? "disabled" : ""
+										}`}
+									>
 										<input
 											type="radio"
 											name="isPublic"
 											checked={gameForm.isPublic}
 											onChange={() => {
-												console.log(
-													"Setting isPublic to true"
-												);
-												setGameForm({
-													...gameForm,
-													isPublic: true,
-												});
+												if (!selectedGroup) {
+													setGameForm({
+														...gameForm,
+														isPublic: true,
+													});
+												}
 											}}
+											disabled={selectedGroup !== null}
 										/>
 										Public (open to join requests)
 									</label>
@@ -303,6 +392,9 @@ export function Host() {
 								date: formattedDate,
 								time: formattedTime,
 								blinds: game.blinds,
+								group: game.group_id
+									? game.group_id.group_name
+									: "Personal",
 								_id: game._id,
 							};
 						})}
