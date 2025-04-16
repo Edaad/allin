@@ -319,20 +319,10 @@ export function Games() {
 		}
 	};
 
-	const menus = [
-		{ title: "Overview", page: "overview" },
-		{ title: "Games", page: "games" },
-		{ title: "Host", page: "host" },
-		{ title: "Community", page: "community" },
-		{ title: "Bankroll", page: "bankroll" },
-		{ title: "Notifications", page: "notifications" }, // Added from main branch
-	];
-
 	if (!user) {
 		return (
 			<div className="dashboard">
 				<Sidebar
-					menus={menus}
 					setPage={setPage}
 					page={page}
 					username="Loading..."
@@ -351,9 +341,8 @@ export function Games() {
 						].map((tabName) => (
 							<button
 								key={tabName}
-								className={`tab${
-									tab === tabName ? "-selected" : ""
-								}`}
+								className={`tab${tab === tabName ? "-selected" : ""
+									}`}
 								disabled
 							>
 								{tabName}
@@ -370,53 +359,43 @@ export function Games() {
 
 	return (
 		<div className="dashboard">
-			<Sidebar
-				menus={menus}
-				setPage={setPage}
-				page={page}
-				username={user.username}
-			/>
+			{user && <Sidebar page={page} username={user.username} />}
 			<div className="logged-content-container">
 				<div className="dashboard-heading">
 					<h1>Games</h1>
 				</div>
 				<div className="tab-container">
 					<button
-						className={`tab${
-							tab === "Public Games" ? "-selected" : ""
-						}`}
+						className={`tab${tab === "Public Games" ? "-selected" : ""
+							}`}
 						onClick={() => handleTabChange("Public Games")}
 					>
 						Public Games
 					</button>
 					<button
-						className={`tab${
-							tab === "Requested Games" ? "-selected" : ""
-						}`}
+						className={`tab${tab === "Requested Games" ? "-selected" : ""
+							}`}
 						onClick={() => handleTabChange("Requested Games")}
 					>
 						Requested Games
 					</button>
 					<button
-						className={`tab${
-							tab === "Invitations" ? "-selected" : ""
-						}`}
+						className={`tab${tab === "Invitations" ? "-selected" : ""
+							}`}
 						onClick={() => handleTabChange("Invitations")}
 					>
 						Invitations
 					</button>
 					<button
-						className={`tab${
-							tab === "Upcoming Games" ? "-selected" : ""
-						}`}
+						className={`tab${tab === "Upcoming Games" ? "-selected" : ""
+							}`}
 						onClick={() => handleTabChange("Upcoming Games")}
 					>
 						Upcoming Games
 					</button>
 					<button
-						className={`tab${
-							tab === "Past Games" ? "-selected" : ""
-						}`}
+						className={`tab${tab === "Past Games" ? "-selected" : ""
+							}`}
 						onClick={() => handleTabChange("Past Games")}
 					>
 						Past Games
@@ -443,10 +422,10 @@ export function Games() {
 												...game,
 												waitlistPosition:
 													game.playerStatus ===
-													"waitlist"
+														"waitlist"
 														? waitlistPositions[
-																game._id
-														  ]
+														game._id
+														]
 														: undefined,
 											}}
 											user={user}
@@ -533,10 +512,10 @@ export function Games() {
 												...game,
 												waitlistPosition:
 													game.playerStatus ===
-													"waitlist"
+														"waitlist"
 														? waitlistPositions[
-																game._id
-														  ]
+														game._id
+														]
 														: undefined,
 											}}
 											user={user}
@@ -571,10 +550,10 @@ export function Games() {
 												...game,
 												waitlistPosition:
 													game.playerStatus ===
-													"waitlist"
+														"waitlist"
 														? waitlistPositions[
-																game._id
-														  ]
+														game._id
+														]
 														: undefined,
 											}}
 											user={user}

@@ -485,15 +485,6 @@ export function GroupDashboard() {
 		}
 	}, [fetchGroupGames, user, groupId, filterParams]);
 
-	const menus = [
-		{ title: "Overview", page: "overview" },
-		{ title: "Games", page: "games" },
-		{ title: "Host", page: "host" },
-		{ title: "Community", page: "community" },
-		{ title: "Bankroll", page: "bankroll" },
-		{ title: "Notifications", page: "notifications" },
-	];
-
 	if (!group || !user) {
 		return <div>Loading...</div>;
 	}
@@ -515,8 +506,6 @@ export function GroupDashboard() {
 	return (
 		<div className="dashboard">
 			<Sidebar
-				menus={menus}
-				setPage={() => {}}
 				page="community"
 				username={user.username}
 			/>
@@ -585,7 +574,7 @@ export function GroupDashboard() {
 									!isMember &&
 									group.is_public &&
 									(requestSent ||
-									group.membershipStatus === "requested" ? (
+										group.membershipStatus === "requested" ? (
 										<span className="status-tag requested">
 											Request Pending
 										</span>
@@ -811,7 +800,7 @@ export function GroupDashboard() {
 												size={"compact"}
 												action={
 													isAdmin &&
-													member.user_id._id !==
+														member.user_id._id !==
 														user._id
 														? "removeMember"
 														: null
@@ -943,10 +932,10 @@ export function GroupDashboard() {
 												...game,
 												waitlistPosition:
 													game.playerStatus ===
-													"waitlist"
+														"waitlist"
 														? waitlistPositions[
-																game._id
-														  ]
+														game._id
+														]
 														: undefined,
 											}}
 											user={user}

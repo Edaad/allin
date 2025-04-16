@@ -503,15 +503,6 @@ export function GameDashboard() {
         setTimeout(() => setShowShareModal(false), 3000); // Hide after 3 seconds
     };
 
-    const menus = [
-        { title: "Overview", page: "overview" },
-        { title: "Games", page: "games" },
-        { title: "Host", page: "host" },
-        { title: "Community", page: "community" },
-        { title: "Bankroll", page: "bankroll" },
-        { title: "Notifications", page: "notifications" },
-    ];
-
     if (!game || !user) {
         return <div>Loading...</div>;
     }
@@ -536,8 +527,6 @@ export function GameDashboard() {
     return (
         <div className="dashboard">
             <Sidebar
-                menus={menus}
-                setPage={() => { }}
                 page="host"
                 username={user.username}
             />

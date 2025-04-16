@@ -16,7 +16,7 @@ export function Community() {
     const [user, setUser] = useState(null);
     const { userId } = useParams();
     const navigate = useNavigate();
-    const [page, setPage] = useState('community');
+    const page = 'community'; // Use a constant instead of state
     const [query, setQuery] = useState("");
     const [data, setData] = useState([]);
     const [groups, setGroups] = useState([]);
@@ -129,15 +129,6 @@ export function Community() {
     //     }
     // };
 
-    const menus = [
-        { title: 'Overview', page: 'overview' },
-        { title: 'Games', page: 'games' },
-        { title: 'Host', page: 'host' },
-        { title: 'Community', page: 'community' },
-        { title: 'Bankroll', page: 'bankroll' },
-        { title: 'Notifications', page: 'notifications' }
-    ];
-
     const getEmptyMessage = () => {
         switch (activeTab) {
             case 'Friends':
@@ -174,14 +165,14 @@ export function Community() {
 
     return (
         <div className="dashboard">
-            {user && <Sidebar menus={menus} setPage={setPage} page={page} username={user.username} />}
+            {user && <Sidebar page={page} username={user.username} />}
             <div className='logged-content-container'>
                 {user ? (
-                <>
-                    <div className='dashboard-heading'><h1>Community</h1></div>
-                    {activeTab === 'All' && <FriendSuggestions user={user} updateUserState={updateUserState} />}
-                </>
-            ) : <h1>Loading...</h1>}
+                    <>
+                        <div className='dashboard-heading'><h1>Community</h1></div>
+                        {activeTab === 'All' && <FriendSuggestions user={user} updateUserState={updateUserState} />}
+                    </>
+                ) : <h1>Loading...</h1>}
                 <div className="tab-container">
                     <button onClick={() => setActiveTab('All')} className={`tab${activeTab === 'All' ? '-selected' : ''}`}>All</button>
                     <button onClick={() => setActiveTab('Friends')} className={`tab${activeTab === 'Friends' ? '-selected' : ''}`}>Friends</button>
