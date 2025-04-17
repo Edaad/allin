@@ -11,5 +11,6 @@ router.post('/cancel-friend-request', cancelFriendRequest);
 router.get('/users/:id', getUserById);
 router.post('/remove-friend', removeFriend); // Add this line
 router.get('/users/:userId/suggestions', getFriendSuggestions);
+router.post('/signin', signinUser);
 
 module.exports = router;
