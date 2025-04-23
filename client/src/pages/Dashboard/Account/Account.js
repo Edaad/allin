@@ -25,7 +25,6 @@ export function Account() {
         { title: 'Games', page: 'games' },
         { title: 'Host', page: 'host' },
         { title: 'Community', page: 'community' },
-        { title: 'Bankroll', page: 'bankroll' },
         { title: 'Notifications', page: 'notifications' }
     ];
 
@@ -47,25 +46,25 @@ export function Account() {
                                         <p><strong>Email:</strong> {user.email}</p>
                                     </div>
                                 </div>
-                                
+
                                 <div className="account-card clickable" onClick={() => navigate(`/dashboard/${userId}/profile`)}>
                                     <h3>Profile Management</h3>
                                     <p>Manage your public profile, including bio, images, social links, and poker preferences</p>
                                     <span className="card-arrow">→</span>
                                 </div>
-                                
+
                                 <div className="account-card">
                                     <h3>Password & Security</h3>
                                     <p>Update your password and security settings</p>
                                     <button className="account-button">Change Password</button>
                                 </div>
-                                
+
                                 <div className="account-card">
                                     <h3>Privacy Settings</h3>
                                     <p>Manage your privacy settings and data</p>
                                     <button className="account-button">Manage Privacy</button>
                                 </div>
-                                
+
                                 <div className="account-card danger-zone">
                                     <h3>Danger Zone</h3>
                                     <p>Permanently delete your account and all data</p>
