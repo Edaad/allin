@@ -262,6 +262,8 @@ export function GameDashboard() {
                 `${process.env.REACT_APP_API_URL}/players/game/${gameId}`
             );
 
+            console.log("Fetched players:", res.data);
+
             // Make sure the data is properly populated
             const populatedData = res.data.map((player) => {
                 // If user_id is just an ID (not populated), provide a default object
@@ -345,7 +347,7 @@ export function GameDashboard() {
 
             const isUserPlayer = players.some(
                 (player) =>
-                    player.user_id._id === user._id &&
+                    player.user_id?._id === user._id &&
                     ["accepted", "requested", "waitlist"].includes(
                         player.invitation_status
                     )
