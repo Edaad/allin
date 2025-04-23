@@ -32,21 +32,39 @@ const playerSchema = new mongoose.Schema({
     updated_at: { type: Date, default: Date.now },
 });
 
-// Improve the index for regular players to explicitly exclude guest players
-playerSchema.index({ game_id: 1, user_id: 1 }, { 
-    unique: true,
-    partialFilterExpression: { 
-        is_guest: { $eq: false },  // Only apply to non-guest players
-        user_id: { $exists: true, $ne: null }  // Ensure user_id exists and is not null
-    }
-});
-
-// Index for guest players 
-playerSchema.index({ game_id: 1, guest_id: 1 }, { 
-    unique: true,
-    partialFilterExpression: { 
-        is_guest: { $eq: true },  // Only apply to guest players
-        guest_id: { $exists: true, $ne: null }  // Ensure guest_id exists and is not null
+// Drop existing indexes and create new ones
+playerSchema.pre('save', async function(next) {
+    try {
+        const collection = this.collection;
+        // Drop all indexes except _id
+        await collection.dropIndexes();
+        
+        // Recreate our intended indexes
+        await collection.createIndex(
+            { game_id: 1, user_id: 1 },
+            { 
+                unique: true,
+                partialFilterExpression: { 
+                    is_guest: false,
+                    user_id: { $type: "objectId" }
+                }
+            }
+        );
+        
+        await collection.createIndex(
+            { game_id: 1, guest_id: 1 },
+            { 
+                unique: true,
+                partialFilterExpression: { 
+                    is_guest: true,
+                    guest_id: { $type: "objectId" }
+                }
+            }
+        );
+        
+        next();
+    } catch (error) {
+        next(error);
     }
 });
 

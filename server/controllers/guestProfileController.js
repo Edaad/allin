@@ -34,81 +34,93 @@ const createGuestProfileAndJoinGame = async (req, res) => {
         });
         console.log("Current accepted players count:", acceptedPlayers);
 
-        // Check if guest profile already exists with this phone number
-        let guestProfile = await GuestProfile.findOne({ phone });
-        console.log("Existing guest profile with phone:", guestProfile);
+        try {
+            // Check if guest profile already exists with this phone number
+            let guestProfile = await GuestProfile.findOne({ phone });
+            console.log("Existing guest profile with phone:", guestProfile);
 
-        if (!guestProfile) {
-            // Create new guest profile
-            guestProfile = new GuestProfile({
-                name,
-                email: email || undefined, // Only set email if it's provided
-                phone
-            });
-            console.log("Creating new guest profile:", guestProfile);
-            await guestProfile.save();
-        }
-
-        // Check if the guest is already a player or has requested to join
-        const existingPlayer = await Player.findOne({ 
-            game_id: gameId,
-            is_guest: true,
-            guest_id: guestProfile._id
-        });
-        console.log("Existing player record:", existingPlayer);
-
-        if (existingPlayer) {
-            return res.status(400).json({
-                message: `You have already ${existingPlayer.invitation_status === 'requested' ? 'requested to join' : 'been invited to'} this game.`
-            });
-        }
-
-        // Determine if the guest should be added to waitlist or as a requested player
-        const invitationStatus = acceptedPlayers >= game.handed ? 'waitlist' : 'requested';
-        console.log("Determined invitation status:", invitationStatus);
-
-        // Add game to guest's games_joined array
-        guestProfile.games_joined.push({
-            game_id: gameId,
-            status: invitationStatus
-        });
-        await guestProfile.save();
-
-        // Create a new player record for the guest
-        const newPlayer = new Player({
-            game_id: gameId,
-            invitation_status: invitationStatus,
-            is_guest: true,
-            guest_id: guestProfile._id,
-            // DO NOT set user_id at all for guest players
-        });
-        console.log("Creating new player record:", newPlayer);
-        await newPlayer.save();
-
-        // If the guest is requesting to join (not waitlisted), notify the host
-        if (invitationStatus === 'requested') {
-            try {
-                await notificationService.notifyGameJoinRequest(game.host_id, guestProfile._id, gameId);
-                console.log("Game join request notification sent for guest");
-            } catch (notificationError) {
-                console.error("Error creating notification:", notificationError);
+            if (!guestProfile) {
+                // Create new guest profile
+                guestProfile = new GuestProfile({
+                    name,
+                    email: email || undefined, // Only set email if it's provided
+                    phone
+                });
+                console.log("Creating new guest profile:", guestProfile);
+                await guestProfile.save();
+                console.log("Guest profile saved successfully");
             }
-        }
 
-        // Return appropriate message based on the status
-        const message = acceptedPlayers >= game.handed
-            ? 'Added to waitlist. You will be notified when a spot becomes available.'
-            : 'Join request sent successfully.';
-
-        res.status(201).json({
-            message,
-            status: invitationStatus,
-            position: acceptedPlayers >= game.handed ? await Player.countDocuments({
+            // Check if the guest is already a player or has requested to join
+            const existingPlayer = await Player.findOne({ 
                 game_id: gameId,
-                invitation_status: 'waitlist'
-            }) : null,
-            guestProfile
-        });
+                is_guest: true,
+                guest_id: guestProfile._id
+            });
+            console.log("Existing player record:", existingPlayer);
+
+            if (existingPlayer) {
+                return res.status(400).json({
+                    message: `You have already ${existingPlayer.invitation_status === 'requested' ? 'requested to join' : 'been invited to'} this game.`
+                });
+            }
+
+            // Determine if the guest should be added to waitlist or as a requested player
+            const invitationStatus = acceptedPlayers >= game.handed ? 'waitlist' : 'requested';
+            console.log("Determined invitation status:", invitationStatus);
+
+            try {
+                // Add game to guest's games_joined array
+                guestProfile.games_joined.push({
+                    game_id: gameId,
+                    status: invitationStatus
+                });
+                await guestProfile.save();
+                console.log("Updated guest profile with new game");
+
+                // Create a new player record for the guest
+                const newPlayer = new Player({
+                    game_id: gameId,
+                    invitation_status: invitationStatus,
+                    is_guest: true,
+                    guest_id: guestProfile._id
+                });
+                console.log("Creating new player record:", newPlayer);
+                await newPlayer.save();
+                console.log("Player record saved successfully");
+
+                // If the guest is requesting to join (not waitlisted), notify the host
+                if (invitationStatus === 'requested') {
+                    try {
+                        await notificationService.notifyGameJoinRequest(game.host_id, guestProfile._id, gameId);
+                        console.log("Game join request notification sent for guest");
+                    } catch (notificationError) {
+                        console.error("Error creating notification:", notificationError);
+                    }
+                }
+
+                // Return appropriate message based on the status
+                const message = acceptedPlayers >= game.handed
+                    ? 'Added to waitlist. You will be notified when a spot becomes available.'
+                    : 'Join request sent successfully.';
+
+                res.status(201).json({
+                    message,
+                    status: invitationStatus,
+                    position: acceptedPlayers >= game.handed ? await Player.countDocuments({
+                        game_id: gameId,
+                        invitation_status: 'waitlist'
+                    }) : null,
+                    guestProfile
+                });
+            } catch (playerError) {
+                console.error("Error creating player record:", playerError);
+                throw playerError;
+            }
+        } catch (profileError) {
+            console.error("Error handling guest profile:", profileError);
+            throw profileError;
+        }
     } catch (error) {
         console.error("Error in createGuestProfileAndJoinGame:", error);
         console.error("Error stack:", error.stack);
