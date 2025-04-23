@@ -290,7 +290,7 @@ export function Overview() {
 											key={userGames.upcoming._id}
 											game={userGames.upcoming}
 											user={user}
-											showBorder={false}
+											showBorder={true}
 										/>
 									) : (
 										<div className="no-games-message">

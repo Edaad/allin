@@ -21,6 +21,7 @@
     height: fit-content;
     overflow: hidden;
     border: #e0e0e0 solid 2px;
+    background-color: white;
 }
 
 .upcoming-games {
@@ -43,7 +44,6 @@
 }
 
 .no-games-message {
-    background-color: #f9f9f9;
     padding: 20px;
     border-radius: 8px;
     text-align: center;
