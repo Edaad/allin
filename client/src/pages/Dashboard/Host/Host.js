@@ -4,7 +4,7 @@ import axios from "axios";
 import "../Dashboard.css";
 import "./Host.css";
 import Sidebar from "../../../components/Sidebar/Sidebar";
-import Table from "../../../components/Table/Table";
+import GameCard from "../../../components/GameCard/GameCard";
 import Input from "../../../components/Input/Input";
 import Select from "../../../components/Select/Select";
 
@@ -18,6 +18,11 @@ export function Host() {
 	const [games, setGames] = useState([]);
 	const [userGroups, setUserGroups] = useState([]);
 	const [selectedGroup, setSelectedGroup] = useState(null);
+	const [statsData, setStatsData] = useState({
+		totalGames: 0,
+		upcomingGames: 0,
+		completedGames: 0
+	});
 
 	const initialGameFormState = {
 		name: "",
@@ -54,6 +59,31 @@ export function Host() {
 		}
 	}, [user]);
 
+	// Calculate stats for the dashboard
+	const calculateStats = useCallback(async () => {
+		if (!user) return;
+		try {
+			// Get all games for stats calculation
+			const upcomingResponse = await axios.get(
+				`${process.env.REACT_APP_API_URL}/games`,
+				{ params: { host_id: user._id, status: "upcoming" } }
+			);
+			
+			const completedResponse = await axios.get(
+				`${process.env.REACT_APP_API_URL}/games`,
+				{ params: { host_id: user._id, status: "completed" } }
+			);
+			
+			setStatsData({
+				totalGames: upcomingResponse.data.length + completedResponse.data.length,
+				upcomingGames: upcomingResponse.data.length,
+				completedGames: completedResponse.data.length
+			});
+		} catch (error) {
+			console.error("Error calculating stats:", error);
+		}
+	}, [user]);
+
 	// Wrap fetchGames with useCallback so its dependencies are explicit
 	const fetchGames = useCallback(async () => {
 		if (!user) return;
@@ -66,10 +96,13 @@ export function Host() {
 				}
 			);
 			setGames(res.data);
+
+			// Update stats after fetching games
+			calculateStats();
 		} catch (error) {
 			console.error("Error fetching games:", error);
 		}
-	}, [tab, user]);
+	}, [tab, user, calculateStats]);
 
 	// Call fetchGames whenever the user or tab changes
 	useEffect(() => {
@@ -146,19 +179,9 @@ export function Host() {
 		setSelectedGroup(null);
 	};
 
-	const handleRowClick = (gameId) => {
-		navigate(`/dashboard/${user._id}/host/game/${gameId}`);
+	const handleGameClick = (gameId) => {
+		navigate(`/dashboard/${user._id}/games/game/${gameId}`);
 	};
-
-	const headers = [
-		"Name",
-		"Host",
-		"Location",
-		"Date",
-		"Time",
-		"Blinds",
-		"Group",
-	];
 
 	if (!user) {
 		return <div>Loading...</div>;
@@ -183,18 +206,56 @@ export function Host() {
 			/>
 			<div className="logged-content-container">
 				<div className="dashboard-heading">
-					<h1>Host</h1>
+					<h1>Host Dashboard</h1>
+					{!hosting && (
+						<button
+							className="host-button"
+							onClick={() => setHosting(true)}
+						>
+							+ Host a new game
+						</button>
+					)}
 				</div>
-				{!hosting && (
-					<button
-						className="host-button"
-						onClick={() => setHosting(true)}
-					>
-						+ Host a new game
-					</button>
-				)}
+
+				{/* Stats Cards */}
+				<div className="stats-container">
+					<div className="stat-card">
+						<div className="stat-icon">
+							<i className="fas fa-dice"></i>
+						</div>
+						<div className="stat-info">
+							<h3>{statsData.totalGames}</h3>
+							<p>Total Games</p>
+						</div>
+					</div>
+					
+					<div className="stat-card">
+						<div className="stat-icon upcoming">
+							<i className="fas fa-calendar-alt"></i>
+						</div>
+						<div className="stat-info">
+							<h3>{statsData.upcomingGames}</h3>
+							<p>Upcoming Games</p>
+						</div>
+					</div>
+					
+					<div className="stat-card">
+						<div className="stat-icon completed">
+							<i className="fas fa-check-circle"></i>
+						</div>
+						<div className="stat-info">
+							<h3>{statsData.completedGames}</h3>
+							<p>Completed Games</p>
+						</div>
+					</div>
+				</div>
+
+				{/* Game Form */}
 				{hosting && (
 					<div className="host-form-container">
+						<div className="form-header">
+							<h2>Create a New Game</h2>
+						</div>
 						<form className="host-form" onSubmit={handleSubmit}>
 							<Input
 								name="name"
@@ -258,8 +319,7 @@ export function Host() {
 								</label>
 								<div className="radio-group">
 									<label
-										className={`radio-label ${selectedGroup ? "disabled" : ""
-											}`}
+										className={`radio-label ${selectedGroup ? "disabled" : ""}`}
 									>
 										<input
 											type="radio"
@@ -278,8 +338,7 @@ export function Host() {
 										Private (invite only)
 									</label>
 									<label
-										className={`radio-label ${selectedGroup ? "disabled" : ""
-											}`}
+										className={`radio-label ${selectedGroup ? "disabled" : ""}`}
 									>
 										<input
 											type="radio"
@@ -325,11 +384,11 @@ export function Host() {
 								/>
 							</div>
 							<div className="buttons">
-								<button className="submit" type="submit">
-									Save
+								<button className="submit-button" type="submit">
+									Save Game
 								</button>
 								<button
-									className="cancel"
+									className="cancel-button"
 									type="button"
 									onClick={handleCancel}
 								>
@@ -339,58 +398,57 @@ export function Host() {
 						</form>
 					</div>
 				)}
-				<div className="tab-container">
-					<button
-						className={`tab${tab === "Upcoming games" ? "-selected" : ""
-							}`}
-						onClick={() => {
-							setTab("Upcoming games");
-						}}
-					>
-						Upcoming games
-					</button>
-					<button
-						className={`tab${tab === "Past games" ? "-selected" : ""
-							}`}
-						onClick={() => {
-							setTab("Past games");
-						}}
-					>
-						Past games
-					</button>
-				</div>
-				{games.length > 0 ? (
-					<Table
-						headers={headers}
-						data={games.map((game) => {
-							const gameDate = new Date(game.game_date);
-							const formattedDate = gameDate.toLocaleDateString();
-							const formattedTime = gameDate.toLocaleTimeString(
-								[],
-								{ hour: "2-digit", minute: "2-digit" }
-							);
 
-							return {
-								name: game.game_name,
-								host: game.host_id.username,
-								location: game.location,
-								date: formattedDate,
-								time: formattedTime,
-								blinds: game.blinds,
-								group: game.group_id
-									? game.group_id.group_name
-									: "Personal",
-								_id: game._id,
-							};
-						})}
-						onRowClick={handleRowClick}
-						shadow
-					/>
-				) : (
-					<div className="no-games-message">
-						You currently have no {tab.toLowerCase()}
+				{/* Games Tab Container */}
+				<div className="games-section">
+					<div className="tab-container">
+						<button
+							className={`tab${tab === "Upcoming games" ? "-selected" : ""}`}
+							onClick={() => {
+								setTab("Upcoming games");
+							}}
+						>
+							Upcoming Games
+						</button>
+						<button
+							className={`tab${tab === "Past games" ? "-selected" : ""}`}
+							onClick={() => {
+								setTab("Past games");
+							}}
+						>
+							Past Games
+						</button>
 					</div>
-				)}
+
+					<div className="games-list">
+						{games.length > 0 ? (
+							games.map((game) => (
+								<div key={game._id} className="game-card-container" onClick={() => handleGameClick(game._id)}>
+									<GameCard
+										game={game}
+										user={user}
+										showBorder={false}
+									/>
+								</div>
+							))
+						) : (
+							<div className="no-games-message">
+								<div className="empty-state">
+									<i className="fas fa-calendar-xmark"></i>
+									<p>You currently have no {tab.toLowerCase()}</p>
+									{tab === "Upcoming games" && !hosting && (
+										<button
+											className="host-button small"
+											onClick={() => setHosting(true)}
+										>
+											+ Host a new game
+										</button>
+									)}
+								</div>
+							</div>
+						)}
+					</div>
+				</div>
 			</div>
 		</div>
 	);
