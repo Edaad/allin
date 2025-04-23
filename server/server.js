@@ -19,10 +19,10 @@ const guestProfileRoutes = require('./routes/guestProfileRoutes');
 
 // Middleware
 app.use(cors({
-	origin: ['https://all-in-4ce60.web.app', 'http://localhost:3000'],
-	credentials: true,
-	methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-	allowedHeaders: ['Content-Type', 'Authorization']
+    origin: ['https://all-in-4ce60.web.app', 'http://localhost:3000'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 
@@ -42,11 +42,11 @@ app.use((req, res, next) => {
 
 // Database connection
 mongoose.connect(process.env.MONGO_URI, {
-	// Additional options if needed
+    // Additional options if needed
 }).then(() => {
-	console.log('Connected to MongoDB');
+    console.log('Connected to MongoDB');
 }).catch((err) => {
-	console.error('Error connecting to MongoDB:', err);
+    console.error('Error connecting to MongoDB:', err);
 });
 
 // Use routes
@@ -80,5 +80,5 @@ app.use((err, req, res, next) => {
 
 // Start the server
 app.listen(3001, () => {
-	console.log('Server is running on port 3001');
+    console.log('Server is running on port 3001');
 });

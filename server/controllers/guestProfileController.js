@@ -1,6 +1,9 @@
-// controllers/guestProfileController.js
-const guestProfileService = require('../services/guestProfileService');
+const GuestProfile = require("../models/guestProfile");
+const Game = require("../models/game");
+const Player = require("../models/player");
+const notificationService = require("../services/notificationService");
 
+// Create a new guest profile and join a game
 const createGuestProfileAndJoinGame = async (req, res) => {
     try {
         console.log("Received request body:", req.body);
@@ -125,28 +128,94 @@ const createGuestProfileAndJoinGame = async (req, res) => {
     }
 };
 
+// Accept a guest's join request
 const acceptGuestJoinRequest = async (req, res) => {
-  try {
-    const { gameId, guestId } = req.body;
-    const hostId = req.user._id;
-    await guestProfileService.acceptGuestJoinRequest({ gameId, guestId, hostId });
-    res.json({ message: "Guest join request accepted" });
-  } catch (error) {
-    console.error("Error in acceptGuestJoinRequest:", error);
-    res.status(400).json({ message: error.message });
-  }
+    try {
+        const { gameId, guestId } = req.body;
+        const hostId = req.user._id; // Assuming you have user info in req.user
+
+        const game = await Game.findById(gameId);
+        if (!game) {
+            return res.status(404).json({ message: "Game not found" });
+        }
+
+        if (game.host_id.toString() !== hostId) {
+            return res.status(403).json({ message: "Not authorized to accept join requests" });
+        }
+
+        // Update guest's game status
+        const guestProfile = await GuestProfile.findById(guestId);
+        if (!guestProfile) {
+            return res.status(404).json({ message: "Guest profile not found" });
+        }
+
+        const gameJoin = guestProfile.games_joined.find(g => g.game_id.toString() === gameId);
+        if (gameJoin) {
+            gameJoin.status = "accepted";
+            await guestProfile.save();
+        }
+
+        // Update game's player status
+        const player = await Player.findOne({ 
+            game_id: gameId,
+            is_guest: true,
+            guest_id: guestId
+        });
+        
+        if (player) {
+            player.invitation_status = "accepted";
+            await player.save();
+        }
+
+        // Notify guest about acceptance
+        await notificationService.notifyGameJoinAccepted(guestId, hostId, gameId);
+
+        res.json({ message: "Guest join request accepted" });
+    } catch (error) {
+        console.error("Error in acceptGuestJoinRequest:", error);
+        res.status(500).json({ message: "Error accepting guest join request" });
+    }
 };
 
+// Reject a guest's join request
 const rejectGuestJoinRequest = async (req, res) => {
-  try {
-    const { gameId, guestId, reason } = req.body;
-    const hostId = req.user._id;
-    await guestProfileService.rejectGuestJoinRequest({ gameId, guestId, hostId, reason });
-    res.json({ message: "Guest join request rejected" });
-  } catch (error) {
-    console.error("Error in rejectGuestJoinRequest:", error);
-    res.status(400).json({ message: error.message });
-  }
+    try {
+        const { gameId, guestId, reason } = req.body;
+        const hostId = req.user._id;
+
+        const game = await Game.findById(gameId);
+        if (!game) {
+            return res.status(404).json({ message: "Game not found" });
+        }
+
+        if (game.host_id.toString() !== hostId) {
+            return res.status(403).json({ message: "Not authorized to reject join requests" });
+        }
+
+        // Update guest's game status
+        const guestProfile = await GuestProfile.findById(guestId);
+        if (!guestProfile) {
+            return res.status(404).json({ message: "Guest profile not found" });
+        }
+
+        const gameJoin = guestProfile.games_joined.find(g => g.game_id.toString() === gameId);
+        if (gameJoin) {
+            gameJoin.status = "rejected";
+            await guestProfile.save();
+        }
+
+        // Remove guest from game's players array
+        await Player.deleteOne({ 
+            game_id: gameId,
+            is_guest: true,
+            guest_id: guestId
+        });
+
+        res.json({ message: "Guest join request rejected" });
+    } catch (error) {
+        console.error("Error in rejectGuestJoinRequest:", error);
+        res.status(500).json({ message: "Error rejecting guest join request" });
+    }
 };
 
 module.exports = {
