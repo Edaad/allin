@@ -9,7 +9,7 @@ import Sidebar from '../../../components/Sidebar/Sidebar';
 import Profile from '../../../components/Profile/Profile';
 import GroupCard from '../../../components/GroupCard/GroupCard';
 import CreateGroupModal from '../../../components/CreateGroupModal/CreateGroupModal';
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 
 export function Community() {
     const [user, setUser] = useState(null);
@@ -171,29 +171,29 @@ export function Community() {
     // Animation variants for Framer Motion
     const containerVariants = {
         hidden: { opacity: 0 },
-        visible: { 
+        visible: {
             opacity: 1,
-            transition: { 
+            transition: {
                 staggerChildren: 0.1
-            } 
+            }
         }
     };
 
     const itemVariants = {
         hidden: { y: 20, opacity: 0 },
-        visible: { 
-            y: 0, 
+        visible: {
+            y: 0,
             opacity: 1,
             transition: { type: "spring", stiffness: 300, damping: 24 }
         }
     };
 
     const tabVariants = {
-        inactive: { 
+        inactive: {
             color: "#9f9f9f",
             fontWeight: "normal",
         },
-        active: { 
+        active: {
             color: "#343434",
             fontWeight: "500",
             scale: 1.05,
@@ -206,28 +206,28 @@ export function Community() {
             {user && <Sidebar menus={menus} setPage={setPage} page={page} username={user.username} />}
             <div className='logged-content-container'>
                 {user ? (
-                <>
-                    <div className='dashboard-heading'>
-                        <motion.h1 
-                            initial={{ opacity: 0, y: -20 }} 
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5 }}
-                        >
-                            Community
-                        </motion.h1>
-                    </div>
-                    {/* Removed Friend Suggestions as requested */}
-                </>
-            ) : <h1>Loading...</h1>}
-                
-                <motion.div 
+                    <>
+                        <div className='dashboard-heading'>
+                            <h1
+                                initial={{ opacity: 0, y: -20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5 }}
+                            >
+                                Community
+                            </h1>
+                        </div>
+                        {/* Removed Friend Suggestions as requested */}
+                    </>
+                ) : <h1>Loading...</h1>}
+
+                <div
                     className="tab-container"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2, duration: 0.5 }}
                 >
                     {['All', 'Friends', 'PendingRequests', 'Invitations', 'Groups'].map((tab) => (
-                        <motion.button
+                        <button
                             key={tab}
                             onClick={() => handleTabChange(tab)}
                             className={`tab-button ${activeTab === tab ? 'active' : ''}`}
@@ -238,44 +238,44 @@ export function Community() {
                             whileTap={{ scale: 0.95 }}
                         >
                             {tab === 'PendingRequests' ? 'Pending Requests' : tab}
-                        </motion.button>
+                        </button>
                     ))}
-                </motion.div>
+                </div>
 
                 {activeTab === 'Groups' ? (
-                    <motion.div 
+                    <div
                         className="groups-container"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.5 }}
                     >
                         <div className="groups-actions">
-                            <motion.button
+                            <button
                                 className="create-group-button"
                                 onClick={() => setCreateGroupModalOpen(true)}
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                             >
                                 + Create New Group
-                            </motion.button>
+                            </button>
 
                             <div className="groups-filter">
                                 {['all', 'my-groups', 'joined'].map((filter) => (
-                                    <motion.button
+                                    <button
                                         key={filter}
                                         className={`filter-button ${filterGroupsBy === filter ? 'active' : ''}`}
                                         onClick={() => setFilterGroupsBy(filter)}
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
                                     >
-                                        {filter === 'all' ? 'All Groups' : 
-                                         filter === 'my-groups' ? 'My Groups' : 'Joined Groups'}
-                                    </motion.button>
+                                        {filter === 'all' ? 'All Groups' :
+                                            filter === 'my-groups' ? 'My Groups' : 'Joined Groups'}
+                                    </button>
                                 ))}
                             </div>
                         </div>
 
-                        <motion.div 
+                        <div
                             className="groups-list"
                             variants={containerVariants}
                             initial="hidden"
@@ -283,7 +283,7 @@ export function Community() {
                         >
                             {groups.length > 0 ? (
                                 groups.map((group, index) => (
-                                    <motion.div 
+                                    <div
                                         key={group._id}
                                         variants={itemVariants}
                                         custom={index}
@@ -293,19 +293,19 @@ export function Community() {
                                             group={group}
                                             user={user}
                                         />
-                                    </motion.div>
+                                    </div>
                                 ))
                             ) : (
-                                <motion.p 
+                                <p
                                     className="no-groups-message"
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     transition={{ delay: 0.3 }}
                                 >
                                     {getEmptyMessage()}
-                                </motion.p>
+                                </p>
                             )}
-                        </motion.div>
+                        </div>
 
                         <CreateGroupModal
                             open={createGroupModalOpen}
@@ -313,10 +313,10 @@ export function Community() {
                             user={user}
                             onGroupCreated={handleGroupCreated}
                         />
-                    </motion.div>
+                    </div>
                 ) : (
                     <>
-                        <motion.div 
+                        <div
                             className="search-container"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -334,7 +334,7 @@ export function Community() {
                                     onBlur={() => setSearchFocused(false)}
                                 />
                                 {query && (
-                                    <button 
+                                    <button
                                         className="clear-search"
                                         onClick={() => setQuery('')}
                                     >
@@ -342,9 +342,9 @@ export function Community() {
                                     </button>
                                 )}
                             </div>
-                        </motion.div>
+                        </div>
 
-                        <motion.div 
+                        <div
                             className={`profiles-container ${animateProfiles ? 'animate' : ''}`}
                             variants={containerVariants}
                             initial="hidden"
@@ -353,24 +353,24 @@ export function Community() {
                             {data.filter(item => item._id !== user?._id).length > 0 ? (
                                 <div className="profiles-grid">
                                     {data.filter(item => item._id !== user?._id).map((item, index) => (
-                                        <motion.div 
+                                        <div
                                             key={item._id}
                                             className="profile-card-wrapper"
                                             variants={itemVariants}
                                             custom={index}
                                         >
-                                            <Profile 
-                                                data={item} 
-                                                currentUser={user} 
-                                                refreshData={fetchData} 
+                                            <Profile
+                                                data={item}
+                                                currentUser={user}
+                                                refreshData={fetchData}
                                                 updateUserState={updateUserState}
-                                                className="profile-card-enhanced" 
+                                                className="profile-card-enhanced"
                                             />
-                                        </motion.div>
+                                        </div>
                                     ))}
                                 </div>
                             ) : (
-                                <motion.div 
+                                <div
                                     className="empty-state"
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
@@ -385,20 +385,20 @@ export function Community() {
                                     ) : activeTab !== 'All' && !query ? (
                                         <>
                                             <div className="empty-icon">
-                                                {activeTab === 'Friends' ? '👥' : 
-                                                 activeTab === 'PendingRequests' ? '⏳' : 
-                                                 activeTab === 'Invitations' ? '✉️' : '🙋'}
+                                                {activeTab === 'Friends' ? '👥' :
+                                                    activeTab === 'PendingRequests' ? '⏳' :
+                                                        activeTab === 'Invitations' ? '✉️' : '🙋'}
                                             </div>
                                             <h3>{getEmptyMessage()}</h3>
-                                                {activeTab === 'Friends' && (
-                                                    <motion.button
+                                            {activeTab === 'Friends' && (
+                                                <button
                                                     className="create-group-button"
                                                     onClick={() => setCreateGroupModalOpen(true)}
                                                     whileHover={{ scale: 1.02 }}
                                                     whileTap={{ scale: 0.98 }}
                                                 >
                                                     + Add Friends
-                                                </motion.button>
+                                                </button>
                                             )}
                                         </>
                                     ) : !hasSearched ? (
@@ -408,9 +408,9 @@ export function Community() {
                                             <p>Search for people to add as friends</p>
                                         </>
                                     ) : null}
-                                </motion.div>
+                                </div>
                             )}
-                        </motion.div>
+                        </div>
                     </>
                 )}
             </div>
