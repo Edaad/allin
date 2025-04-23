@@ -391,7 +391,7 @@
     font-size: 1rem;
 }
 
-.detail-icon-wrapper i{
+.detail-icon-wrapper i {
     display: flex;
     justify-content: center;
     width: 20px;
@@ -404,9 +404,11 @@
     0% {
         box-shadow: 0 0 0 0 rgba(53, 115, 55, 0.7);
     }
+
     70% {
         box-shadow: 0 0 0 10px rgba(53, 115, 55, 0);
     }
+
     100% {
         box-shadow: 0 0 0 0 rgba(53, 115, 55, 0);
     }
@@ -437,25 +439,26 @@
     .card-content-wrapper {
         flex-direction: column;
     }
-    
+
     .game-details {
         margin-bottom: 20px;
     }
-    
+
     .game-actions {
         justify-content: center;
         margin-top: 15px;
         margin-left: 0;
     }
-    
+
     .chip-button {
         margin-left: 0;
     }
 
     .poker-game-card:hover {
-        transform: translateY(-4px); /* Smaller movement on mobile */
+        transform: translateY(-4px);
+        /* Smaller movement on mobile devices */
     }
-    
+
     .game-status-indicator {
         top: 10px;
         right: 10px;
