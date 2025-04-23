@@ -15,18 +15,20 @@ export function Overview() {
 	const navigate = useNavigate();
 	const [page, setPage] = useState(menuItem || "overview");
 	const [friends, setFriends] = useState([]);
-	const [userGames, setUserGames] = useState({ upcoming: null, past: null });
+	const [userGames, setUserGames] = useState({ upcoming: null });
 	const [isLoading, setIsLoading] = useState(true);
-	const [invitations, setInvitations] = useState([]); // Add this state for invitations
+	const [invitations, setInvitations] = useState([]);
 	const [friendRequests, setFriendRequests] = useState([]);
 	const [suggestedFriends, setSuggestedFriends] = useState([]);
+	const [notifications, setNotifications] = useState([]);
+	const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
 
 	useEffect(() => {
 		const loggedUser = JSON.parse(localStorage.getItem("user"));
 		if (loggedUser && loggedUser._id === userId) {
 			setUser(loggedUser);
 		} else {
-			navigate("/signin"); // Redirect to sign-in if no user data found or user ID does not match
+			navigate("/signin");
 		}
 	}, [userId, navigate]);
 
@@ -43,17 +45,17 @@ export function Overview() {
 				);
 				const fetchedUser = res.data;
 				setUser(fetchedUser);
-				setFriends(fetchedUser.friends); // Set friends from fetched data
+				setFriends(fetchedUser.friends);
 			} catch (error) {
 				console.error("Error fetching user data:", error);
-				navigate("/signin"); // Redirect if fetching user data fails
+				navigate("/signin");
 			}
 		};
 
 		fetchUserData();
 	}, [userId, navigate]);
 
-	// Modify the useEffect for fetching user's games
+	// Fetch upcoming games
 	useEffect(() => {
 		const fetchUserGames = async () => {
 			if (!user) return;
@@ -73,21 +75,8 @@ export function Overview() {
 				const soonestGame =
 					upcomingGames.length > 0 ? upcomingGames[0] : null;
 
-				// Fetch completed games (status = completed)
-				const completedRes = await axios.get(
-					`${process.env.REACT_APP_API_URL}/games/player/${userId}`,
-					{ params: { status: "completed" } }
-				);
-
-				// Sort by date (most recent first) and get the latest game
-				const pastGames = completedRes.data.sort(
-					(a, b) => new Date(b.game_date) - new Date(a.game_date)
-				);
-				const recentGame = pastGames.length > 0 ? pastGames[0] : null;
-
 				setUserGames({
 					upcoming: soonestGame,
-					past: recentGame,
 				});
 			} catch (error) {
 				console.error("Error fetching user games:", error);
@@ -99,7 +88,7 @@ export function Overview() {
 		fetchUserGames();
 	}, [userId, user]);
 
-	// Add this useEffect to fetch invitations
+	// Fetch game invitations
 	useEffect(() => {
 		const fetchInvitations = async () => {
 			if (!user) return;
@@ -117,7 +106,7 @@ export function Overview() {
 		fetchInvitations();
 	}, [userId, user]);
 
-	// Add this useEffect to fetch friend requests and suggestions
+	// Fetch friend requests and suggestions
 	useEffect(() => {
 		const fetchFriendData = async () => {
 			if (!user) return;
@@ -154,7 +143,30 @@ export function Overview() {
 		fetchFriendData();
 	}, [user]);
 
-	// Add these handler functions to handle accepting and declining invitations
+	// Fetch notifications
+	useEffect(() => {
+		const fetchNotifications = async () => {
+			if (!user) return;
+
+			setIsLoadingNotifications(true);
+			try {
+				const response = await axios.get(
+					`${process.env.REACT_APP_API_URL}/notifications/${userId}`,
+					{ params: { limit: 3 } } // Fetch only 3 recent notifications
+				);
+				// The correct path to the notifications array from the response
+				setNotifications(response.data.notifications || []);
+			} catch (error) {
+				console.error("Error fetching notifications:", error);
+			} finally {
+				setIsLoadingNotifications(false);
+			}
+		};
+
+		fetchNotifications();
+	}, [userId, user]);
+
+	// Handle invitations
 	const handleAcceptInvitation = async (gameId, e) => {
 		if (e) e.stopPropagation();
 
@@ -173,11 +185,25 @@ export function Overview() {
 			);
 			setInvitations(newInvitations);
 
-			// Refetch games data
-			const fetchUserGames = async () => {
-				// Your existing fetchUserGames implementation
+			// Refetch the updated upcoming games
+			const fetchUpcomingGames = async () => {
+				const upcomingRes = await axios.get(
+					`${process.env.REACT_APP_API_URL}/games/player/${userId}`,
+					{ params: { status: "upcoming" } }
+				);
+
+				const upcomingGames = upcomingRes.data.sort(
+					(a, b) => new Date(a.game_date) - new Date(b.game_date)
+				);
+				const soonestGame =
+					upcomingGames.length > 0 ? upcomingGames[0] : null;
+
+				setUserGames({
+					upcoming: soonestGame,
+				});
 			};
-			fetchUserGames();
+
+			fetchUpcomingGames();
 		} catch (error) {
 			console.error("Error accepting invitation:", error);
 		}
@@ -205,14 +231,27 @@ export function Overview() {
 		}
 	};
 
+	// Format notification timestamps
+	const formatNotificationTime = (timestamp) => {
+		const date = new Date(timestamp);
+		const now = new Date();
+		const diffMs = now - date;
+		const diffMins = Math.floor(diffMs / (1000 * 60));
+		const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+		const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+		if (diffMins < 60) {
+			return `${diffMins} ${diffMins === 1 ? "minute" : "minutes"} ago`;
+		} else if (diffHrs < 24) {
+			return `${diffHrs} ${diffHrs === 1 ? "hour" : "hours"} ago`;
+		} else {
+			return `${diffDays} ${diffDays === 1 ? "day" : "days"} ago`;
+		}
+	};
+
 	return (
 		<div className="dashboard">
-			{user && (
-				<Sidebar
-					page={page}
-					username={user.username}
-				/>
-			)}
+			{user && <Sidebar page={page} username={user.username} />}
 			<div className="logged-content-container">
 				{user ? (
 					<div className="dashboard-heading">
@@ -223,88 +262,61 @@ export function Overview() {
 				) : (
 					<h1>Loading...</h1>
 				)}
-				<div className="overview-container">
-					<div className="summary-item">
-						<div className="games-overview">
-							<div className="game-section">
-								<div className="summary-header">
-									<h2>Upcoming Game</h2>
-									<div className="summary-header-divider"></div>
-									<div
-										className="summary-link"
-										onClick={() =>
-											navigate(
-												`/dashboard/${userId}/games?tab=Upcoming Games`
-											)
-										}
-									>
-										View All
-									</div>
+
+				<div className="overview-layout">
+					{/* Left Section (70%) - Games */}
+					<div className="overview-main">
+						<div className="summary-item">
+							<div className="summary-header">
+								<h2>Next Game</h2>
+								<div
+									className="summary-link"
+									onClick={() =>
+										navigate(
+											`/dashboard/${userId}/games?tab=Upcoming Games`
+										)
+									}
+								>
+									View All
 								</div>
-								{isLoading ? (
-									<div className="loading-games">
-										Loading...
-									</div>
-								) : (
-									<>
-										{userGames.upcoming ? (
-											<GameCard
-												key={userGames.upcoming._id}
-												game={userGames.upcoming}
-												user={user}
-												showBorder={false}
-											/>
-										) : (
-											<p className="no-games-message">
-												No upcoming games
-											</p>
-										)}
-									</>
-								)}
 							</div>
-							<div className="game-section">
-								<div className="summary-header">
-									<h2>Past Game</h2>
-									<div className="summary-header-divider"></div>
-									<div
-										className="summary-link"
-										onClick={() =>
-											navigate(
-												`/dashboard/${userId}/games?tab=Past Games`
-											)
-										}
-									>
-										View All
-									</div>
-								</div>
-								{isLoading ? (
-									<div className="loading-games">
-										Loading...
-									</div>
-								) : (
-									<>
-										{userGames.past ? (
-											<GameCard
-												key={userGames.past._id}
-												game={userGames.past}
-												user={user}
-												showBorder={false}
-											/>
-										) : (
-											<p className="no-games-message">
-												No past games
+
+							{isLoading ? (
+								<div className="loading-games">Loading...</div>
+							) : (
+								<>
+									{userGames.upcoming ? (
+										<GameCard
+											key={userGames.upcoming._id}
+											game={userGames.upcoming}
+											user={user}
+											showBorder={true}
+										/>
+									) : (
+										<div className="no-games-message">
+											<p>
+												You have no upcoming games
+												scheduled
 											</p>
-										)}
-									</>
-								)}
-							</div>
+											<button
+												className="browse-games-button"
+												onClick={() =>
+													navigate(
+														`/dashboard/${userId}/games`
+													)
+												}
+											>
+												Browse Games
+											</button>
+										</div>
+									)}
+								</>
+							)}
 						</div>
-					</div>
-					<div className="summary-secondary">
+
 						<div className="summary-item">
 							<div className="summary-header">
 								<h2>Game Invitations</h2>
-								<div className="summary-header-divider"></div>
 								<div
 									className="summary-link"
 									onClick={() =>
@@ -316,6 +328,7 @@ export function Overview() {
 									View All
 								</div>
 							</div>
+
 							<div className="invitations-container">
 								{invitations.length > 0 ? (
 									<div className="game-cards-container">
@@ -325,13 +338,12 @@ export function Overview() {
 													inv != null &&
 													inv.host_id != null
 											)
-											.slice(0, 2) // Show only the first 2 invitations
 											.map((invitation) => (
 												<GameCard
 													key={invitation._id}
 													game={invitation}
 													user={user}
-													showBorder={false}
+													showBorder={true}
 													customActions={
 														<div className="card-actions">
 															<button
@@ -362,14 +374,77 @@ export function Overview() {
 											))}
 									</div>
 								) : (
-									<p>You have no game invitations.</p>
+									<div className="no-games-message">
+										<p>You have no game invitations</p>
+									</div>
 								)}
 							</div>
 						</div>
+					</div>
+
+					{/* Right Section (30%) - Notifications & Friends */}
+					<div className="overview-sidebar">
+						{/* Notifications */}
+						<div className="summary-item">
+							<div className="summary-header">
+								<h2>Notifications</h2>
+								<div
+									className="summary-link"
+									onClick={() =>
+										navigate(
+											`/dashboard/${userId}/notifications`
+										)
+									}
+								>
+									View All
+								</div>
+							</div>
+
+							<div className="notifications-container">
+								{isLoadingNotifications ? (
+									<div className="loading-notifications">
+										Loading...
+									</div>
+								) : (
+									<>
+										{notifications.length > 0 ? (
+											<div className="overview-notifications-list">
+												{notifications.map(
+													(notification) => (
+														<div
+															key={
+																notification._id
+															}
+															className="notification-item"
+														>
+															<div className="notification-content">
+																<p
+																	dangerouslySetInnerHTML={{
+																		__html: notification.message,
+																	}}
+																></p>
+																<span className="notification-time">
+																	{formatNotificationTime(
+																		notification.created_at
+																	)}
+																</span>
+															</div>
+														</div>
+													)
+												)}
+											</div>
+										) : (
+											<p>You have no notifications</p>
+										)}
+									</>
+								)}
+							</div>
+						</div>
+
+						{/* Friends Section */}
 						<div className="summary-item">
 							<div className="summary-header">
 								<h2>Friends</h2>
-								<div className="summary-header-divider"></div>
 								<div
 									className="summary-link"
 									onClick={() =>
@@ -407,7 +482,7 @@ export function Overview() {
 															setFriendRequests(
 																res.data
 																	.friendRequests ||
-																[]
+																	[]
 															);
 														};
 													fetchUserData();
@@ -430,50 +505,80 @@ export function Overview() {
 												size="compact"
 												currentUser={user}
 												refreshData={() => {
-													const fetchUserData = async () => {
-														const res = await axios.get(
-															`${process.env.REACT_APP_API_URL}/users/${userId}`
-														);
-														setUser(res.data);
-														setFriends(res.data.friends);
+													const fetchUserData =
+														async () => {
+															const res =
+																await axios.get(
+																	`${process.env.REACT_APP_API_URL}/users/${userId}`
+																);
+															setUser(res.data);
+															setFriends(
+																res.data.friends
+															);
 
-														// Refetch suggestions
-														const suggestionsResponse = axios.get(
-															`${process.env.REACT_APP_API_URL}/users`,
-															{
-																params: {
-																	userId: user._id,
-																	tab: "All",
-																},
-															}
-														);
-														suggestionsResponse.then(
-															(response) => {
-																const newSuggestions = response.data
-																	.filter(
-																		(u) =>
-																			u.mutualFriendsCount >= 1 &&
-																			!res.data.friends.some(
-																				(f) => f._id === u._id
-																			) &&
-																			!res.data.friendRequests.some(
-																				(f) => f._id === u._id
-																			) &&
-																			!res.data.pendingRequests.some(
-																				(f) => f._id === u._id
+															// Refetch suggestions
+															const suggestionsResponse =
+																axios.get(
+																	`${process.env.REACT_APP_API_URL}/users`,
+																	{
+																		params: {
+																			userId: user._id,
+																			tab: "All",
+																		},
+																	}
+																);
+
+															suggestionsResponse.then(
+																(response) => {
+																	const newSuggestions =
+																		response.data
+																			.filter(
+																				(
+																					u
+																				) =>
+																					u.mutualFriendsCount >=
+																						1 &&
+																					!res.data.friends.some(
+																						(
+																							f
+																						) =>
+																							f._id ===
+																							u._id
+																					) &&
+																					!res.data.friendRequests.some(
+																						(
+																							f
+																						) =>
+																							f._id ===
+																							u._id
+																					) &&
+																					!res.data.pendingRequests.some(
+																						(
+																							f
+																						) =>
+																							f._id ===
+																							u._id
+																					)
 																			)
-																	)
-																	.sort(
-																		(a, b) =>
-																			b.mutualFriendsCount -
-																			a.mutualFriendsCount
-																	)
-																	.slice(0, 5);
+																			.sort(
+																				(
+																					a,
+																					b
+																				) =>
+																					b.mutualFriendsCount -
+																					a.mutualFriendsCount
+																			)
+																			.slice(
+																				0,
+																				3
+																			);
 
-																setSuggestedFriends(newSuggestions);
-															}
-														);
-													};
+																	setSuggestedFriends(
+																		newSuggestions
+																	);
+																}
+															);
+														};
 													fetchUserData();
 												}}
 											/>

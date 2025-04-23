@@ -17,10 +17,11 @@
     gap: 10px;
     padding: 30px;
     box-shadow: 0 0px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+    border-radius: 12px;
     height: fit-content;
     overflow: hidden;
-    border: #e0e0e0 solid 1px;
+    border: #e0e0e0 solid 2px;
+    background-color: white;
 }
 
 .upcoming-games {
@@ -42,18 +43,32 @@
     gap: 10px;
 }
 
-.game-section h3 {
-    margin: 0;
-    font-size: 1.2rem;
-    color: #555;
-}
-
 .no-games-message {
-    background-color: #f9f9f9;
     padding: 20px;
     border-radius: 8px;
     text-align: center;
     color: #777;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px;
+}
+
+.browse-games-button {
+    margin-top: 15px;
+    padding: 8px 16px;
+    background-color: rgb(53, 115, 55);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.browse-games-button:hover {
+    background-color: rgb(43, 95, 45);
 }
 
 .summary-secondary .summary-item:nth-child(1) {
@@ -67,12 +82,20 @@
 .summary-header {
     display: flex;
     flex-direction: row;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.summary-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 500;
 }
 
 .summary-link {
     font-size: 1.2rem;
     font-weight: 400;
-    margin: 0;
+    margin-left: auto;
     color: rgb(167, 167, 167);
     transition: color 0.5s ease, font-weight 0.5s ease;
 }
@@ -83,10 +106,8 @@
     font-weight: 500;
 }
 
-
 .summary-header-divider {
     background-color: rgb(167, 167, 167);
-    /* transition: color 0.5s ease; */
     border-radius: 50%;
     width: 3px;
     height: 3px;
@@ -176,6 +197,123 @@
     min-height: 80px;
 }
 
+/* Base styles */
+.overview-layout {
+    display: flex;
+    gap: 30px;
+    width: 100%;
+    margin-top: 30px;
+}
+
+.overview-main {
+    flex: 0 0 60%;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.overview-sidebar {
+    flex: 0 0 40%;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/* Game cards */
+.game-cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Loading states */
+.loading-games,
+.loading-notifications {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100px;
+    color: #777;
+}
+
+/* Notifications */
+.overview-notifications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.notification-item {
+    padding: 12px;
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+}
+
+.notification-item:hover {
+    background-color: #eaeaea;
+}
+
+.notification-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.notification-content p {
+    margin: 0;
+    color: #333;
+}
+
+.notification-time {
+    margin-top: 5px;
+    font-size: 0.8rem;
+    color: #777;
+}
+
+/* Friends section */
+.friend-section {
+    margin-bottom: 20px;
+}
+
+.friend-section + .friend-section {
+    padding-top: 10px;
+}
+
+/* Card actions */
+.card-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.accept-button, 
+.decline-button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.accept-button {
+    background-color: rgb(53, 115, 55);
+    color: white;
+}
+
+.accept-button:hover {
+    background-color: rgb(43, 95, 45);
+}
+
+.decline-button {
+    background-color: #f2f2f2;
+    color: #777;
+}
+
+.decline-button:hover {
+    background-color: #e0e0e0;
+}
+
 /* Responsive styles */
 @media (max-width: 1100px) {
     .summary-secondary {
@@ -190,10 +328,32 @@
     .summary-secondary .summary-item:nth-child(2) {
         width: unset;
     }
+
+    .overview-layout {
+        flex-direction: column;
+    }
+    
+    .overview-main,
+    .overview-sidebar {
+        flex: 0 0 100%;
+        width: 100%;
+    }
+    
+    .overview-sidebar {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 30px;
+    }
 }
 
 @media (max-width: 850px) {
     .games-overview {
         flex-direction: column;
+    }
+}
+
+@media (max-width: 768px) {
+    .overview-sidebar {
+        grid-template-columns: 1fr;
     }
 }

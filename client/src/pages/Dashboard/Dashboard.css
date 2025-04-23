@@ -6,6 +6,9 @@
 .dashboard h1 {
     font-size: 2rem;
     color: #343434;
+    margin-bottom: 0;
+    margin-top: 40px; 
+    color: rgb(53, 115, 55);
 }
 
 .dashboard h2 {
@@ -22,7 +25,7 @@
 }
 
 .dashboard-heading h1 {
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .logged-content-container {
