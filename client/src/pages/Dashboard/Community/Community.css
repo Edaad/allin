@@ -59,7 +59,7 @@
     border-radius: 3px;
 }
 
-/* Search input styles */
+/* Search input styles extracted from the search component */
 .search-container {
     margin-bottom: 25px;
 }
