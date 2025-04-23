@@ -146,3 +146,19 @@
         width: unset;
     }
 }
+
+.games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+    padding: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+    .games-grid {
+        padding: 16px;
+        gap: 16px;
+    }
+}

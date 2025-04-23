@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./Accordion.css";
-import arrowIcon from "../../assets/icons/iconamoon_arrow-down-2-light.svg";
 
 export const Accordion = ({ children }) => {
     return <div className="accordion">{children}</div>;
@@ -25,11 +24,7 @@ export const AccordionItem = ({ title, children }) => {
         <div className="accordion-item">
             <div className="accordion-header" onClick={toggleOpen}>
                 {title}
-                <img
-                    src={arrowIcon}
-                    alt="Toggle"
-                    className={`accordion-icon ${isOpen ? "open" : ""}`}
-                />
+                <span className={`accordion-icon ${isOpen ? "open" : ""}`}>▼</span>
             </div>
             <div
                 className="accordion-content"

@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import { ReactComponent as SpadeIcon } from "../../assets/icons/spade.svg";
 import "./Logo.css";
 
 export default function Logo() {
@@ -12,13 +11,11 @@ export default function Logo() {
 				navigate("/");
 			}}
 		>
-			<p>all</p>
-			<p className="in-text" style={{ color: "rgb(53, 115, 55)" }}>
-				in
-				<div className="logo-spade">
-					<SpadeIcon className="spade-icon" />
-				</div>
-			</p>
+			<span className="logo-text">all</span>
+			<div className="in-text" style={{ color: "rgb(53, 115, 55)" }}>
+				<span>in</span>
+				<span className="spade-icon">♠</span>
+			</div>
 		</div>
 	);
 }

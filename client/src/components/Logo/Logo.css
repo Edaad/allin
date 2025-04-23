@@ -7,9 +7,10 @@
     margin-left: 5px;
     font-weight: 600;
     cursor: pointer;
+    gap: 4px;
 }
 
-.logo-name p {
+.logo-text {
     margin: 0;
     padding: 0;
     line-height: 1;
@@ -17,16 +18,20 @@
 
 .in-text {
     display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .logo-spade {
-
-    margin-left: 1px;
+    display: flex;
+    align-items: center;
+    margin-left: 4px;
 }
 
 .spade-icon {
-    width: 12px;
-    height: 12px;
-    fill: rgb(53, 115, 55);
-    
+    font-size: 24px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    margin-top: -2px;
 }

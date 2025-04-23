@@ -1,8 +1,16 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import "./GameCard.css";
-import { ReactComponent as SpadeIcon } from "../../assets/icons/spade.svg";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+	faGamepad, 
+	faUsers, 
+	faDollarSign, 
+	faLocationDot, 
+	faClock, 
+	faCalendarDay 
+} from '@fortawesome/free-solid-svg-icons';
 
 function GameCard({ game, user, customActions, showBorder = true }) {
 	const navigate = useNavigate();
@@ -14,21 +22,23 @@ function GameCard({ game, user, customActions, showBorder = true }) {
 
 	// Format date to be more readable - without day of the week
 	const formatDate = (dateString) => {
-		const options = {
-			month: "long",
-			day: "numeric",
-			year: "numeric",
-		};
 		const date = new Date(dateString);
-		return date.toLocaleDateString("en-US", options);
+		return date.toLocaleDateString('en-US', {
+			month: 'short',
+			day: 'numeric',
+			year: 'numeric'
+		});
 	};
 
 	// Format time to 12 hour format
-	const formatTime = (dateString) => {
-		return new Date(dateString).toLocaleTimeString("en-US", {
-			hour: "numeric",
-			minute: "2-digit",
-			hour12: true,
+	const formatTime = (timeString) => {
+		const [hours, minutes] = timeString.split(':');
+		const date = new Date();
+		date.setHours(parseInt(hours));
+		date.setMinutes(parseInt(minutes));
+		return date.toLocaleTimeString('en-US', {
+			hour: 'numeric',
+			minute: '2-digit'
 		});
 	};
 
@@ -160,72 +170,41 @@ function GameCard({ game, user, customActions, showBorder = true }) {
 
 	// New renderer for the card with chip on the right side
 	return (
-		<div
-			className={`poker-game-card ${!showBorder ? "no-border" : ""}`}
-			onClick={handleCardClick}
-		>
+		<div className="game-card">
 			<div className="game-card-header">
-				<div className="game-title-section">
-					<SpadeIcon className="game-icon" />
-					<h3 className="game-title">{game.game_name}</h3>
-					<span className="host-label">
-						<span className="gameCard-circle-divider">|</span>
-						{game.host_id?.username}
-					</span>
-				</div>
-				{game.game_status && (
-					<div
-						className={`game-status-indicator ${game.game_status}`}
-					>
-						{game.game_status.charAt(0).toUpperCase() +
-							game.game_status.slice(1)}
-					</div>
-				)}
+				<h3>{game.game_name || 'Poker Game'}</h3>
+				<span className="host">Hosted by {game.host_id?.username}</span>
 			</div>
-
-			<hr className="divider" />
-
-			<div className="card-content-wrapper">
-				<div className="gameCard-details">
-					<div className="detail-row">
-						<span className="card-detail-label">Date:</span>
-						<span className="detail-value">
-							{formatDate(game.game_date)}
-						</span>
-					</div>
-
-					<div className="detail-row">
-						<span className="card-detail-label">Time:</span>
-						<span className="detail-value">
-							{formatTime(game.game_date)}
-						</span>
-					</div>
-
-					<div className="detail-row">
-						<span className="card-detail-label">Location:</span>
-						<span className="detail-value">{game.location}</span>
-					</div>
-
-					<div className="detail-row">
-						<span className="card-detail-label">Blinds:</span>
-						<span className="detail-value">{game.blinds}</span>
-					</div>
-
-					<div className="detail-row">
-						<span className="card-detail-label">Open Seats:</span>
-						<span className="detail-value">
-							{game.acceptedPlayersCount
-								? `${game.handed - game.acceptedPlayersCount}/${
-										game.handed
-								  }`
-								: `${game.handed - 1}/${game.handed}`}
-						</span>
-					</div>
+			<div className="game-card-details">
+				<div className="detail-item">
+					<FontAwesomeIcon icon={faGamepad} className="detail-icon" />
+					<span>{game.game_type}</span>
 				</div>
-
-				<div className="game-actions">
-					{customActions || renderActionOrStatus()}
+				<div className="detail-item">
+					<FontAwesomeIcon icon={faUsers} className="detail-icon" />
+					<span>{game.handed}</span>
 				</div>
+				<div className="detail-item">
+					<FontAwesomeIcon icon={faDollarSign} className="detail-icon" />
+					<span>{game.blinds}</span>
+				</div>
+				<div className="detail-item">
+					<FontAwesomeIcon icon={faLocationDot} className="detail-icon" />
+					<span>{game.location}</span>
+				</div>
+				<div className="detail-item">
+					<FontAwesomeIcon icon={faCalendarDay} className="detail-icon" />
+					<span>{formatDate(game.game_date)}</span>
+				</div>
+				<div className="detail-item">
+					<FontAwesomeIcon icon={faClock} className="detail-icon" />
+					<span>{formatTime(game.game_date)}</span>
+				</div>
+			</div>
+			<div className="game-card-footer">
+				<Link to={`/guest-join/${game._id}`} className="join-button">
+					Join Game
+				</Link>
 			</div>
 		</div>
 	);

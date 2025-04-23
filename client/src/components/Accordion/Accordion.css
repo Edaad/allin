@@ -23,9 +23,12 @@
 }
 
 .accordion-icon {
-    width: 24px;
-    height: 24px;
+    font-size: 12px;
+    color: #666;
     transition: transform 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .accordion-icon.open {

@@ -1,465 +1,104 @@
-.poker-game-card {
-    box-sizing: border-box;
-    background-color: white;
+.game-card {
+    background: white;
     border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    padding: 35px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     display: flex;
     flex-direction: column;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    width: 100%;
-    cursor: pointer;
-    position: relative;
-    border: 2px solid #e0e0e0;
+    gap: 16px;
 }
 
-.poker-game-card.no-border {
-    border: none;
-}
-
-.poker-game-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+.game-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .game-card-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    gap: 12px;
 }
 
-.game-title {
-    font-size: 20px;
-    margin: 0;
-    color: #357337;
-    font-weight: 500;
-}
-
-.game-host {
-    font-size: 16px;
-    color: #333;
-    font-weight: 500;
+.game-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
     margin: 0;
 }
 
-.game-privacy {
+.host-info {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.game-details {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.detail-item {
     display: flex;
     align-items: center;
-    flex-direction: column;
     gap: 8px;
-    align-items: flex-end;
 }
 
-.privacy-tag {
-    font-size: 14px;
-    padding: 4px 8px;
-    border-radius: 4px;
+.detail-label {
     font-weight: 500;
+    color: #4b5563;
+    font-size: 0.875rem;
 }
 
-.privacy-tag.public {
-    background-color: #3498db;
-    color: white;
+.detail-value {
+    color: #1f2937;
+    font-size: 0.875rem;
 }
 
-.privacy-tag.private {
-    background-color: #95a5a6;
-    color: white;
-}
-
-.game-card-content {
-    margin-bottom: 16px;
-}
-
-.game-info-row {
+.icon-wrapper {
     display: flex;
-    margin-bottom: 6px;
-    font-size: 16px;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background-color: rgba(22, 163, 74, 0.1);
+    border-radius: 6px;
 }
 
-.game-info-row span {
-    margin-right: 2rem;
-}
-
-.game-info-row p {
-    margin: 0;
-    font-weight: 500;
-}
-
-.info-label {
-    font-weight: 500;
-    color: #333;
-}
-
-.info-value {
-    color: #333;
+.icon-wrapper i {
+    color: #16a34a;
+    font-size: 0.875rem;
 }
 
 .game-card-footer {
     display: flex;
     justify-content: flex-end;
+    margin-top: auto;
+    padding-top: 8px;
 }
 
-.status-badge {
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.status-badge.accepted {
-    background-color: #2ecc71;
+.join-button {
+    background-color: #16a34a;
     color: white;
-}
-
-.status-badge.pending {
-    background-color: #f39c12;
-    color: white;
-}
-
-.status-badge.requested {
-    background-color: #f39c12;
-    color: white;
-}
-
-.status-badge.rejected {
-    background-color: #e74c3c;
-    color: white;
-}
-
-.status-badge.waitlist {
-    background-color: #9b59b6;
-    color: white;
-}
-
-.status-badge.completed {
-    background-color: #34495e;
-    color: white;
-}
-
-.status-badge.host {
-    background-color: #3498db;
-    color: white;
-}
-
-.status-badge-container {
-    display: flex;
-    align-items: center;
-    position: relative;
-}
-
-.info-icon {
-    margin-right: 8px;
-    color: #e74c3c;
-    cursor: help;
-    font-size: 16px;
-}
-
-.rejection-reason-tooltip {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    background-color: #333;
-    color: white;
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-size: 16px;
-    width: 200px;
-    z-index: 10;
-    margin-top: 6px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-}
-
-.rejection-reason-tooltip::after {
-    content: '';
-    position: absolute;
-    bottom: 100%;
-    right: 10px;
-    border-width: 6px;
-    border-style: solid;
-    border-color: transparent transparent #333 transparent;
-}
-
-.request-button {
-    background: none;
-    font-size: 14px;
-    font-weight: 600;
-    color: rgb(53, 115, 55);
-    border: solid 2px;
-    border-color: rgb(53, 115, 55);
-    border-radius: 4px;
-    padding: 5px 10px;
-    transition: background-color 0.3s ease, color 0.3s ease;
-    cursor: pointer;
-}
-
-.request-button:hover:not(:disabled) {
-    background-color: rgb(53, 115, 55);
-    color: white;
-}
-
-.request-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.card-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-}
-
-.card-actions .accept-button,
-.card-actions .decline-button {
-    font-size: 14px;
-    padding: 6px 12px;
-    border-radius: 4px;
-}
-
-.card-actions .accept-button:hover {
-    background-color: rgb(53, 115, 55);
-    color: white;
-}
-
-.card-actions .decline-button:hover {
-    background-color: rgb(255, 0, 0);
-    color: white;
-}
-
-
-
-.game-title-section {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.game-icon {
-    width: 20px;
-    height: 20px;
-    background-image: url('../../assets/icons/spade.svg');
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
-    color: rgb(53, 115, 55);
-}
-
-.host-section {
-    font-weight: 500;
-    color: #333;
-}
-
-.divider {
-    width: 100%;
     border: none;
-    border-top: 1px solid #ddd;
-    margin: 15px 0;
-}
-
-.card-content-wrapper {
-    display: flex;
-    justify-content: space-between;
-}
-
-.gameCard-details {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    flex: 1;
-}
-
-.detail-row {
-    display: flex;
-}
-
-.card-detail-label {
-    width: 100px;
-    color: rgb(53, 115, 55);
+    border-radius: 6px;
+    padding: 8px 16px;
     font-weight: 500;
-}
-
-.detail-value {
-    color: #333;
-}
-
-.game-actions {
-    display: flex;
-    align-items: flex-end;
-    margin-left: 20px;
-}
-
-.chip-button {
-    background: none;
-    border: none;
     cursor: pointer;
-    padding: 0;
-    transition: transform 0.3s ease;
-    position: relative;
-    z-index: 2;
+    transition: background-color 0.2s ease;
 }
 
-.chip-button:hover {
-    transform: scale(1.1) rotate(10deg);
+.join-button:hover {
+    background-color: #15803d;
 }
 
-.chip-button:active {
-    transform: scale(0.95);
-}
-
-.chip-icon {
-    width: 100px;
-    height: 100px;
-    background-image: url('../../assets/images/chip.png');
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    border-radius: 100%;
-    transition: box-shadow 0.3s ease;
-}
-
-.chip-button:hover .chip-icon {
-    box-shadow: 0 0 15px rgba(53, 115, 55, 0.5);
-    animation: pulse 1.5s infinite;
-}
-
-.request-text {
-    color: #333;
-    font-size: 16px;
-    font-weight: bold;
-    text-align: center;
-    line-height: 1.2;
-    z-index: 2;
-    position: absolute;
-    width: 80%;
-}
-
-.view-more-button {
-    background: none;
-    border: none;
-    color: #333;
-    font-weight: 500;
-    font-size: 14px;
-    cursor: pointer;
-    padding: 8px 12px;
-    transition: transform 0.2s ease, color 0.2s ease;
-    border-radius: 4px;
-    z-index: 2;
-}
-
-.view-more-button:hover {
-    text-decoration: underline;
-    transform: translateY(-2px);
-    color: rgb(53, 115, 55);
-}
-
-/* Game status indicator */
-.game-status-indicator {
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: capitalize;
-}
-
-.game-status-indicator.upcoming {
-    background-color: rgba(33, 150, 243, 0.1);
-    color: #2196f3;
-    border: 1px solid rgba(33, 150, 243, 0.3);
-}
-
-.game-status-indicator.completed {
-    background-color: rgba(76, 175, 80, 0.1);
-    color: #4caf50;
-    border: 1px solid rgba(76, 175, 80, 0.3);
-}
-
-.game-status-indicator.cancelled {
-    background-color: rgba(244, 67, 54, 0.1);
-    color: #f44336;
-    border: 1px solid rgba(244, 67, 54, 0.3);
-}
-
-.gameCard-circle-divider {
-    margin-right: 10px;
-    color: #333;
-    width: 5px;
-    font-size: 1rem;
-}
-
-.detail-icon-wrapper i{
-    display: flex;
-    justify-content: center;
-    width: 20px;
-    color: rgb(53, 115, 55);
-    margin-right: 8px;
-}
-
-/* Pulse animation for chip button */
-@keyframes pulse {
-    0% {
-        box-shadow: 0 0 0 0 rgba(53, 115, 55, 0.7);
-    }
-    70% {
-        box-shadow: 0 0 0 10px rgba(53, 115, 55, 0);
-    }
-    100% {
-        box-shadow: 0 0 0 0 rgba(53, 115, 55, 0);
-    }
-}
-
-/* Media queries for responsive design */
 @media (max-width: 768px) {
-    .game-info-row {
-        flex-direction: column;
-        margin-bottom: 10px;
+    .game-card {
+        padding: 16px;
     }
 
-    .info-label {
-        width: 100%;
-        margin-bottom: 2px;
-    }
-
-    .game-card-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-
-    .host-section {
-        margin-left: 30px;
-    }
-
-    .card-content-wrapper {
-        flex-direction: column;
-    }
-    
     .game-details {
-        margin-bottom: 20px;
-    }
-    
-    .game-actions {
-        justify-content: center;
-        margin-top: 15px;
-        margin-left: 0;
-    }
-    
-    .chip-button {
-        margin-left: 0;
-    }
-
-    .poker-game-card:hover {
-        transform: translateY(-4px); /* Smaller movement on mobile */
-    }
-    
-    .game-status-indicator {
-        top: 10px;
-        right: 10px;
-        font-size: 10px;
-        padding: 3px 8px;
+        grid-template-columns: 1fr;
     }
 }
