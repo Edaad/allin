@@ -1,245 +1,52 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+// src/pages/Dashboard/GroupDashboard/GroupDashboard.js
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../Dashboard.css";
-import "./GameDashboard.css";
-import { minidenticon } from "minidenticons";
+// import "./GroupDashboard.css";
 import Sidebar from "../../../components/Sidebar/Sidebar";
+import Input from "../../../components/Input/Input";
+import Profile from "../../../components/Profile/Profile";
 import RejectModal from "../../../components/RejectModal/RejectModal";
-import ReviewButton from "../../../components/ReviewButton/ReviewButton";
-import ReviewModal from "../../../components/ReviewModal/ReviewModal";
-import GameDetails from "../../../components/GameDetails/GameDetails";
-import HostInfo from "../../../components/HostInfo/HostInfo";
-import PlayersList from "../../../components/PlayersList/PlayersList";
+import Filter from "../../../components/Filter/Filter";
+import GameCard from "../../../components/GameCard/GameCard";
 
 export function GameDashboard() {
     const [user, setUser] = useState(null);
-    const { userId, gameId } = useParams();
+    const { userId, groupId } = useParams();
     const navigate = useNavigate();
-    const [game, setGame] = useState(null);
+    const [group, setGroup] = useState(null);
     const [editing, setEditing] = useState(false);
-    const [isHost, setIsHost] = useState(false);
-    const [isPlayer, setIsPlayer] = useState(false);
-    const [gameForm, setGameForm] = useState({
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [isMember, setIsMember] = useState(false);
+    const [groupForm, setGroupForm] = useState({
         name: "",
-        blinds: "",
-        location: "",
-        date: "",
-        time: "",
-        handed: "",
-        notes: "",
+        description: "",
+        profile_image: "",
+        banner_image: "",
+        isPublic: false,
     });
-    const [players, setPlayers] = useState([]);
+    const [members, setMembers] = useState([]);
     const [joinRequests, setJoinRequests] = useState([]);
     const [isLoadingRequests, setIsLoadingRequests] = useState(false);
-    const [showReviewModal, setShowReviewModal] = useState(false);
-    const [showShareModal, setShowShareModal] = useState(false);
-    const [selectedGroup, setSelectedGroup] = useState(null);
-    const [userGroups, setUserGroups] = useState([]);
-
-    // State for host information
-    const [hostProfile, setHostProfile] = useState(null);
-    const [hostStats, setHostStats] = useState({
-        memberSince: "",
-        gamesHosted: 0,
-        gamesPlayed: 0,
-    });
-    const [hostReviews, setHostReviews] = useState([]);
-    const [averageRating, setAverageRating] = useState(0);
-
-    // Function to fetch host information
-    const fetchHostInfo = useCallback(async () => {
-        if (!game || !game.host_id) return;
-
-        try {
-            // Get the host ID - handle both populated and unpopulated host_id
-            const hostId =
-                typeof game.host_id === "object"
-                    ? game.host_id._id
-                    : game.host_id;
-
-            // Fetch host profile
-            const profileResponse = await axios.get(
-                `${process.env.REACT_APP_API_URL}/users/${hostId}`
-            );
-            setHostProfile(profileResponse.data);
-
-            // Set member since date
-            if (profileResponse.data.created_at || profileResponse.data.createdAt) {
-                const memberDate = new Date(profileResponse.data.created_at || profileResponse.data.createdAt);
-                setHostStats((prev) => ({
-                    ...prev,
-                    memberSince: memberDate.toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                    }),
-                }));
-            }
-
-            // Fetch host stats
-            const hostedGamesResponse = await axios.get(
-                `${process.env.REACT_APP_API_URL}/games`,
-                {
-                    params: { host_id: hostId },
-                }
-            );
-
-            if (hostedGamesResponse.data) {
-                setHostStats((prev) => ({
-                    ...prev,
-                    gamesHosted: hostedGamesResponse.data.length,
-                }));
-            }
-
-            // Fetch host's played games
-            const playedGamesResponse = await axios.get(
-                `${process.env.REACT_APP_API_URL}/games/player/${hostId}`
-            );
-            if (playedGamesResponse.data) {
-                setHostStats((prev) => ({
-                    ...prev,
-                    gamesPlayed: playedGamesResponse.data.length,
-                }));
-            }
-
-            // Fetch host reviews
-            const reviewsResponse = await axios.get(
-                `${process.env.REACT_APP_API_URL}/reviews/host/${hostId}`
-            );
-            if (reviewsResponse.data) {
-                setHostReviews(reviewsResponse.data.reviews || []);
-                setAverageRating(reviewsResponse.data.averageRating || 0);
-            }
-        } catch (error) {
-            console.error("Error fetching host information:", error);
-        }
-    }, [game]);
-
-    // Generate minidenticon for host
-    const generateAvatar = useMemo(() => {
-        return (username) => {
-            if (!username) return "";
-            return (
-                "data:image/svg+xml;utf8," +
-                encodeURIComponent(minidenticon(username))
-            );
-        };
-    }, []);
-
-    // Format date for reviews
-    const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-        });
-    };
-
-    const fetchJoinRequests = useCallback(async () => {
-        if (!game || !user || !isHost) return;
-
-        try {
-            setIsLoadingRequests(true);
-            const res = await axios.get(
-                `${process.env.REACT_APP_API_URL}/players/requests/${gameId}`,
-                { params: { hostId: user._id } }
-            );
-            setJoinRequests(res.data);
-            setIsLoadingRequests(false);
-        } catch (error) {
-            console.error("Error fetching join requests:", error);
-            setIsLoadingRequests(false);
-        }
-    }, [gameId, game, user, isHost]);
-
-    useEffect(() => {
-        if (isHost && game && game.is_public) {
-            fetchJoinRequests();
-        }
-    }, [isHost, game, fetchJoinRequests]);
-
-    const handleAcceptRequest = async (requesterId) => {
-        try {
-            const request = joinRequests.find(req => 
-                (req.is_guest ? req.guest_id._id : req.user_id._id) === requesterId
-            );
-            
-            await axios.post(`${process.env.REACT_APP_API_URL}/players/accept-invitation`, {
-                userId: user._id,  // Host ID
-                gameId: gameId,
-                requesterId: requesterId,
-                isGuest: request?.is_guest || false
-            });
-            fetchJoinRequests();
-            fetchPlayers();
-        } catch (error) {
-            console.error("Error accepting join request:", error);
-        }
-    };
-
-    const handleRejectRequest = async () => {
-        if (!rejectReason.trim()) {
-            alert("Please enter a reason for rejection.");
-            return;
-        }
-
-        try {
-            const request = joinRequests.find(req => 
-                (req.is_guest ? req.guest_id._id : req.user_id._id) === selectedRequesterId
-            );
-
-            await axios.post(`${process.env.REACT_APP_API_URL}/players/reject-request`, {
-                hostId: user._id,
-                gameId: gameId,
-                requesterId: selectedRequesterId,
-                reason: rejectReason,
-                isGuest: request?.is_guest || false
-            });
-            setRejectModalOpen(false);
-            setRejectReason("");
-            fetchJoinRequests();
-        } catch (error) {
-            console.error("Error rejecting join request:", error);
-        }
-    };
-
     const [isRejectModalOpen, setRejectModalOpen] = useState(false);
     const [rejectReason, setRejectReason] = useState("");
     const [selectedRequesterId, setSelectedRequesterId] = useState(null);
+    const [friends, setFriends] = useState([]);
+    const [selectedFriends, setSelectedFriends] = useState([]);
+    const [requestSent, setRequestSent] = useState(false);
+    const [groupGames, setGroupGames] = useState([]);
+    const [isLoadingGames, setIsLoadingGames] = useState(false);
+    const [filterParams, setFilterParams] = useState({});
+    const [waitlistPositions, setWaitlistPositions] = useState({});
+    const [gamesFilter, setGamesFilter] = useState({
+        blinds: [],
+        handed: { min: 2, max: 10 },
+        dateRange: { startDate: "", endDate: "" },
+        timeRange: { startTime: "", endTime: "" },
+    });
 
-    const openRejectModal = (requesterId) => {
-        setSelectedRequesterId(requesterId);
-        setRejectModalOpen(true);
-    };
-
-    const handleRequestToJoin = async () => {
-        try {
-            const response = await axios.post(
-                `${process.env.REACT_APP_API_URL}/players/request-to-join`,
-                {
-                    userId: user._id,
-                    gameId: gameId,
-                }
-            );
-
-            if (response.data.status === "waitlist") {
-                alert(
-                    `The game is currently full. You've been added to the waitlist at position #${response.data.position || ""
-                    }.`
-                );
-            } else {
-                alert(
-                    "Your request to join the game has been sent successfully."
-                );
-            }
-
-            fetchGame();
-        } catch (error) {
-            console.error("Error requesting to join game:", error);
-            alert("Failed to request to join game. Please try again.");
-        }
-    };
-
+    // Fetch user data
     useEffect(() => {
         const fetchUser = async () => {
             try {
@@ -249,6 +56,7 @@ export function GameDashboard() {
                         `${process.env.REACT_APP_API_URL}/users/${userId}`
                     );
                     setUser(res.data);
+                    setFriends(res.data.friends || []);
                 } else {
                     navigate("/signin");
                 }
@@ -260,272 +68,458 @@ export function GameDashboard() {
         fetchUser();
     }, [userId, navigate]);
 
-    const fetchPlayers = useCallback(async () => {
+    // Fetch group members
+    const fetchMembers = useCallback(async () => {
         try {
             const res = await axios.get(
-                `${process.env.REACT_APP_API_URL}/players/game/${gameId}`
+                `${process.env.REACT_APP_API_URL}/group-members/${groupId}`
             );
+            setMembers(res.data);
 
-            console.log("Fetched players:", res.data);
-
-            // Make sure the data is properly populated
-            const populatedData = res.data.map((player) => {
-                // If user_id is just an ID (not populated), provide a default object
-                if (player.user_id && typeof player.user_id !== "object") {
-                    return {
-                        ...player,
-                        user_id: { _id: player.user_id },
-                    };
-                }
-                return player;
-            });
-
-            setPlayers(populatedData);
+            // Check if the current user is a member
+            const isUserMember = res.data.some(
+                (member) =>
+                    member.user_id._id === userId &&
+                    member.membership_status === "accepted"
+            );
+            setIsMember(isUserMember);
         } catch (error) {
-            console.error("Error fetching players:", error);
+            console.error("Error fetching group members:", error);
         }
-    }, [gameId]);
+    }, [groupId, userId]);
 
-    const fetchGame = useCallback(async () => {
+    // Fetch join requests
+    const fetchJoinRequests = useCallback(async () => {
+        if (!group || !user || !isAdmin) return;
+
+        try {
+            setIsLoadingRequests(true);
+            const res = await axios.get(
+                `${process.env.REACT_APP_API_URL}/group-members/requests/${groupId}`,
+                { params: { adminId: user._id } }
+            );
+            setJoinRequests(res.data);
+            setIsLoadingRequests(false);
+        } catch (error) {
+            console.error("Error fetching join requests:", error);
+            setIsLoadingRequests(false);
+        }
+    }, [groupId, group, user, isAdmin]);
+
+    // Fetch group data
+    const fetchGroup = useCallback(async () => {
         try {
             const res = await axios.get(
-                `${process.env.REACT_APP_API_URL}/games/${gameId}`
+                `${process.env.REACT_APP_API_URL}/groups/${groupId}`
             );
-            const gameData = res.data;
-            setGame(gameData);
+            const groupData = res.data;
+            setGroup(groupData);
 
-            const gameDate = new Date(gameData.game_date);
-
-            const year = gameDate.getFullYear();
-            const month = String(gameDate.getMonth() + 1).padStart(2, "0");
-            const day = String(gameDate.getDate()).padStart(2, "0");
-
-            const hours = String(gameDate.getHours()).padStart(2, "0");
-            const minutes = String(gameDate.getMinutes()).padStart(2, "0");
-
-            const formattedDate = `${year}-${month}-${day}`;
-            const formattedTime = `${hours}:${minutes}`;
-
-            setGameForm({
-                name: gameData.game_name,
-                blinds: gameData.blinds,
-                location: gameData.location,
-                date: formattedDate,
-                time: formattedTime,
-                notes: gameData.notes || "",
-                handed: gameData.handed,
-                isPublic: gameData.is_public,
+            setGroupForm({
+                name: groupData.group_name,
+                description: groupData.description || "",
+                profile_image: groupData.profile_image || "",
+                banner_image: groupData.banner_image || "",
+                isPublic: groupData.is_public,
             });
-            fetchPlayers();
+
+            // Fetch members after fetching the group details
+            fetchMembers();
         } catch (error) {
-            console.error("Error fetching game:", error);
+            console.error("Error fetching group:", error);
         }
-    }, [gameId, fetchPlayers]);
+    }, [groupId, fetchMembers]);
 
-    const fetchUserGroups = useCallback(async () => {
-        if (!user) return;
-        try {
-            const response = await axios.get(
-                `${process.env.REACT_APP_API_URL}/groups/user/${user._id}`,
-                { params: { membership_status: "accepted" } }
-            );
-            setUserGroups(response.data);
-        } catch (error) {
-            console.error("Error fetching user groups:", error);
-        }
-    }, [user]);
-
+    // Initial data load
     useEffect(() => {
-        if (user) {
-            fetchUserGroups();
-        }
-    }, [user, fetchUserGroups]);
+        fetchGroup();
+    }, [fetchGroup]);
 
+    // Check if user is admin
     useEffect(() => {
-        fetchGame();
-    }, [fetchGame]);
-
-    useEffect(() => {
-        if (user && game && game.host_id) {
-            setIsHost(user._id === game.host_id._id);
-
-            const isUserPlayer = players.some(
-                (player) => player.user_id && player.user_id._id === user._id &&
-                    ['accepted', 'requested', 'waitlist'].includes(player.invitation_status)
-            );
-            setIsPlayer(isUserPlayer);
+        if (user && group) {
+            setIsAdmin(user._id === group.admin_id._id);
         }
-    }, [user, game, players]);
+    }, [user, group]);
 
+    // Fetch join requests when needed
     useEffect(() => {
-        if (game && game.group_id) {
-            setSelectedGroup(game.group_id);
-        } else {
-            setSelectedGroup(null);
+        if (isAdmin && group && group.is_public) {
+            fetchJoinRequests();
         }
-    }, [game]);
+    }, [isAdmin, group, fetchJoinRequests]);
 
-    useEffect(() => {
-        if (game && !isHost) {
-            fetchHostInfo();
-        }
-    }, [game, isHost, fetchHostInfo]);
-
+    // Form input handlers
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+        setGroupForm({ ...groupForm, [name]: value });
+    };
 
-        if (name === "group_id") {
-            // Group selection logic
-            if (value) {
-                const selectedGroup = userGroups.find(
-                    (group) => group._id === value
-                );
-                if (selectedGroup) {
-                    setSelectedGroup(selectedGroup);
-                    setGameForm((prev) => ({
-                        ...prev,
-                        group_id: value,
-                        isPublic: selectedGroup.is_public,
-                    }));
-                }
-            } else {
-                setSelectedGroup(null);
-                setGameForm((prev) => ({
-                    ...prev,
-                    group_id: value,
-                }));
-            }
+    const handlePrivacyChange = (isPublic) => {
+        setGroupForm({ ...groupForm, isPublic });
+    };
+
+    // Handle friend selection for invites
+    const handleCheckboxChange = (e, friend) => {
+        if (e.target.checked) {
+            setSelectedFriends([...selectedFriends, friend]);
         } else {
-            // For other fields, standard update
-            setGameForm({ ...gameForm, [name]: value });
+            setSelectedFriends(
+                selectedFriends.filter((f) => f._id !== friend._id)
+            );
         }
     };
 
+    // Send invitations to friends
+    const handleSendInvites = async () => {
+        try {
+            const inviteeIds = selectedFriends.map((friend) => friend._id);
+            await axios.post(
+                `${process.env.REACT_APP_API_URL}/group-members/send-invitations`,
+                {
+                    groupId,
+                    adminId: user._id,
+                    inviteeIds,
+                }
+            );
+            setSelectedFriends([]);
+            fetchMembers();
+        } catch (error) {
+            console.error("Error sending invitations:", error);
+        }
+    };
+
+    // Handle updating group details
     const handleUpdate = async (e) => {
         e.preventDefault();
         try {
-            const gameDateTimeString = `${gameForm.date}T${gameForm.time}:00`;
-            const gameDateTime = new Date(gameDateTimeString);
-
-            const updatedGame = {
-                game_name: gameForm.name,
-                location: gameForm.location,
-                game_date: gameDateTime,
-                blinds: gameForm.blinds,
-                notes: gameForm.notes,
-                handed: gameForm.handed,
-                is_public: gameForm.isPublic,
+            const updatedGroup = {
+                group_name: groupForm.name,
+                description: groupForm.description,
+                profile_image: groupForm.profile_image,
+                banner_image: groupForm.banner_image,
+                is_public: groupForm.isPublic,
             };
 
             await axios.put(
-                `${process.env.REACT_APP_API_URL}/games/${gameId}`,
-                updatedGame
+                `${process.env.REACT_APP_API_URL}/groups/${groupId}`,
+                updatedGroup
             );
             setEditing(false);
-            fetchGame();
+            fetchGroup();
         } catch (error) {
-            console.error("Error updating game:", error);
+            console.error("Error updating group:", error);
         }
     };
 
+    // Handle deleting group
     const handleDelete = async () => {
         const confirmDelete = window.confirm(
-            "Are you sure you want to delete this game?"
+            "Are you sure you want to delete this group?"
         );
         if (!confirmDelete) return;
+
         try {
             await axios.delete(
-                `${process.env.REACT_APP_API_URL}/games/${gameId}`
+                `${process.env.REACT_APP_API_URL}/groups/${groupId}`,
+                {
+                    data: { userId: user._id }, // Send userId in the request body
+                }
             );
-            navigate(`/dashboard/${userId}/host`);
+            navigate(`/dashboard/${userId}/community`);
         } catch (error) {
-            console.error("Error deleting game:", error);
+            console.error("Error deleting group:", error);
         }
     };
 
+    // Handle edit mode toggle
     const handleEdit = () => {
-        setEditing(true);
-        const gameDate = new Date(game.game_date);
-
-        setGameForm({
-            name: game.game_name,
-            blinds: game.blinds,
-            location: game.location,
-            date: gameDate.toISOString().split("T")[0],
-            time: gameDate.toTimeString().slice(0, 5),
-            handed: game.handed.toString(),
-            notes: game.notes || "",
-            isPublic: game.is_public,
-        });
+        if (isAdmin) {
+            setEditing(true);
+        } else {
+            alert("Only the admin can edit this group.");
+        }
     };
 
-    const handleLeaveGame = async () => {
+    // Handle removing a member
+    const handleRemoveMember = async (memberId) => {
+        const confirmRemove = window.confirm(
+            "Are you sure you want to remove this member?"
+        );
+        if (!confirmRemove) return;
+
+        try {
+            await axios.post(
+                `${process.env.REACT_APP_API_URL}/group-members/remove-member`,
+                {
+                    groupId: groupId,
+                    adminId: user._id,
+                    memberId: memberId,
+                }
+            );
+            fetchMembers();
+        } catch (error) {
+            console.error("Error removing member:", error);
+        }
+    };
+
+    // Handle leave group
+    const handleLeaveGroup = async () => {
         const confirmLeave = window.confirm(
-            "Are you sure you want to leave this game?"
+            "Are you sure you want to leave this group?"
         );
         if (!confirmLeave) return;
 
         try {
-            const data = {
-                gameId: gameId,
-                inviterId: user._id,
-                inviteeId: user._id,
-            };
             await axios.post(
-                `${process.env.REACT_APP_API_URL}/players/remove-player`,
-                data
+                `${process.env.REACT_APP_API_URL}/group-members/remove-member`,
+                {
+                    groupId: groupId,
+                    adminId: user._id, // In this context, adminId is the user making the request
+                    memberId: user._id,
+                }
             );
-            navigate(`/dashboard/${userId}/games`);
+            navigate(`/dashboard/${userId}/community`);
         } catch (error) {
-            console.error("Error leaving game:", error);
+            console.error("Error leaving group:", error);
         }
     };
 
-    const handleReviewClick = () => {
-        setShowReviewModal(true);
+    // Handle accepting join request
+    const handleAcceptRequest = async (requesterId) => {
+        try {
+            await axios.post(
+                `${process.env.REACT_APP_API_URL}/group-members/accept-invitation`,
+                {
+                    userId: user._id, // Admin ID
+                    groupId: groupId,
+                    requesterId: requesterId,
+                }
+            );
+            fetchJoinRequests();
+            fetchMembers();
+        } catch (error) {
+            console.error("Error accepting join request:", error);
+        }
     };
 
-    const handleReviewSubmitted = () => {
-        fetchGame();
+    // Open reject modal for a join request
+    const openRejectModal = (requesterId) => {
+        setSelectedRequesterId(requesterId);
+        setRejectModalOpen(true);
     };
 
-    const handleShareLink = () => {
-        const guestLink = `${window.location.origin}/guest/join/${gameId}`;
-        navigator.clipboard.writeText(guestLink);
-        setShowShareModal(true);
-        setTimeout(() => setShowShareModal(false), 3000); // Hide after 3 seconds
+    // Handle rejecting join request
+    const handleRejectRequest = async () => {
+        if (!rejectReason.trim()) {
+            alert("Please enter a reason for rejection.");
+            return;
+        }
+
+        try {
+            await axios.post(
+                `${process.env.REACT_APP_API_URL}/group-members/reject-request`,
+                {
+                    adminId: user._id,
+                    groupId: groupId,
+                    requesterId: selectedRequesterId,
+                    reason: rejectReason,
+                }
+            );
+            setRejectModalOpen(false);
+            setRejectReason("");
+            fetchJoinRequests();
+        } catch (error) {
+            console.error("Error rejecting join request:", error);
+        }
     };
 
-    if (!game || !user) {
+    // Handle canceling invitation
+    const handleCancelInvite = async (inviteeId) => {
+        try {
+            await axios.post(
+                `${process.env.REACT_APP_API_URL}/group-members/cancel-invitation`,
+                {
+                    groupId: groupId,
+                    adminId: user._id,
+                    inviteeId: inviteeId,
+                }
+            );
+            fetchMembers();
+        } catch (error) {
+            console.error("Error canceling invitation:", error);
+        }
+    };
+
+    // Handle request to join public group
+    const handleRequestToJoin = async () => {
+        try {
+            await axios.post(
+                `${process.env.REACT_APP_API_URL}/group-members/request-to-join`,
+                {
+                    userId: user._id,
+                    groupId: groupId,
+                }
+            );
+
+            // Instead of fetching the group again, manually update the state
+            setGroup((prevGroup) => ({
+                ...prevGroup,
+                membershipStatus: "requested",
+            }));
+
+            // Disable the request button by updating a local state variable
+            setRequestSent(true);
+        } catch (error) {
+            console.error("Error requesting to join group:", error);
+        }
+    };
+
+    // Format filters for API
+    const formatFiltersForAPI = (filters) => {
+        if (!filters) return {};
+
+        const formattedFilters = { ...filters };
+
+        if (
+            filters.dateRange &&
+            (filters.dateRange.startDate || filters.dateRange.endDate)
+        ) {
+            formattedFilters.dateRange = JSON.stringify(filters.dateRange);
+        }
+
+        if (
+            filters.handed &&
+            (filters.handed.min !== undefined ||
+                filters.handed.max !== undefined)
+        ) {
+            formattedFilters.handed = JSON.stringify(filters.handed);
+        }
+
+        return formattedFilters;
+    };
+
+    // Fetch waitlist position for games when needed
+    const fetchWaitlistPosition = useCallback(
+        async (gameId) => {
+            if (!user) return;
+
+            try {
+                const res = await axios.get(
+                    `${process.env.REACT_APP_API_URL}/players/waitlist/${gameId}/${user._id}`
+                );
+                setWaitlistPositions((prev) => ({
+                    ...prev,
+                    [gameId]: res.data.position,
+                }));
+            } catch (error) {
+                console.error("Error fetching waitlist position:", error);
+            }
+        },
+        [user]
+    );
+
+    // Fetch games for the group
+    const fetchGroupGames = useCallback(async () => {
+        if (!user || !groupId) return;
+
+        setIsLoadingGames(true);
+        try {
+            const params = {
+                group_id: groupId,
+                ...filterParams,
+            };
+
+            const res = await axios.get(
+                `${process.env.REACT_APP_API_URL}/games`,
+                { params }
+            );
+
+            // For each game, fetch player count and waitlist position if needed
+            const gamesWithPlayerCount = await Promise.all(
+                res.data.map(async (game) => {
+                    try {
+                        const playersRes = await axios.get(
+                            `${process.env.REACT_APP_API_URL}/players/game/${game._id}`
+                        );
+                        const acceptedPlayers = playersRes.data.filter(
+                            (p) => p.invitation_status === "accepted"
+                        );
+
+                        // If player is on waitlist, fetch their position
+                        if (game.playerStatus === "waitlist") {
+                            await fetchWaitlistPosition(game._id);
+                        }
+
+                        return {
+                            ...game,
+                            acceptedPlayersCount: acceptedPlayers.length,
+                        };
+                    } catch (err) {
+                        console.error(
+                            `Error fetching players for game ${game._id}:`,
+                            err
+                        );
+                        return game;
+                    }
+                })
+            );
+            setGroupGames(gamesWithPlayerCount);
+        } catch (error) {
+            console.error("Error fetching group games:", error);
+        } finally {
+            setIsLoadingGames(false);
+        }
+    }, [groupId, user, filterParams, fetchWaitlistPosition]);
+
+    // Apply filters to group games
+    const handleApplyFilters = (filters) => {
+        setGamesFilter(filters);
+        setFilterParams(formatFiltersForAPI(filters));
+    };
+
+    // Fetch group games when filter parameters change
+    useEffect(() => {
+        if (user && groupId) {
+            fetchGroupGames();
+        }
+    }, [fetchGroupGames, user, groupId, filterParams]);
+
+    if (!group || !user) {
         return <div>Loading...</div>;
     }
 
-    const gameDate = new Date(game.game_date);
-    const formattedDate = gameDate.toLocaleDateString();
-    const formattedTime = gameDate.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-    });
+    // Separate members by status
+    const acceptedMembers = members.filter(
+        (member) => member.membership_status === "accepted"
+    );
+    const pendingMembers = members.filter(
+        (member) => member.membership_status === "pending"
+    );
 
-    const acceptedPlayers = players.filter(
-        (player) => player.invitation_status === "accepted"
+    // Filter available friends (those who aren't already members or invited)
+    const memberIds = members.map((member) => member.user_id._id);
+    const availableFriends = friends.filter(
+        (friend) => !memberIds.includes(friend._id)
     );
 
     return (
         <div className="dashboard">
             <Sidebar
-                page="host"
+                page="community"
                 username={user.username}
             />
-            <div className="logged-content-container game-dashboard">
+            <div className="logged-content-container group-dashboard">
                 <div className="dashboard-heading">
                     <h1>
-                        {game.game_name}
-                        {game.is_public && (
-                            <span className="game-type-tag public">Public</span>
+                        {group.group_name}
+                        {group.is_public && (
+                            <span className="group-type-tag public">
+                                Public
+                            </span>
                         )}
-                        {!game.is_public && (
-                            <span className="game-type-tag private">
+                        {!group.is_public && (
+                            <span className="group-type-tag private">
                                 Private
                             </span>
                         )}
@@ -533,7 +527,7 @@ export function GameDashboard() {
                     <div className="buttons">
                         {editing ? (
                             <>
-                                {isHost && (
+                                {isAdmin && (
                                     <button
                                         className="save"
                                         onClick={handleUpdate}
@@ -541,7 +535,7 @@ export function GameDashboard() {
                                         Save
                                     </button>
                                 )}
-                                {isHost && (
+                                {isAdmin && (
                                     <button
                                         className="cancel"
                                         onClick={() => setEditing(false)}
@@ -552,15 +546,15 @@ export function GameDashboard() {
                             </>
                         ) : (
                             <>
-                                {isHost && (
+                                {isAdmin && (
                                     <button
                                         className="edit"
                                         onClick={handleEdit}
                                     >
-                                        Edit & Invite
+                                        Edit Group
                                     </button>
                                 )}
-                                {isHost && (
+                                {isAdmin && (
                                     <button
                                         className="delete"
                                         onClick={handleDelete}
@@ -568,34 +562,30 @@ export function GameDashboard() {
                                         Delete
                                     </button>
                                 )}
-                                {!isHost && isPlayer && (
+                                {!isAdmin && isMember && (
                                     <button
-                                        className="leave-game"
-                                        onClick={handleLeaveGame}
+                                        className="leave-group"
+                                        onClick={handleLeaveGroup}
                                     >
-                                        Leave Game
+                                        Leave Group
                                     </button>
                                 )}
-                                {!isHost && !isPlayer && game.is_public && (
-                                    <button
-                                        className="request-button"
-                                        onClick={handleRequestToJoin}
-                                    >
-                                        {acceptedPlayers.length >= game.handed
-                                            ? "Join Waitlist"
-                                            : "Request to Join"}
-                                    </button>
-                                )}
-                                {!isHost &&
-                                    isPlayer &&
-                                    game.game_status === "completed" && (
-                                        <ReviewButton
-                                            gameId={gameId}
-                                            gameStatus={game.game_status}
-                                            isHost={isHost}
-                                            onReviewClick={handleReviewClick}
-                                        />
-                                    )}
+                                {!isAdmin &&
+                                    !isMember &&
+                                    group.is_public &&
+                                    (requestSent ||
+                                        group.membershipStatus === "requested" ? (
+                                        <span className="status-tag requested">
+                                            Request Pending
+                                        </span>
+                                    ) : (
+                                        <button
+                                            className="request-button"
+                                            onClick={handleRequestToJoin}
+                                        >
+                                            Request to Join
+                                        </button>
+                                    ))}
                                 <button
                                     className="back"
                                     onClick={() => navigate(-1)}
@@ -606,71 +596,82 @@ export function GameDashboard() {
                         )}
                     </div>
                 </div>
-                <div className="game-dashboard-container">
-                    <div className="summary-item">
-                        {/* Host Information Section - Only show when not editing and not the host */}
-                        {!editing && !isHost && hostProfile && (
-                            <HostInfo
-                                hostProfile={hostProfile}
-                                hostStats={hostStats}
-                                hostReviews={hostReviews}
-                                averageRating={averageRating}
-                                generateAvatar={generateAvatar}
-                                formatDate={formatDate}
-                            />
-                        )}
+
+                {/* Group Banner Image */}
+                {group.banner_image && (
+                    <div className="group-banner">
+                        <img
+                            src={group.banner_image}
+                            alt={`${group.group_name} banner`}
+                        />
+                    </div>
+                )}
+
+                <div className="group-dashboard-container">
+                    <div className="group-info-section">
+                        <div className="summary-header">
+                            <h2>Group Information</h2>
+                        </div>
                         {editing ? (
-                            <form className='host-form compact'>
+                            <form className="group-edit-form">
                                 <Input
-                                    name='name'
-                                    type='text'
-                                    label='Name'
-                                    placeholder={`Give your game a name e.g.${user.username}'s poker night`}
-                                    value={gameForm.name}
+                                    name="name"
+                                    type="text"
+                                    label="Group Name"
+                                    placeholder="Enter group name"
+                                    value={groupForm.name}
                                     onChange={handleInputChange}
                                 />
-                                <div className='input-double'>
-                                    <Select
-                                        name="blinds"
-                                        label="Blinds"
-                                        placeholder="Select your game blinds"
-                                        value={gameForm.blinds}
+
+                                <div className="textarea-container">
+                                    <label
+                                        htmlFor="description"
+                                        className="input-label"
+                                    >
+                                        Description
+                                    </label>
+                                    <textarea
+                                        name="description"
+                                        id="description"
+                                        rows="4"
+                                        value={groupForm.description}
                                         onChange={handleInputChange}
-                                        options={[
-                                            { value: '1/2', label: '$1/$2' },
-                                            { value: '2/5', label: '$2/$5' },
-                                            { value: '5/10', label: '$5/$10' },
-                                        ]}
-                                    />
-                                    <Select
-                                        name="handed"
-                                        label="Handed"
-                                        placeholder="Select the player max"
-                                        value={gameForm.handed}
-                                        onChange={handleInputChange}
-                                        options={[
-                                            { value: '2', label: '2 max' },
-                                            { value: '3', label: '3 max' },
-                                            { value: '4', label: '4 max' },
-                                            { value: '5', label: '5 max' },
-                                            { value: '6', label: '6 max' },
-                                            { value: '7', label: '7 max' },
-                                            { value: '8', label: '8 max' },
-                                            { value: '9', label: '9 max' },
-                                            { value: '10', label: '10 max' },
-                                        ]}
+                                        placeholder="Enter group description..."
                                     />
                                 </div>
-                                <div className="game-privacy-option">
-                                    <label className="input-label">Game Privacy</label>
+
+                                <Input
+                                    name="profile_image"
+                                    type="text"
+                                    label="Profile Image URL"
+                                    placeholder="Enter profile image URL"
+                                    value={groupForm.profile_image}
+                                    onChange={handleInputChange}
+                                />
+
+                                <Input
+                                    name="banner_image"
+                                    type="text"
+                                    label="Banner Image URL"
+                                    placeholder="Enter banner image URL"
+                                    value={groupForm.banner_image}
+                                    onChange={handleInputChange}
+                                />
+
+                                <div className="group-privacy-option">
+                                    <label className="input-label">
+                                        Group Privacy
+                                    </label>
                                     <div className="radio-group">
                                         <label className="radio-label">
                                             <input
                                                 type="radio"
                                                 name="isPublic"
                                                 value="false"
-                                                checked={!gameForm.isPublic}
-                                                onChange={() => setGameForm({ ...gameForm, isPublic: false })}
+                                                checked={!groupForm.isPublic}
+                                                onChange={() =>
+                                                    handlePrivacyChange(false)
+                                                }
                                             />
                                             Private (invite only)
                                         </label>
@@ -679,272 +680,290 @@ export function GameDashboard() {
                                                 type="radio"
                                                 name="isPublic"
                                                 value="true"
-                                                checked={gameForm.isPublic}
-                                                onChange={() => setGameForm({ ...gameForm, isPublic: true })}
+                                                checked={groupForm.isPublic}
+                                                onChange={() =>
+                                                    handlePrivacyChange(true)
+                                                }
                                             />
                                             Public (open to join requests)
                                         </label>
                                     </div>
                                 </div>
-                                <Input
-                                    name='location'
-                                    type='text'
-                                    label='Location'
-                                    placeholder='Enter the address of your game'
-                                    value={gameForm.location}
-                                    onChange={handleInputChange}
-                                />
-                                <div className='input-double'>
-                                    <Input
-                                        name='date'
-                                        type='date'
-                                        label='Date'
-                                        value={gameForm.date}
-                                        onChange={handleInputChange}
-                                    />
-                                    <Input
-                                        name='time'
-                                        type='time'
-                                        label='Time'
-                                        value={gameForm.time}
-                                        onChange={handleInputChange}
-                                    />
-                                </div>
-                                <div className='textarea-container'>
-                                    <label htmlFor='notes' className='input-label'>Notes</label>
-                                    <textarea
-                                        name='notes'
-                                        id='notes'
-                                        rows='5'
-                                        value={gameForm.notes}
-                                        onChange={handleInputChange}
-                                        placeholder='Enter any additional notes about the game...'
-                                    />
-                                </div>
                             </form>
                         ) : (
-                            <div className='game-details'>
-                                <div className='detail-item'>
-                                    <span className='detail-label'>Game Type: </span>
-                                    <span className='detail-value'>
-                                        <span className="icon-wrapper">
-                                            <i className="fa-solid fa-gamepad"></i>
-                                        </span>
-                                        {game.is_public ? 'Public (open to join requests)' : 'Private (invite only)'}
+                            <div className="group-details">
+                                <div className="group-profile">
+                                    {group.profile_image && (
+                                        <img
+                                            src={group.profile_image}
+                                            alt={`${group.group_name} profile`}
+                                            className="group-profile-image"
+                                        />
+                                    )}
+                                </div>
+
+                                <div className="detail-item">
+                                    <span className="detail-label">
+                                        Admin:{" "}
+                                    </span>
+                                    <span className="detail-value">
+                                        {group.admin_id.username}
                                     </span>
                                 </div>
-                                {isHost && (
-                                    <div className='detail-item'>
-                                        <span className='detail-label'>Handed: </span>
-                                        <span className='detail-value'>
-                                            <span className="icon-wrapper">
-                                                <i className="fa-solid fa-users"></i>
-                                            </span>
-                                            {game.handed} max
-                                        </span>
+
+                                <div className="detail-item">
+                                    <span className="detail-label">
+                                        Group Type:{" "}
+                                    </span>
+                                    <span className="detail-value">
+                                        {group.is_public
+                                            ? "Public (open to join requests)"
+                                            : "Private (invite only)"}
+                                    </span>
+                                </div>
+
+                                <div className="detail-item">
+                                    <span className="detail-label">
+                                        Description:{" "}
+                                    </span>
+                                    <div className="detail-value description-value">
+                                        {group.description ||
+                                            "No description provided"}
                                     </div>
-                                )}
-                                <div className='detail-item'>
-                                    <span className='detail-label'>Blinds: </span>
-                                    <span className='detail-value'>
-                                        <span className="icon-wrapper">
-                                            <i className="fa-solid fa-dollar-sign"></i>
-                                        </span>
-                                        {game.blinds}
-                                    </span>
-                                </div>
-                                <div className='detail-item'>
-                                    <span className='detail-label'>Location: </span>
-                                    <span className='detail-value'>
-                                        <span className="icon-wrapper">
-                                            <i className="fa-solid fa-location-dot"></i>
-                                        </span>
-                                        {game.location}
-                                    </span>
-                                </div>
-                                <div className='detail-item'>
-                                    <span className='detail-label'>Date: </span>
-                                    <span className='detail-value'>
-                                        <span className="icon-wrapper">
-                                            <i className="fa-solid fa-calendar"></i>
-                                        </span>
-                                        {formattedDate}
-                                    </span>
-                                </div>
-                                <div className='detail-item'>
-                                    <span className='detail-label'>Time: </span>
-                                    <span className='detail-value'>
-                                        <span className="icon-wrapper">
-                                            <i className="fa-solid fa-clock"></i>
-                                        </span>
-                                        {formattedTime}
-                                    </span>
-                                </div>
-                                <div className='detail-item'>
-                                    <span className='detail-label'>Notes: </span>
-                                    <span className='detail-value'>
-                                        <span className="icon-wrapper">
-                                            <i className="fa-solid fa-note-sticky"></i>
-                                        </span>
-                                        <span className='notes-value'>{game.notes || 'No notes provided'}</span>
-                                    </span>
                                 </div>
                             </div>
                         )}
                     </div>
-                    <div className='summary-item players-item'>
-                        <div className='game-summary-header'>
-                            <h2>Players</h2>
+
+                    <div className="members-section">
+                        <div className="summary-header">
+                            <h2>Members</h2>
                         </div>
-                        {editing ? (
-                            isHost ? (
-                                <InvitePlayers
-                                    user={user}
-                                    gameId={gameId}
-                                    players={players}
-                                    fetchPlayers={fetchPlayers}
-                                />
-                            ) : (
-                                <div>You are not authorized to edit players.</div>
-                            )
+                        {editing && isAdmin ? (
+                            <div className="invite-friends-container">
+                                <h3>Invite Friends</h3>
+                                {availableFriends.length > 0 ? (
+                                    <div className="invite-friends-list">
+                                        {availableFriends.map((friend) => (
+                                            <div
+                                                key={friend._id}
+                                                className="invite-friend-item"
+                                            >
+                                                <label
+                                                    htmlFor={friend._id}
+                                                    className="friend-label"
+                                                >
+                                                    <input
+                                                        type="checkbox"
+                                                        id={friend._id}
+                                                        onChange={(e) =>
+                                                            handleCheckboxChange(
+                                                                e,
+                                                                friend
+                                                            )
+                                                        }
+                                                        checked={selectedFriends.some(
+                                                            (f) =>
+                                                                f._id ===
+                                                                friend._id
+                                                        )}
+                                                    />
+                                                    <Profile
+                                                        data={friend}
+                                                        size="compact"
+                                                    />
+                                                </label>
+                                            </div>
+                                        ))}
+                                        <button
+                                            className="invite-button"
+                                            onClick={handleSendInvites}
+                                            disabled={
+                                                selectedFriends.length === 0
+                                            }
+                                        >
+                                            Send Invitations
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div>No available friends to invite</div>
+                                )}
+                            </div>
                         ) : (
-                            <div className='players-list'>
-                                {acceptedPlayers.length > 0 ? (
-                                    <div className='all-profiles-container'>
-                                        {acceptedPlayers.map(player => (
-                                            <Profile 
-                                                key={player._id} 
-                                                data={player.is_guest ? player.guest_id : player.user_id} 
-                                                size={"compact"} 
-                                                currentUser={user}
-                                                isGuest={player.is_guest}
+                            <div className="members-list">
+                                {acceptedMembers.length > 0 ? (
+                                    <div className="all-profiles-container">
+                                        {acceptedMembers.map((member) => (
+                                            <Profile
+                                                key={member._id}
+                                                data={member.user_id}
+                                                size={"compact"}
+                                                action={
+                                                    isAdmin &&
+                                                        member.user_id._id !==
+                                                        user._id
+                                                        ? "removeMember"
+                                                        : null
+                                                }
+                                                onAction={() =>
+                                                    handleRemoveMember(
+                                                        member.user_id._id
+                                                    )
+                                                }
                                             />
                                         ))}
                                     </div>
                                 ) : (
-                                    <div>No accepted players</div>
+                                    <div>No members in this group</div>
                                 )}
-                                {pendingPlayers.length > 0 && (
+
+                                {pendingMembers.length > 0 && isAdmin && (
                                     <>
                                         <h3>Pending Invitations</h3>
-                                        <div className='all-profiles-container'>
-                                            {pendingPlayers.map(player => (
-                                                <Profile 
-                                                    key={player._id} 
-                                                    data={player.is_guest ? player.guest_id : player.user_id} 
-                                                    size={"compact"} 
-                                                    currentUser={user}
-                                                    isGuest={player.is_guest}
+                                        <div className="all-profiles-container">
+                                            {pendingMembers.map((member) => (
+                                                <Profile
+                                                    key={member._id}
+                                                    data={member.user_id}
+                                                    size={"compact"}
+                                                    action="cancelInvitation"
+                                                    onAction={() =>
+                                                        handleCancelInvite(
+                                                            member.user_id._id
+                                                        )
+                                                    }
                                                 />
                                             ))}
                                         </div>
                                     </>
                                 )}
-                                {waitlistedPlayers.length > 0 && (
-                                    <>
-                                        <h3>Waitlist</h3>
-                                        <div className="all-profiles-container">
-                                            {waitlistedPlayers.map((player, index) => (
-                                                <div key={player._id} className="waitlist-player">
-                                                    <span className="waitlist-position">#{index + 1}</span>
-                                                    <Profile 
-                                                        data={player.is_guest ? player.guest_id : player.user_id} 
-                                                        size="compact" 
-                                                        currentUser={user}
-                                                        isGuest={player.is_guest}
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </>
-                                )}
 
-                                {isHost && game.is_public && (
+                                {/* Join Requests Section for Public Groups */}
+                                {isAdmin && group.is_public && (
                                     <div className="join-requests-section">
-                                        <h3>Join Requests {isLoadingRequests && <span className="loading-indicator">Loading...</span>}</h3>
+                                        <h3>
+                                            Join Requests{" "}
+                                            {isLoadingRequests && (
+                                                <span className="loading-indicator">
+                                                    Loading...
+                                                </span>
+                                            )}
+                                        </h3>
                                         {joinRequests.length > 0 ? (
                                             <ul className="join-requests-list">
-                                                {joinRequests.map(request => {
-                                                    const isGuestRequest = request.is_guest;
-                                                    const profileData = isGuestRequest ? request.guest_id : request.user_id;
-                                                    const requesterId = isGuestRequest ? request.guest_id._id : request.user_id._id;
-                                                    
-                                                    return (
-                                                        <li key={request._id} className="join-request-item">
-                                                            <div className="join-request-profile">
-                                                                {profileData && (
-                                                                    <Profile
-                                                                        data={profileData}
-                                                                        size="compact"
-                                                                        currentUser={user}
-                                                                    />
-                                                                )}
-                                                                <div className="join-request-actions">
-                                                                    <button
-                                                                        className="accept-button small"
-                                                                        onClick={() => handleAcceptRequest(requesterId)}
-                                                                    >
-                                                                        Accept
-                                                                    </button>
-                                                                    <button 
-                                                                        className="decline-button small" 
-                                                                        onClick={() => openRejectModal(requesterId)}
-                                                                    >
-                                                                        Decline
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        </li>
-                                                    );
-                                                })}
+                                                {joinRequests.map((request) => (
+                                                    <li
+                                                        key={request._id}
+                                                        className="join-request-item"
+                                                    >
+                                                        <div className="join-request-profile">
+                                                            <Profile
+                                                                data={
+                                                                    request.user_id
+                                                                }
+                                                                size="compact"
+                                                            />
+                                                        </div>
+                                                        <div className="join-request-actions">
+                                                            <button
+                                                                className="accept-button small"
+                                                                onClick={() =>
+                                                                    handleAcceptRequest(
+                                                                        request
+                                                                            .user_id
+                                                                            ._id
+                                                                    )
+                                                                }
+                                                            >
+                                                                Accept
+                                                            </button>
+                                                            <button
+                                                                className="decline-button small"
+                                                                onClick={() =>
+                                                                    openRejectModal(
+                                                                        request
+                                                                            .user_id
+                                                                            ._id
+                                                                    )
+                                                                }
+                                                            >
+                                                                Decline
+                                                            </button>
+                                                        </div>
+                                                    </li>
+                                                ))}
                                             </ul>
                                         ) : (
-                                            <p className="no-requests-message">No pending join requests</p>
+                                            <p className="no-requests-message">
+                                                No pending join requests
+                                            </p>
                                         )}
                                     </div>
                                 )}
                             </div>
                         )}
                     </div>
-                    <div className="summary-item players-item">
-                        {/* Players List Section */}
-                        <PlayersList
-                            players={players}
-                            editing={editing}
-                            isHost={isHost}
-                            user={user}
-                            gameId={gameId}
-                            fetchPlayers={fetchPlayers}
-                            game={game}
-                            joinRequests={joinRequests}
-                            handleAcceptRequest={handleAcceptRequest}
-                            openRejectModal={openRejectModal}
-                            isLoadingRequests={isLoadingRequests}
-                        />
-                    </div>
-
-                    {/* Modals */}
-                    {isRejectModalOpen && (
-                        <RejectModal
-                            open={isRejectModalOpen}
-                            onClose={() => setRejectModalOpen(false)}
-                            rejectReason={rejectReason}
-                            setRejectReason={setRejectReason}
-                            onSubmit={handleRejectRequest}
-                        />
-                    )}
-                    {showReviewModal && (
-                        <ReviewModal
-                            gameId={gameId}
-                            isOpen={showReviewModal}
-                            onClose={() => setShowReviewModal(false)}
-                            onReviewSubmitted={handleReviewSubmitted}
-                        />
-                    )}
                 </div>
+
+                <div className="games-section">
+                    <div className="summary-header">
+                        <h2>Group Games</h2>
+                    </div>
+                    <div
+                        className="group-games-container"
+                        style={{ display: "flex" }}
+                    >
+                        <Filter
+                            tab="Group Games"
+                            onApply={handleApplyFilters}
+                            initialFilters={gamesFilter}
+                        />
+                        <div className="games-container">
+                            {isLoadingGames ? (
+                                <div className="loading-message">
+                                    Loading games...
+                                </div>
+                            ) : groupGames.length > 0 ? (
+                                <div className="game-cards-grid">
+                                    {groupGames.map((game) => (
+                                        <GameCard
+                                            key={game._id}
+                                            game={{
+                                                ...game,
+                                                waitlistPosition:
+                                                    game.playerStatus ===
+                                                        "waitlist"
+                                                        ? waitlistPositions[
+                                                        game._id
+                                                        ]
+                                                        : undefined,
+                                            }}
+                                            user={user}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="no-games-message">
+                                    There are no games in this group.
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Rejection Modal */}
+                {isRejectModalOpen && (
+                    <RejectModal
+                        open={isRejectModalOpen}
+                        onClose={() => setRejectModalOpen(false)}
+                        rejectReason={rejectReason}
+                        setRejectReason={setRejectReason}
+                        onSubmit={handleRejectRequest}
+                    />
+                )}
             </div>
         </div>
     );
-};
+}
 
 export default GameDashboard;

@@ -1,6 +1,6 @@
 // InvitePlayers.js
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import "./InvitePlayers.css";
 import Profile from "../Profile/Profile";
@@ -11,6 +11,30 @@ export default function InvitePlayers({ user, gameId, players, fetchPlayers }) {
 	const [error, setError] = useState(null);
 	const [game, setGame] = useState(null);
 	const [loading, setLoading] = useState(true);
+
+	// Memoize fetchGroupMembers function with useCallback to avoid dependency cycles
+	const fetchGroupMembers = useCallback(async (groupId) => {
+		try {
+			// Ensure groupId is just the ID string, not the full object
+			const groupIdValue =
+				typeof groupId === "object" ? groupId._id : groupId;
+
+			// Fetch group members from API
+			const response = await axios.get(
+				`${process.env.REACT_APP_API_URL}/group-members/${groupIdValue}`
+			);
+
+			// Filter for accepted members only
+			const acceptedMembers = response.data.filter(
+				(member) => member.membership_status === "accepted"
+			);
+
+			setGroupMembers(acceptedMembers);
+		} catch (error) {
+			console.error("Error fetching group members:", error);
+			setError("Failed to load group members.");
+		}
+	}, []);  // Empty dependency array since it doesn't depend on any props or state
 
 	// Fetch game details to check if it belongs to a group
 	useEffect(() => {
@@ -35,59 +59,7 @@ export default function InvitePlayers({ user, gameId, players, fetchPlayers }) {
 		};
 
 		fetchGame();
-	}, [gameId]);
-
-	// Fetch group members if the game belongs to a group
-	const fetchGroupMembers = async (groupId) => {
-		try {
-			// Ensure groupId is just the ID string, not the full object
-			const groupIdValue =
-				typeof groupId === "object" ? groupId._id : groupId;
-
-    const handleCancelInvite = async (inviteeId, isGuest = false) => {
-        try {
-            const data = {
-                gameId: gameId,
-                inviterId: user._id,
-                inviteeId: inviteeId,
-                isGuest: isGuest
-            };
-            await axios.post(
-                `${process.env.REACT_APP_API_URL}/players/cancel-invitation`,
-                data
-            );
-            fetchPlayers();
-        } catch (error) {
-            console.error("Error canceling invitation:", error);
-            setError("Failed to cancel invitation.");
-        }
-    };
-
-    const handleRemovePlayer = async (inviteeId, isGuest = false) => {
-        try {
-            const data = {
-                gameId: gameId,
-                inviterId: user._id,
-                inviteeId: inviteeId,
-                isGuest: isGuest
-            };
-            await axios.post(
-                `${process.env.REACT_APP_API_URL}/players/remove-player`,
-                data
-            );
-            fetchPlayers();
-        } catch (error) {
-            console.error("Error removing player:", error);
-            setError("Failed to remove player.");
-        }
-    };
-
-			setGroupMembers(acceptedMembers);
-		} catch (error) {
-			console.error("Error fetching group members:", error);
-			setError("Failed to load group members.");
-		}
-	};
+	}, [gameId, fetchGroupMembers]); // Now fetchGroupMembers is stable across renders
 
 	// Extract the IDs of people who have already been invited
 	const invitedPersonIds = players
@@ -103,7 +75,7 @@ export default function InvitePlayers({ user, gameId, players, fetchPlayers }) {
 		.filter((id) => id !== null); // Remove any null entries
 
 	// Get available people to invite (either group members or friends)
-	const getAvailablePeople = () => {
+	const getAvailablePeople = useCallback(() => {
 		if (game?.group_id) {
 			// For group games, show group members who haven't been invited
 			return groupMembers
@@ -137,21 +109,21 @@ export default function InvitePlayers({ user, gameId, players, fetchPlayers }) {
 					)
 			);
 		}
-	};
+	}, [game, groupMembers, invitedPersonIds, user]);  // Added proper dependencies
 
 	const availablePeople = getAvailablePeople();
 
-	const handleCheckboxChange = (e, person) => {
+	const handleCheckboxChange = useCallback((e, person) => {
 		if (e.target.checked) {
-			setSelectedFriends([...selectedFriends, person]);
+			setSelectedFriends(prev => [...prev, person]);
 		} else {
-			setSelectedFriends(
-				selectedFriends.filter((f) => f._id !== person._id)
+			setSelectedFriends(prev =>
+				prev.filter((f) => f._id !== person._id)
 			);
 		}
-	};
+	}, []);
 
-	const handleSendInvites = async () => {
+	const handleSendInvites = useCallback(async () => {
 		try {
 			const inviteeIds = selectedFriends.map((person) => person._id);
 			const data = {
@@ -169,9 +141,9 @@ export default function InvitePlayers({ user, gameId, players, fetchPlayers }) {
 			console.error("Error sending invitations:", error);
 			setError("Failed to send invitations.");
 		}
-	};
+	}, [selectedFriends, gameId, user._id, fetchPlayers]);
 
-	const handleInviteAll = async () => {
+	const handleInviteAll = useCallback(async () => {
 		try {
 			// Make sure we have the user IDs in the correct format
 			const allAvailableIds = availablePeople.map((person) => person._id);
@@ -241,14 +213,13 @@ export default function InvitePlayers({ user, gameId, players, fetchPlayers }) {
 				error.response?.data || "No response data"
 			);
 			setError(
-				`Failed to send invitations: ${
-					error.message || "Unknown error"
+				`Failed to send invitations: ${error.message || "Unknown error"
 				}`
 			);
 		}
-	};
+	}, [availablePeople, gameId, user._id, fetchPlayers, game, fetchGroupMembers]);
 
-	const handleCancelInvite = async (inviteeId) => {
+	const handleCancelInvite = useCallback(async (inviteeId) => {
 		try {
 			const data = {
 				gameId: gameId,
@@ -264,9 +235,9 @@ export default function InvitePlayers({ user, gameId, players, fetchPlayers }) {
 			console.error("Error canceling invitation:", error);
 			setError("Failed to cancel invitation.");
 		}
-	};
+	}, [gameId, user._id, fetchPlayers]);
 
-	const handleRemovePlayer = async (inviteeId) => {
+	const handleRemovePlayer = useCallback(async (inviteeId) => {
 		try {
 			const data = {
 				gameId: gameId,
@@ -282,7 +253,7 @@ export default function InvitePlayers({ user, gameId, players, fetchPlayers }) {
 			console.error("Error removing player:", error);
 			setError("Failed to remove player.");
 		}
-	};
+	}, [gameId, user._id, fetchPlayers]);
 
 	if (loading) {
 		return <div className="loading-message">Loading...</div>;
@@ -370,10 +341,10 @@ export default function InvitePlayers({ user, gameId, players, fetchPlayers }) {
 				{players.filter(
 					(player) => player.invitation_status === "pending"
 				).length === 0 && (
-					<li className="no-invitations-message">
-						No pending invitations
-					</li>
-				)}
+						<li className="no-invitations-message">
+							No pending invitations
+						</li>
+					)}
 			</ul>
 
 			<h3>Accepted Players</h3>
@@ -395,8 +366,8 @@ export default function InvitePlayers({ user, gameId, players, fetchPlayers }) {
 				{players.filter(
 					(player) => player.invitation_status === "accepted"
 				).length === 0 && (
-					<li className="no-players-message">No accepted players</li>
-				)}
+						<li className="no-players-message">No accepted players</li>
+					)}
 			</ul>
 
 			<h3>Waitlist</h3>
@@ -428,10 +399,10 @@ export default function InvitePlayers({ user, gameId, players, fetchPlayers }) {
 				{players.filter(
 					(player) => player.invitation_status === "waitlist"
 				).length === 0 && (
-					<li className="no-waitlist-message">
-						No players on waitlist
-					</li>
-				)}
+						<li className="no-waitlist-message">
+							No players on waitlist
+						</li>
+					)}
 			</ul>
 		</div>
 	);
