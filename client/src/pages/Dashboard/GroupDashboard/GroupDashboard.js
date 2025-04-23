@@ -905,7 +905,7 @@ export function GroupDashboard() {
 					</div>
 				</div>
 
-				<div className="games-section">
+				<div className="group-games-section">
 					<div className="summary-header">
 						<h2>Group Games</h2>
 					</div>
