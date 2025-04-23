@@ -14,6 +14,8 @@ export function Games() {
 	const { userId } = useParams();
 	const navigate = useNavigate();
 	const page = "games"; // Constant page identifier
+	const [searchTerm, setSearchTerm] = useState("");
+	const [activeFilters, setActiveFilters] = useState([]);
 
 	// Load user data
 	useEffect(() => {
@@ -59,6 +61,66 @@ export function Games() {
 		{ id: "Past Games", label: "Past Games" },
 	];
 
+	// Filtered games based on search term
+	const filteredGames = games.filter((game) => {
+		if (!game) return false;
+
+		// Search through game name, location, blinds
+		const searchString = `${game.game_name || ""} ${game.location || ""} ${
+			game.blinds || ""
+		} ${game.host_id?.username || ""}`.toLowerCase();
+		return searchString.includes(searchTerm.toLowerCase());
+	});
+
+	// Handle search input change
+	const handleSearchChange = (e) => {
+		setSearchTerm(e.target.value);
+	};
+
+	// Apply filters and update active filter tags
+	const applyFilters = (filters) => {
+		// Update the active filter tags
+		const newActiveFilters = [];
+
+		// Blinds filter
+		if (filters.blinds && filters.blinds.length > 0) {
+			newActiveFilters.push({
+				id: "blinds",
+				label: filters.blinds.join(", "),
+			});
+		}
+
+		// Players filter (handed)
+		if (
+			filters.handed &&
+			(filters.handed.min !== 2 || filters.handed.max !== 10)
+		) {
+			newActiveFilters.push({
+				id: "players",
+				label: `${filters.handed.min}-${filters.handed.max} Players`,
+			});
+		}
+
+		setActiveFilters(newActiveFilters);
+		handleApplyFilters(filters);
+	};
+
+	// Remove a filter tag
+	const removeFilterTag = (filterId) => {
+		const updatedFilters = { ...tabFilters[tab] };
+
+		if (filterId === "blinds") {
+			updatedFilters.blinds = [];
+		} else if (filterId === "players") {
+			updatedFilters.handed = { min: 2, max: 10 };
+		}
+
+		setActiveFilters(
+			activeFilters.filter((filter) => filter.id !== filterId)
+		);
+		handleApplyFilters(updatedFilters);
+	};
+
 	// Generate custom actions for invitation cards
 	const renderInvitationActions = (game) => (
 		<div className="card-actions">
@@ -85,6 +147,10 @@ export function Games() {
 
 	// Get the appropriate empty message based on the current tab
 	const getEmptyMessage = () => {
+		if (searchTerm) {
+			return "No games match your search criteria.";
+		}
+
 		switch (tab) {
 			case "Public Games":
 				return "There are no public games available.";
@@ -138,9 +204,43 @@ export function Games() {
 					{/* Filter panel (don't show for Invitations tab) */}
 					{tab !== "Invitations" && (
 						<div className="games-filter">
+							{/* Search bar */}
+							<div className="search-container">
+								<input
+									type="text"
+									className="search-input"
+									placeholder="Search"
+									value={searchTerm}
+									onChange={handleSearchChange}
+								/>
+								<i className="fa-solid fa-magnifying-glass search-icon"></i>
+							</div>
+
+							{/* Active filter tags */}
+							{activeFilters.length > 0 && (
+								<div className="active-filters">
+									{activeFilters.map((filter) => (
+										<div
+											key={filter.id}
+											className="filter-tag"
+										>
+											{filter.label}
+											<button
+												className="remove-filter"
+												onClick={() =>
+													removeFilterTag(filter.id)
+												}
+											>
+												×
+											</button>
+										</div>
+									))}
+								</div>
+							)}
+
 							<Filter
 								tab={tab}
-								onApply={handleApplyFilters}
+								onApply={applyFilters}
 								initialFilters={tabFilters[tab]}
 							/>
 						</div>
@@ -150,7 +250,9 @@ export function Games() {
 					<div className="games-list-wrapper">
 						{tab === "Invitations" ? (
 							<GamesList
-								games={games.filter(game => game && game.host_id)}
+								games={filteredGames.filter(
+									(game) => game && game.host_id
+								)}
 								user={user}
 								waitlistPositions={waitlistPositions}
 								renderCustomActions={renderInvitationActions}
@@ -159,7 +261,7 @@ export function Games() {
 							/>
 						) : (
 							<GamesList
-								games={games}
+								games={filteredGames}
 								user={user}
 								waitlistPositions={waitlistPositions}
 								emptyMessage={getEmptyMessage()}
