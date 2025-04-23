@@ -238,7 +238,6 @@ export function Community() {
                             whileTap={{ scale: 0.95 }}
                         >
                             {tab === 'PendingRequests' ? 'Pending Requests' : tab}
-                            {tab === activeTab && <motion.div className="tab-indicator" layoutId="indicator" />}
                         </motion.button>
                     ))}
                 </motion.div>

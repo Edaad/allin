@@ -34,7 +34,6 @@
     border-radius: 30px;
     color: #9f9f9f;
     font-weight: 500;
-    transition: all 0.3s ease;
 }
 
 .tab-button:hover {
@@ -45,9 +44,12 @@
     color: #357337;
     font-weight: 600;
     background-color: rgba(53, 115, 55, 0.1);
+    border-bottom: 3px solid #357337;
+    border-radius: 0;
 }
 
 .tab-indicator {
+    display: none;
     position: absolute;
     bottom: -2px;
     left: 0;
