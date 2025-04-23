@@ -174,7 +174,7 @@ export function Community() {
         visible: {
             opacity: 1,
             transition: {
-                staggerChildren: 0.1
+                staggerChildren: 0.09
             }
         }
     };
