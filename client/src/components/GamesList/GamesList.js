@@ -1,6 +1,8 @@
 import React from "react";
 import "./GamesList.css";
 import GameCard from "../GameCard/GameCard";
+import "../GameCard/GameCard.css";
+
 
 /**
  * Reusable component to display a list of games with consistent styling

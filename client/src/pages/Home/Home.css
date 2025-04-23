@@ -111,8 +111,8 @@
     margin-top: 2rem;
 }
 
-/* Game card styles */
-.poker-game-card {
+/* Scope all game card styles to the home page */
+.public-games-section .poker-game-card {
     background-color: white;
     border-radius: 12px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
@@ -124,12 +124,12 @@
     border: 1px solid #eaeaea;
 }
 
-.poker-game-card:hover {
+.public-games-section .poker-game-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
-.game-card-header {
+.public-games-section .game-card-header {
     padding: 15px;
     display: flex;
     justify-content: space-between;
@@ -138,17 +138,15 @@
     border-bottom: 1px solid #eaeaea;
 }
 
-.game-title-section {
+.public-games-section .game-title-section {
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-.game-icon {
+.public-games-section .game-icon {
     width: 25px;
-    /* Reduced from 30px */
     height: 25px;
-    /* Reduced from 30px */
     background-color: rgba(53, 115, 55, 0.1);
     border-radius: 50%;
     display: flex;
@@ -156,57 +154,55 @@
     justify-content: center;
 }
 
-.game-icon::before {
+.public-games-section .game-icon::before {
     content: "♠";
     color: rgb(53, 115, 55);
     font-size: 16px;
 }
 
-.game-title {
+.public-games-section .game-title {
     font-size: 16px;
-    /* Reduced from 18px */
     font-weight: 600;
     margin: 0;
     color: #333;
 }
 
-.host-label {
+.public-games-section .host-label {
     color: #666;
     font-size: 14px;
 }
 
-.gameCard-circle-divider {
+.public-games-section .gameCard-circle-divider {
     margin: 0 8px;
     color: #ccc;
 }
 
-.game-status-indicator {
+.public-games-section .game-status-indicator {
     padding: 4px 10px;
-    /* Reduced from 6px 12px */
     border-radius: 20px;
     font-size: 12px;
     font-weight: 600;
     text-transform: capitalize;
 }
 
-.game-status-indicator.upcoming {
+.public-games-section .game-status-indicator.upcoming {
     background-color: rgba(33, 150, 243, 0.1);
     color: #2196f3;
 }
 
-.game-status-indicator.completed {
+.public-games-section .game-status-indicator.completed {
     background-color: rgba(76, 175, 80, 0.1);
     color: #4caf50;
 }
 
-.divider {
+.public-games-section .divider {
     border: none;
     height: 1px;
     background-color: #eaeaea;
     margin: 0;
 }
 
-.card-content-wrapper {
+.public-games-section .card-content-wrapper {
     padding: 15px;
     display: flex;
     flex-direction: column;
@@ -214,53 +210,47 @@
     justify-content: space-between;
 }
 
-.gameCard-details {
+.public-games-section .gameCard-details {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    /* Reduced from 12px */
     margin-bottom: 15px;
-    /* Reduced from 20px */
 }
 
-.detail-row {
+.public-games-section .detail-row {
     display: flex;
     align-items: center;
 }
 
-.card-detail-label {
+.public-games-section .card-detail-label {
     font-weight: 600;
     min-width: 90px;
-    /* Reduced from 100px */
     color: #555;
 }
 
-.detail-value {
+.public-games-section .detail-value {
     color: #333;
 }
 
-.game-actions {
+.public-games-section .game-actions {
     margin-top: auto;
     display: flex;
     justify-content: flex-end;
 }
 
-/* Styled join button */
-.join-button {
+.public-games-section .join-button {
     background: none;
     font-size: 14px;
-    /* Reduced from 15px */
     font-weight: 600;
     color: rgb(53, 115, 55);
     border: solid 2px rgb(53, 115, 55);
     border-radius: 4px;
     padding: 8px 16px;
-    /* Reduced from 10px 20px */
     transition: background-color 0.3s ease, color 0.3s ease;
     cursor: pointer;
 }
 
-.join-button:hover {
+.public-games-section .join-button:hover {
     background-color: rgb(53, 115, 55);
     color: white;
 }
