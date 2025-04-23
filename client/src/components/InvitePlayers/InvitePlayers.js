@@ -44,14 +44,43 @@ export default function InvitePlayers({ user, gameId, players, fetchPlayers }) {
 			const groupIdValue =
 				typeof groupId === "object" ? groupId._id : groupId;
 
-			const response = await axios.get(
-				`${process.env.REACT_APP_API_URL}/group-members/${groupIdValue}`
-			);
+    const handleCancelInvite = async (inviteeId, isGuest = false) => {
+        try {
+            const data = {
+                gameId: gameId,
+                inviterId: user._id,
+                inviteeId: inviteeId,
+                isGuest: isGuest
+            };
+            await axios.post(
+                `${process.env.REACT_APP_API_URL}/players/cancel-invitation`,
+                data
+            );
+            fetchPlayers();
+        } catch (error) {
+            console.error("Error canceling invitation:", error);
+            setError("Failed to cancel invitation.");
+        }
+    };
 
-			// Extract members with accepted status
-			const acceptedMembers = response.data.filter(
-				(member) => member.membership_status === "accepted"
-			);
+    const handleRemovePlayer = async (inviteeId, isGuest = false) => {
+        try {
+            const data = {
+                gameId: gameId,
+                inviterId: user._id,
+                inviteeId: inviteeId,
+                isGuest: isGuest
+            };
+            await axios.post(
+                `${process.env.REACT_APP_API_URL}/players/remove-player`,
+                data
+            );
+            fetchPlayers();
+        } catch (error) {
+            console.error("Error removing player:", error);
+            setError("Failed to remove player.");
+        }
+    };
 
 			setGroupMembers(acceptedMembers);
 		} catch (error) {

@@ -74,6 +74,53 @@
     font-size: 16px;
 }
 
+/* Success message styling */
+.success-container {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.success-message {
+    background-color: #f0f9f0;
+    border: 1px solid #c3e6cb;
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.success-message i {
+    font-size: 60px;
+    color: #28a745;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.success-message h2 {
+    font-size: 28px;
+    color: #28a745;
+    margin-bottom: 15px;
+}
+
+.success-message p {
+    font-size: 18px;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.waitlist-info, .request-info {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.waitlist-info p, .request-info p {
+    margin: 8px 0;
+    font-size: 16px;
+}
+
 .loading {
     text-align: center;
     padding: 60px;
@@ -96,6 +143,128 @@
     border: 1px solid #ffcdd2;
     font-weight: 500;
     box-shadow: 0 2px 4px rgba(220, 53, 69, 0.1);
+}
+
+/* New styles for account options */
+.join-options {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.join-option-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eaeaea;
+}
+
+.tab {
+    padding: 10px 20px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    color: #666;
+    text-decoration: none;
+    position: relative;
+}
+
+.tab:hover {
+    color: #357337;
+}
+
+.tab.active {
+    color: #357337;
+    font-weight: 600;
+}
+
+.tab.active:after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: #357337;
+}
+
+.account-benefits {
+    margin-top: 30px;
+    background-color: #f9f9f9;
+    border: 1px solid #eaeaea;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.account-benefits h3 {
+    margin-bottom: 15px;
+    color: #444;
+    font-size: 18px;
+}
+
+.account-benefits ul {
+    margin-left: 20px;
+    margin-bottom: 20px;
+}
+
+.account-benefits li {
+    margin-bottom: 8px;
+    color: #555;
+}
+
+.account-suggestion {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #eaeaea;
+}
+
+.account-option {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.account-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.primary-button, .secondary-button {
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    font-size: 16px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.primary-button {
+    background-color: #357337;
+    color: white;
+}
+
+.primary-button:hover {
+    background-color: #2a5c2c;
+}
+
+.secondary-button {
+    background-color: #f8f9fa;
+    color: #357337;
+    border: 1px solid #357337;
+}
+
+.secondary-button:hover {
+    background-color: #eef0f2;
 }
 
 /* Responsive adjustments */
@@ -136,4 +305,30 @@
     .icon-wrapper {
         margin-bottom: 10px;
     }
-} 
+    
+    .success-message {
+        padding: 25px;
+    }
+    
+    .success-message i {
+        font-size: 40px;
+    }
+    
+    .success-message h2 {
+        font-size: 22px;
+    }
+    
+    .join-option-tabs {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .tab {
+        padding: 10px;
+        text-align: center;
+    }
+    
+    .account-buttons {
+        flex-direction: column;
+    }
+}

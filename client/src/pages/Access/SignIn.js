@@ -21,12 +21,24 @@ export function SignIn() {
             setError('');
             localStorage.removeItem('user'); // Clear any existing user data
 
-            // Extract necessary fields, including friends, pendingRequests, and friendRequests
-            const { _id, names, username, email, friends, pendingRequests, friendRequests } = response.data.user;
-            const userData = { _id, names, username, email, friends, pendingRequests, friendRequests };
-            localStorage.setItem('user', JSON.stringify(userData)); // Store the filtered user data
+            // Extract necessary fields from the response
+            const userData = response.data.user;
+            
+            // Ensure all required fields are present with default values if missing
+            const sanitizedUserData = {
+                _id: userData._id || '',
+                names: userData.names || { firstName: '', lastName: '' },
+                username: userData.username || '',
+                email: userData.email || '',
+                friends: userData.friends || [],
+                pendingRequests: userData.pendingRequests || [],
+                friendRequests: userData.friendRequests || []
+            };
+            
+            // Store the sanitized user data
+            localStorage.setItem('user', JSON.stringify(sanitizedUserData));
 
-            navigate(`/dashboard/${_id}/overview`);
+            navigate(`/dashboard/${sanitizedUserData._id}/overview`);
         } catch (error) {
             setError(error.response ? error.response.data.message : 'Error signing in');
             setSuccess('');

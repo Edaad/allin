@@ -32,14 +32,41 @@ const playerSchema = new mongoose.Schema({
     updated_at: { type: Date, default: Date.now },
 });
 
-// Ensure a user/guest is invited only once per game
-playerSchema.index({ 
-    game_id: 1,
-    $or: [
-        { user_id: 1 },
-        { guest_id: 1 }
-    ]
-}, { unique: true });
+// Drop existing indexes and create new ones
+playerSchema.pre('save', async function(next) {
+    try {
+        const collection = this.collection;
+        // Drop all indexes except _id
+        await collection.dropIndexes();
+        
+        // Recreate our intended indexes
+        await collection.createIndex(
+            { game_id: 1, user_id: 1 },
+            { 
+                unique: true,
+                partialFilterExpression: { 
+                    is_guest: false,
+                    user_id: { $type: "objectId" }
+                }
+            }
+        );
+        
+        await collection.createIndex(
+            { game_id: 1, guest_id: 1 },
+            { 
+                unique: true,
+                partialFilterExpression: { 
+                    is_guest: true,
+                    guest_id: { $type: "objectId" }
+                }
+            }
+        );
+        
+        next();
+    } catch (error) {
+        next(error);
+    }
+});
 
 const Player = mongoose.model('Player', playerSchema);
 module.exports = Player;
