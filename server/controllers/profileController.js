@@ -1,6 +1,6 @@
 // controllers/profileController.js
 
-const profileService = require('../services/profileservice');
+const profileService = require('../services/profileService');
 
 /**
  * Get a user's profile
@@ -8,7 +8,7 @@ const profileService = require('../services/profileservice');
 const getProfile = async (req, res) => {
   try {
     const { profileId } = req.params;
-    
+
     // Use service to get profile with games
     const profileWithGames = await profileService.getProfileWithGames(profileId);
     res.status(200).json(profileWithGames);
@@ -25,12 +25,12 @@ const createProfile = async (req, res) => {
   try {
     console.log('Creating profile with data:', req.body);
     const { user_id } = req.body;
-    
+
     if (!user_id) {
       console.error('Missing user_id in request body');
       return res.status(400).json({ message: 'user_id is required' });
     }
-    
+
     // Prepare profile data with defaults
     const profileData = {
       user_id,
@@ -52,27 +52,27 @@ const createProfile = async (req, res) => {
         }
       }
     };
-    
+
     console.log('Creating profile with processed data:', profileData);
     const savedProfile = await profileService.createNewProfile(profileData);
     console.log('Profile created successfully:', savedProfile);
-    
+
     res.status(201).json(savedProfile);
   } catch (err) {
     console.error('Error creating profile:', err);
-    
+
     // More specific error response
     if (err.name === 'ValidationError') {
-      return res.status(400).json({ 
-        message: 'Profile validation failed', 
-        errors: Object.values(err.errors).map(e => e.message) 
+      return res.status(400).json({
+        message: 'Profile validation failed',
+        errors: Object.values(err.errors).map(e => e.message)
       });
     }
-    
+
     if (err.code === 11000 || err.status === 400) {
       return res.status(400).json({ message: err.message || 'Profile already exists for this user' });
     }
-    
+
     res.status(err.status || 500).json({ message: err.message || 'Server error creating profile' });
   }
 };
@@ -84,12 +84,12 @@ const updateProfile = async (req, res) => {
   try {
     const { profileId } = req.params;
     const { userId } = req.body;
-    
+
     // Remove user_id from update data to prevent it from being changed
     const updateData = { ...req.body };
     delete updateData.user_id;
     delete updateData.userId;
-    
+
     const updatedProfile = await profileService.updateProfileData(profileId, userId, updateData);
     res.status(200).json(updatedProfile);
   } catch (err) {
@@ -105,12 +105,12 @@ const updateImage = async (req, res) => {
   try {
     const { profileId } = req.params;
     const { imageUrl, type, userId } = req.body;
-    
+
     const profile = await profileService.updateProfileImage(profileId, userId, imageUrl, type);
-    
-    res.status(200).json({ 
+
+    res.status(200).json({
       message: `${type === 'profile' ? 'Profile' : 'Banner'} image updated`,
-      profile 
+      profile
     });
   } catch (err) {
     console.error('Error updating image:', err);
@@ -125,9 +125,9 @@ const updatePokerPreferences = async (req, res) => {
   try {
     const { profileId } = req.params;
     const { poker_preferences, userId } = req.body;
-    
+
     const profile = await profileService.updatePokerPreferences(profileId, userId, poker_preferences);
-    
+
     res.status(200).json({ message: 'Poker preferences updated', profile });
   } catch (err) {
     console.error('Error updating poker preferences:', err);
@@ -142,9 +142,9 @@ const updateSocialLinks = async (req, res) => {
   try {
     const { profileId } = req.params;
     const { social_links, userId } = req.body;
-    
+
     const profile = await profileService.updateSocialLinks(profileId, userId, social_links);
-    
+
     res.status(200).json({ message: 'Social links updated', profile });
   } catch (err) {
     console.error('Error updating social links:', err);
@@ -159,14 +159,14 @@ const getProfileByUserId = async (req, res) => {
   try {
     const { userId } = req.params;
     console.log('Fetching profile for user ID:', userId);
-    
+
     if (!userId) {
       return res.status(400).json({ message: 'User ID is required' });
     }
-    
+
     const profileWithGames = await profileService.getProfileWithGames(userId);
     console.log('Profile found for user ID:', userId);
-    
+
     res.status(200).json(profileWithGames);
   } catch (err) {
     console.error('Error fetching profile by user ID:', err);
