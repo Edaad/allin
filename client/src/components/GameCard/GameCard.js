@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./GameCard.css";
+import { ReactComponent as SpadeIcon } from "../../assets/icons/spade.svg";
 
 function GameCard({ game, user, customActions, showBorder = true }) {
 	const navigate = useNavigate();
@@ -11,15 +12,15 @@ function GameCard({ game, user, customActions, showBorder = true }) {
 		game.playerStatus || "none"
 	);
 
-	// Format date to be more readable
+	// Format date to be more readable - without day of the week
 	const formatDate = (dateString) => {
 		const options = {
-			weekday: "long",
 			month: "long",
 			day: "numeric",
 			year: "numeric",
 		};
-		return new Date(dateString).toLocaleDateString("en-US", options);
+		const date = new Date(dateString);
+		return date.toLocaleDateString("en-US", options);
 	};
 
 	// Format time to 12 hour format
@@ -58,127 +59,172 @@ function GameCard({ game, user, customActions, showBorder = true }) {
 		}
 	};
 
-	// Render the appropriate status badge or action button based on player status
-	const renderStatusBadge = () => {
-		// If game is public and player hasn't made any action yet
-		if (game.is_public && (playerStatus === "none" || !playerStatus)) {
-			// Check if the game is full by comparing accepted players to game.handed
-			const isFull = game.acceptedPlayersCount >= game.handed;
+	const handleViewMore = (e) => {
+		// Prevent default to avoid conflicts
+		e.stopPropagation();
+		navigate(`/dashboard/${user._id}/games/game/${game._id}`);
+	};
 
-			return (
-				<button
-					className="request-button"
-					onClick={handleRequestToJoin}
-					disabled={isRequesting || game.game_status === "completed"}
-				>
-					{isFull ? "Join Waitlist" : "Request to Join"}
-				</button>
-			);
+	// Handle click on the entire card
+	const handleCardClick = () => {
+		navigate(`/dashboard/${user._id}/games/game/${game._id}`);
+	};
+
+	// Get waitlist position text if applicable
+	const getWaitlistText = () => {
+		if (playerStatus === "waitlist" && game.waitlistPosition) {
+			return `Waitlist #${game.waitlistPosition}`;
+		} else if (playerStatus === "waitlist") {
+			return "On Waitlist";
+		} else if (playerStatus === "waitlist_requested") {
+			return "Waitlist Requested";
+		}
+		return null;
+	};
+
+	// Render the status badge or action button
+	const renderActionOrStatus = () => {
+		// If the user is the host, show "Host" status
+		if (user._id === game.host_id?._id) {
+			return <div className="status-badge host">Host</div>;
 		}
 
-		// Check if game is completed first, regardless of player status
-		if (game.game_status === "completed") {
-			return <span className="status-badge completed">Completed</span>;
-		}
-
-		// Otherwise, show status badges for upcoming games
-		switch (playerStatus) {
-			case "accepted":
-				return <span className="status-badge accepted">Joined</span>;
-			case "pending":
-				return (
-					<span className="status-badge pending">
-						Invitation Pending
-					</span>
-				);
-			case "requested":
-				return (
-					<span className="status-badge requested">
-						Request Pending
-					</span>
-				);
-			case "waitlist":
-				return (
-					<span className="status-badge waitlist">
-						On Waitlist{" "}
-						{game.waitlistPosition
-							? `(#${game.waitlistPosition})`
-							: ""}
-					</span>
-				);
-			case "rejected":
+		// If the user has a status other than "none", show the status badge
+		if (playerStatus !== "none" && playerStatus) {
+			// Handle rejection reason display
+			if (playerStatus === "rejected") {
 				return (
 					<div className="status-badge-container">
-						{game.rejectionReason && (
-							<span
-								className="info-icon"
-								onMouseEnter={() => setShowReason(true)}
-								onMouseLeave={() => setShowReason(false)}
-							>
-								ⓘ
-							</span>
-						)}
-						<span className="status-badge rejected">
-							Request Rejected
-						</span>
-
-						{showReason && game.rejectionReason && (
+						<div
+							className="status-badge rejected"
+							onMouseEnter={() => setShowReason(true)}
+							onMouseLeave={() => setShowReason(false)}
+						>
+							<i className="fa-solid fa-circle-exclamation info-icon"></i>
+							Declined
+						</div>
+						{showReason && game.rejection_reason && (
 							<div className="rejection-reason-tooltip">
-								{game.rejectionReason}
+								{game.rejection_reason}
 							</div>
 						)}
 					</div>
 				);
-			default:
-				return null;
+			}
+
+			// Handle waitlist display
+			const waitlistText = getWaitlistText();
+			if (waitlistText) {
+				return (
+					<div className="status-badge waitlist">{waitlistText}</div>
+				);
+			}
+
+			// Other statuses display
+			const statusLabels = {
+				accepted: "Joined",
+				pending: "Invited",
+				requested: "Request Sent",
+				completed: "Completed",
+			};
+
+			return (
+				<div className={`status-badge ${playerStatus}`}>
+					{statusLabels[playerStatus] || playerStatus}
+				</div>
+			);
 		}
+
+		// For completed games, show the View More button
+		if (game.game_status === "completed") {
+			return (
+				<button onClick={handleViewMore} className="view-more-button">
+					View More
+				</button>
+			);
+		}
+
+		// For public games where player hasn't joined yet, show the chip button
+		return (
+			<button
+				className="chip-button"
+				onClick={handleRequestToJoin}
+				disabled={isRequesting}
+			>
+				<div className="chip-icon">
+					<span className="request-text">Join</span>
+				</div>
+			</button>
+		);
 	};
 
-	const handleCardClick = () => {
-		// If custom actions are provided, don't navigate on click
-		if (customActions) return;
-		navigate(`/dashboard/${user._id}/games/game/${game._id}`);
-	};
-
+	// New renderer for the card with chip on the right side
 	return (
 		<div
-			className={`game-card ${showBorder ? "" : "no-border"}`}
+			className={`poker-game-card ${!showBorder ? "no-border" : ""}`}
 			onClick={handleCardClick}
 		>
 			<div className="game-card-header">
-				<div className="game-header">
+				<div className="game-title-section">
+					<SpadeIcon className="game-icon" />
 					<h3 className="game-title">{game.game_name}</h3>
-					<h4 className="game-host">{game.host_id?.username}</h4>
+					<span className="host-label">
+						<span className="gameCard-circle-divider">|</span>
+						{game.host_id?.username}
+					</span>
 				</div>
-				<div className="game-privacy">
-					{game.is_public ? (
-						<span className="privacy-tag public">Public</span>
-					) : (
-						<span className="privacy-tag private">Private</span>
-					)}
-					<div className="game-card-footer">
-						{customActions || renderStatusBadge()}
+				{game.game_status && (
+					<div
+						className={`game-status-indicator ${game.game_status}`}
+					>
+						{game.game_status.charAt(0).toUpperCase() +
+							game.game_status.slice(1)}
 					</div>
-				</div>
+				)}
 			</div>
 
-			<div className="game-card-content">
-				<div className="game-info-row">
-					<p className="info-value">
-						{formatDate(game.game_date)} at{" "}
-						{formatTime(game.game_date)}
-					</p>
+			<hr className="divider" />
+
+			<div className="card-content-wrapper">
+				<div className="gameCard-details">
+					<div className="detail-row">
+						<span className="card-detail-label">Date:</span>
+						<span className="detail-value">
+							{formatDate(game.game_date)}
+						</span>
+					</div>
+
+					<div className="detail-row">
+						<span className="card-detail-label">Time:</span>
+						<span className="detail-value">
+							{formatTime(game.game_date)}
+						</span>
+					</div>
+
+					<div className="detail-row">
+						<span className="card-detail-label">Location:</span>
+						<span className="detail-value">{game.location}</span>
+					</div>
+
+					<div className="detail-row">
+						<span className="card-detail-label">Blinds:</span>
+						<span className="detail-value">{game.blinds}</span>
+					</div>
+
+					<div className="detail-row">
+						<span className="card-detail-label">Open Seats:</span>
+						<span className="detail-value">
+							{game.acceptedPlayersCount
+								? `${game.handed - game.acceptedPlayersCount}/${
+										game.handed
+								  }`
+								: `${game.handed - 1}/${game.handed}`}
+						</span>
+					</div>
 				</div>
 
-				<div className="game-info-row">
-					<p className="info-value">{game.location}</p>
-				</div>
-
-				<div className="game-info-row">
-					<p className="info-value">
-						<span>Blinds: {game.blinds}</span>{" "}
-						<span>Players: {game.handed}</span>
-					</p>
+				<div className="game-actions">
+					{customActions || renderActionOrStatus()}
 				</div>
 			</div>
 		</div>

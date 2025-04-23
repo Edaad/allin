@@ -1,262 +1,123 @@
-// src/pages/Dashboard/Community/Community.js (Updated)
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { debounce } from 'lodash';
+// src/pages/Dashboard/Community/Community.js (Refactored)
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import Input from '../../../components/Input/Input';
-import '../Dashboard.css';
 import './Community.css';
 import Sidebar from '../../../components/Sidebar/Sidebar';
-import Profile from '../../../components/Profile/Profile';
-import GroupCard from '../../../components/GroupCard/GroupCard';
-import CreateGroupModal from '../../../components/CreateGroupModal/CreateGroupModal';
+import TabNav from '../../../components/TabNav/TabNav';
+import UsersTab from '../../../components/UsersTab/UsersTab';
+import GroupsTab from '../../../components/GroupsTab/GroupsTab';
 
 export function Community() {
     const [user, setUser] = useState(null);
     const { userId } = useParams();
     const navigate = useNavigate();
-    const [page, setPage] = useState('community');
-    const [query, setQuery] = useState("");
-    const [data, setData] = useState([]);
-    const [groups, setGroups] = useState([]);
+    const page = 'community';
     const [activeTab, setActiveTab] = useState('All');
-    const [createGroupModalOpen, setCreateGroupModalOpen] = useState(false);
-    const [filterGroupsBy, setFilterGroupsBy] = useState('all'); // all, my-groups, joined
+    const [isTabLoading, setIsTabLoading] = useState(false);
 
-    const fetchData = useMemo(
-        () =>
-            debounce(async (searchQuery) => {
-                if (!user) return;
+    // Track the current tab with a ref to prevent unnecessary renders
+    const prevTabRef = React.useRef(activeTab);
 
-                try {
-                    // Only fetch users if not on Groups tab
-                    if (activeTab !== 'Groups') {
-                        const res = await axios.get(`${process.env.REACT_APP_API_URL}/users`, {
-                            params: {
-                                query: searchQuery.length >= 3 ? searchQuery : '',
-                                tab: activeTab,
-                                userId: user._id,
-                            },
-                        });
-                        setData(res.data);
-                    }
-                } catch (error) {
-                    console.error('Error fetching data:', error);
+    // Tab configuration - memoized to prevent recreation on render
+    const tabs = useMemo(() => [
+        { id: 'All', label: 'All' },
+        { id: 'Friends', label: 'Friends' },
+        { id: 'PendingRequests', label: 'Pending Requests' },
+        { id: 'Invitations', label: 'Invitations' },
+        { id: 'Groups', label: 'Groups' }
+    ], []);
+
+    // Fetch user data
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const loggedUser = JSON.parse(localStorage.getItem('user'));
+                if (loggedUser && loggedUser._id === userId) {
+                    setUser(loggedUser);
+                } else {
+                    navigate('/signin');
                 }
-            }, 200),
-        [user, activeTab]
-    );
-
-    const fetchGroups = useCallback(async () => {
-        if (!user) return;
-
-        try {
-            let endpoint;
-            let params = {};
-
-            if (filterGroupsBy === 'my-groups') {
-                // Fetch groups where the user is admin
-                params = { admin_id: user._id, userId: user._id };
-                endpoint = '/groups';
-            } else if (filterGroupsBy === 'joined') {
-                // Fetch groups where the user is a member
-                endpoint = `/groups/user/${user._id}`;
-                params = { membership_status: 'accepted' };
-            } else {
-                // Fetch all public groups + groups where user is a member
-                endpoint = '/groups';
-                params = { is_public: true, userId: user._id };
+            } catch (error) {
+                console.error("Error loading user data:", error);
+                navigate('/signin');
             }
-
-            const res = await axios.get(`${process.env.REACT_APP_API_URL}${endpoint}`, { params });
-            setGroups(res.data);
-        } catch (error) {
-            console.error('Error fetching groups:', error);
-        }
-    }, [user, filterGroupsBy]);
-
-    useEffect(() => {
-        if (activeTab === 'Groups') {
-            fetchGroups();
-        } else {
-            fetchData(query);
-        }
-    }, [query, activeTab, user, fetchData, fetchGroups, filterGroupsBy]);
-
-    useEffect(() => {
-        return () => {
-            fetchData.cancel();
         };
-    }, [fetchData]);
 
-    useEffect(() => {
-        const loggedUser = JSON.parse(localStorage.getItem('user'));
-        if (loggedUser && loggedUser._id === userId) {
-            setUser(loggedUser);
-        } else {
-            navigate('/signin');
-        }
+        fetchUser();
     }, [userId, navigate]);
 
-    const updateUserState = (updatedUser) => {
+    // Handle tab change with loading state to improve perceived performance
+    const handleTabChange = useCallback((tabId) => {
+        if (tabId === prevTabRef.current) return; // Avoid unnecessary state updates
+
+        setIsTabLoading(true); // Show loading state while changing tabs
+
+        // Small delay to allow UI to update before heavy operations
+        setTimeout(() => {
+            setActiveTab(tabId);
+            prevTabRef.current = tabId;
+
+            // Add a small delay before removing loading state to prevent flickering
+            setTimeout(() => {
+                setIsTabLoading(false);
+            }, 100);
+        }, 0);
+    }, []);
+
+    // Check URL params for initial tab
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const tabParam = params.get('tab');
+
+        if (tabParam && tabs.some(tab => tab.id === tabParam)) {
+            handleTabChange(tabParam);
+        }
+    }, [tabs, handleTabChange]);
+
+    // Update user state function - useful for child components
+    const updateUserState = useCallback((updatedUser) => {
         setUser(updatedUser);
         localStorage.setItem('user', JSON.stringify(updatedUser));
-    };
+    }, []);
 
-    const handleGroupCreated = () => {
-        // Refresh the groups list
-        fetchGroups();
-    };
+    // Render the active tab content based on current tab
+    const renderTabContent = () => {
+        if (isTabLoading) {
+            return <div className="tab-loading">Loading...</div>;
+        }
 
-    // const requestToJoinGroup = async (groupId) => {
-    //     try {
-    //         await axios.post(`${process.env.REACT_APP_API_URL}/group-members/request-to-join`, {
-    //             userId: user._id,
-    //             groupId: groupId
-    //         });
-
-    //         // Update local state to reflect the change
-    //         setGroups(prevGroups => 
-    //             prevGroups.map(group => 
-    //                 group._id === groupId 
-    //                     ? {...group, membershipStatus: 'requested'} 
-    //                     : group
-    //             )
-    //         );
-    //     } catch (error) {
-    //         console.error('Error requesting to join group:', error);
-    //     }
-    // };
-
-    const menus = [
-        { title: 'Overview', page: 'overview' },
-        { title: 'Games', page: 'games' },
-        { title: 'Host', page: 'host' },
-        { title: 'Community', page: 'community' },
-        { title: 'Bankroll', page: 'bankroll' },
-        { title: 'Notifications', page: 'notifications' }
-    ];
-
-    const getEmptyMessage = () => {
-        switch (activeTab) {
-            case 'Friends':
-                return 'You currently have no friends';
-            case 'PendingRequests':
-                return 'You currently have no pending requests';
-            case 'Invitations':
-                return 'You currently have no invitations';
-            case 'Groups':
-                if (filterGroupsBy === 'my-groups') return 'You haven\'t created any groups yet';
-                if (filterGroupsBy === 'joined') return 'You haven\'t joined any groups yet';
-                return 'There are no public groups available';
-            case 'All':
-                return '';
-            default:
-                return '';
+        if (activeTab === 'Groups') {
+            return <GroupsTab user={user} />;
+        } else {
+            return <UsersTab user={user} activeTab={activeTab} updateUserState={updateUserState} />;
         }
     };
 
-    const getNoUserFoundMessage = () => {
-        switch (activeTab) {
-            case 'Friends':
-                return 'There are no friends that match your search';
-            case 'PendingRequests':
-                return 'There are no pending requests that match your search';
-            case 'Invitations':
-                return 'There are no invitations that match your search';
-            case 'All':
-                return 'There are no members in the community that match your search';
-            default:
-                return '';
-        }
-    };
+    // If user isn't loaded yet, show a loading indicator
+    if (!user) {
+        return (
+            <div className="dashboard">
+                <Sidebar page={page} username="Loading..." />
+                <div className='logged-content-container'>
+                    <div className="loading-container">Loading...</div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="dashboard">
-            {user && <Sidebar menus={menus} setPage={setPage} page={page} username={user.username} />}
+            <Sidebar page={page} username={user.username} />
             <div className='logged-content-container'>
-                {user ? <div className='dashboard-heading'><h1>Community</h1></div> : <h1>Loading...</h1>}
+                <div className='dashboard-heading'><h1>Community</h1></div>
 
-                <div className="tab-container">
-                    <button onClick={() => setActiveTab('All')} className={`tab${activeTab === 'All' ? '-selected' : ''}`}>All</button>
-                    <button onClick={() => setActiveTab('Friends')} className={`tab${activeTab === 'Friends' ? '-selected' : ''}`}>Friends</button>
-                    <button onClick={() => setActiveTab('PendingRequests')} className={`tab${activeTab === 'PendingRequests' ? '-selected' : ''}`}>Pending Requests</button>
-                    <button onClick={() => setActiveTab('Invitations')} className={`tab${activeTab === 'Invitations' ? '-selected' : ''}`}>Invitations</button>
-                    <button onClick={() => setActiveTab('Groups')} className={`tab${activeTab === 'Groups' ? '-selected' : ''}`}>Groups</button>
-                </div>
+                <TabNav
+                    activeTab={activeTab}
+                    onTabChange={handleTabChange}
+                    tabs={tabs}
+                />
 
-                {activeTab === 'Groups' ? (
-                    <div className="groups-container">
-                        <div className="groups-actions">
-                            <button
-                                className="create-group-button"
-                                onClick={() => setCreateGroupModalOpen(true)}
-                            >
-                                + Create New Group
-                            </button>
-
-                            <div className="groups-filter">
-                                <button
-                                    className={`filter-button ${filterGroupsBy === 'all' ? 'active' : ''}`}
-                                    onClick={() => setFilterGroupsBy('all')}
-                                >
-                                    All Groups
-                                </button>
-                                <button
-                                    className={`filter-button ${filterGroupsBy === 'my-groups' ? 'active' : ''}`}
-                                    onClick={() => setFilterGroupsBy('my-groups')}
-                                >
-                                    My Groups
-                                </button>
-                                <button
-                                    className={`filter-button ${filterGroupsBy === 'joined' ? 'active' : ''}`}
-                                    onClick={() => setFilterGroupsBy('joined')}
-                                >
-                                    Joined Groups
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="groups-list">
-                            {groups.length > 0 ? (
-                                groups.map(group => (
-                                    <GroupCard
-                                        key={group._id}
-                                        group={group}
-                                        user={user}
-                                    />
-                                ))
-                            ) : (
-                                <p className="no-groups-message">{getEmptyMessage()}</p>
-                            )}
-                        </div>
-
-                        <CreateGroupModal
-                            open={createGroupModalOpen}
-                            onClose={() => setCreateGroupModalOpen(false)}
-                            user={user}
-                            onGroupCreated={handleGroupCreated}
-                        />
-                    </div>
-                ) : (
-                    <>
-                        <Input
-                            name='search'
-                            type='text'
-                            placeholder='Search for members in the community by their name or username..'
-                            onChange={(e) => setQuery(e.target.value)}
-                        />
-                        <div className='all-profiles-container'>
-                            {data.filter(item => item._id !== user?._id).length > 0 ? (
-                                data.filter(item => item._id !== user?._id).map((item) => (
-                                    <Profile key={item._id} data={item} currentUser={user} refreshData={fetchData} updateUserState={updateUserState} />
-                                ))
-                            ) : (
-                                <p>{!query && getEmptyMessage()}{query && getNoUserFoundMessage()}</p>
-                            )}
-                        </div>
-                    </>
-                )}
+                {renderTabContent()}
             </div>
         </div>
     );

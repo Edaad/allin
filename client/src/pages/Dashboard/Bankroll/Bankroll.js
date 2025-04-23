@@ -7,7 +7,7 @@ export function Bankroll() {
     const [user, setUser] = useState(null);
     const { userId } = useParams();
     const navigate = useNavigate();
-    const [page, setPage] = useState('bankroll');
+    const page = "bankroll"; // No need for state since this is constant
 
     useEffect(() => {
         const loggedUser = JSON.parse(localStorage.getItem('user'));
@@ -20,18 +20,9 @@ export function Bankroll() {
 
     console.log(user);
 
-    const menus = [
-        { title: 'Overview', page: 'overview' },
-        { title: 'Games', page: 'games' },
-        { title: 'Host', page: 'host' },
-        { title: 'Community', page: 'community' },
-        { title: 'Bankroll', page: 'bankroll' },
-        { title: 'Notifications', page: 'notifications' }
-    ];
-
     return (
         <div className="dashboard">
-            {user && <Sidebar menus={menus} setPage={setPage} page={page} username={user.username} />}
+            {user && <Sidebar page={page} username={user.username} />}
             <div className='logged-content-container'>
                 {user ? <div className='dashboard-heading'><h1>Bankroll</h1></div> : <h1>Loading...</h1>}
             </div>

@@ -1,9 +1,32 @@
 .logo-name {
     display: flex;
     flex-direction: row;
+    align-items: center;
     color: #343434;
     font-size: 40px;
     margin-left: 5px;
     font-weight: 600;
     cursor: pointer;
+}
+
+.logo-name p {
+    margin: 0;
+    padding: 0;
+    line-height: 1;
+}
+
+.in-text {
+    display: flex;
+}
+
+.logo-spade {
+
+    margin-left: 1px;
+}
+
+.spade-icon {
+    width: 12px;
+    height: 12px;
+    fill: rgb(53, 115, 55);
+    
 }

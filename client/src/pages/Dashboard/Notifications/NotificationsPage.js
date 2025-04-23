@@ -230,18 +230,10 @@ export function NotificationsPage() {
     };
 
     const groupedNotifications = groupNotificationsByDate();
-    const menus = [
-        { title: 'Overview', page: 'overview' },
-        { title: 'Games', page: 'games' },
-        { title: 'Host', page: 'host' },
-        { title: 'Community', page: 'community' },
-        { title: 'Bankroll', page: 'bankroll' },
-        { title: 'Notifications', page: 'notifications' }
-    ];
 
     return (
         <div className="dashboard">
-            {user && <Sidebar menus={menus} page={page} username={user.username} />}
+            {user && <Sidebar page={page} username={user.username} />}
             <div className='logged-content-container'>
                 <div className='dashboard-heading'>
                     <h1>Notifications</h1>

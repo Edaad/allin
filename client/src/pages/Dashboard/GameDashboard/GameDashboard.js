@@ -1,17 +1,16 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import '../Dashboard.css';
-import './GameDashboard.css';
-import '../Host/Host.css';
-import Sidebar from '../../../components/Sidebar/Sidebar';
-import Input from '../../../components/Input/Input';
-import Select from '../../../components/Select/Select';
-import InvitePlayers from '../../../components/InvitePlayers/InvitePlayers';
-import Profile from '../../../components/Profile/Profile';
-import RejectModal from '../../../components/RejectModal/RejectModal';
-import ReviewButton from '../../../components/ReviewButton/ReviewButton';
-import ReviewModal from '../../../components/ReviewModal/ReviewModal';
+import React, { useEffect, useState, useCallback, useMemo } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import "../Dashboard.css";
+import "./GameDashboard.css";
+import { minidenticon } from "minidenticons";
+import Sidebar from "../../../components/Sidebar/Sidebar";
+import RejectModal from "../../../components/RejectModal/RejectModal";
+import ReviewButton from "../../../components/ReviewButton/ReviewButton";
+import ReviewModal from "../../../components/ReviewModal/ReviewModal";
+import GameDetails from "../../../components/GameDetails/GameDetails";
+import HostInfo from "../../../components/HostInfo/HostInfo";
+import PlayersList from "../../../components/PlayersList/PlayersList";
 
 export function GameDashboard() {
     const [user, setUser] = useState(null);
@@ -22,19 +21,119 @@ export function GameDashboard() {
     const [isHost, setIsHost] = useState(false);
     const [isPlayer, setIsPlayer] = useState(false);
     const [gameForm, setGameForm] = useState({
-        name: '',
-        blinds: '',
-        location: '',
-        date: '',
-        time: '',
-        handed: '',
-        notes: ''
+        name: "",
+        blinds: "",
+        location: "",
+        date: "",
+        time: "",
+        handed: "",
+        notes: "",
     });
     const [players, setPlayers] = useState([]);
     const [joinRequests, setJoinRequests] = useState([]);
     const [isLoadingRequests, setIsLoadingRequests] = useState(false);
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [showShareModal, setShowShareModal] = useState(false);
+    const [selectedGroup, setSelectedGroup] = useState(null);
+    const [userGroups, setUserGroups] = useState([]);
+
+    // State for host information
+    const [hostProfile, setHostProfile] = useState(null);
+    const [hostStats, setHostStats] = useState({
+        memberSince: "",
+        gamesHosted: 0,
+        gamesPlayed: 0,
+    });
+    const [hostReviews, setHostReviews] = useState([]);
+    const [averageRating, setAverageRating] = useState(0);
+
+    // Function to fetch host information
+    const fetchHostInfo = useCallback(async () => {
+        if (!game || !game.host_id) return;
+
+        try {
+            // Get the host ID - handle both populated and unpopulated host_id
+            const hostId =
+                typeof game.host_id === "object"
+                    ? game.host_id._id
+                    : game.host_id;
+
+            // Fetch host profile
+            const profileResponse = await axios.get(
+                `${process.env.REACT_APP_API_URL}/users/${hostId}`
+            );
+            setHostProfile(profileResponse.data);
+
+            // Set member since date
+            if (profileResponse.data.created_at || profileResponse.data.createdAt) {
+                const memberDate = new Date(profileResponse.data.created_at || profileResponse.data.createdAt);
+                setHostStats((prev) => ({
+                    ...prev,
+                    memberSince: memberDate.toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                    }),
+                }));
+            }
+
+            // Fetch host stats
+            const hostedGamesResponse = await axios.get(
+                `${process.env.REACT_APP_API_URL}/games`,
+                {
+                    params: { host_id: hostId },
+                }
+            );
+
+            if (hostedGamesResponse.data) {
+                setHostStats((prev) => ({
+                    ...prev,
+                    gamesHosted: hostedGamesResponse.data.length,
+                }));
+            }
+
+            // Fetch host's played games
+            const playedGamesResponse = await axios.get(
+                `${process.env.REACT_APP_API_URL}/games/player/${hostId}`
+            );
+            if (playedGamesResponse.data) {
+                setHostStats((prev) => ({
+                    ...prev,
+                    gamesPlayed: playedGamesResponse.data.length,
+                }));
+            }
+
+            // Fetch host reviews
+            const reviewsResponse = await axios.get(
+                `${process.env.REACT_APP_API_URL}/reviews/host/${hostId}`
+            );
+            if (reviewsResponse.data) {
+                setHostReviews(reviewsResponse.data.reviews || []);
+                setAverageRating(reviewsResponse.data.averageRating || 0);
+            }
+        } catch (error) {
+            console.error("Error fetching host information:", error);
+        }
+    }, [game]);
+
+    // Generate minidenticon for host
+    const generateAvatar = useMemo(() => {
+        return (username) => {
+            if (!username) return "";
+            return (
+                "data:image/svg+xml;utf8," +
+                encodeURIComponent(minidenticon(username))
+            );
+        };
+    }, []);
+
+    // Format date for reviews
+    const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+        });
+    };
 
     const fetchJoinRequests = useCallback(async () => {
         if (!game || !user || !isHost) return;
@@ -48,7 +147,7 @@ export function GameDashboard() {
             setJoinRequests(res.data);
             setIsLoadingRequests(false);
         } catch (error) {
-            console.error('Error fetching join requests:', error);
+            console.error("Error fetching join requests:", error);
             setIsLoadingRequests(false);
         }
     }, [gameId, game, user, isHost]);
@@ -74,7 +173,7 @@ export function GameDashboard() {
             fetchJoinRequests();
             fetchPlayers();
         } catch (error) {
-            console.error('Error accepting join request:', error);
+            console.error("Error accepting join request:", error);
         }
     };
 
@@ -97,15 +196,15 @@ export function GameDashboard() {
                 isGuest: request?.is_guest || false
             });
             setRejectModalOpen(false);
-            setRejectReason('');
+            setRejectReason("");
             fetchJoinRequests();
         } catch (error) {
-            console.error('Error rejecting join request:', error);
+            console.error("Error rejecting join request:", error);
         }
     };
 
     const [isRejectModalOpen, setRejectModalOpen] = useState(false);
-    const [rejectReason, setRejectReason] = useState('');
+    const [rejectReason, setRejectReason] = useState("");
     const [selectedRequesterId, setSelectedRequesterId] = useState(null);
 
     const openRejectModal = (requesterId) => {
@@ -115,37 +214,47 @@ export function GameDashboard() {
 
     const handleRequestToJoin = async () => {
         try {
-            const response = await axios.post(`${process.env.REACT_APP_API_URL}/players/request-to-join`, {
-                userId: user._id,
-                gameId: gameId
-            });
+            const response = await axios.post(
+                `${process.env.REACT_APP_API_URL}/players/request-to-join`,
+                {
+                    userId: user._id,
+                    gameId: gameId,
+                }
+            );
 
-            if (response.data.status === 'waitlist') {
-                alert(`The game is currently full. You've been added to the waitlist at position #${response.data.position || ''}.`);
+            if (response.data.status === "waitlist") {
+                alert(
+                    `The game is currently full. You've been added to the waitlist at position #${response.data.position || ""
+                    }.`
+                );
             } else {
-                alert('Your request to join the game has been sent successfully.');
+                alert(
+                    "Your request to join the game has been sent successfully."
+                );
             }
 
             fetchGame();
         } catch (error) {
-            console.error('Error requesting to join game:', error);
-            alert('Failed to request to join game. Please try again.');
+            console.error("Error requesting to join game:", error);
+            alert("Failed to request to join game. Please try again.");
         }
     };
 
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const loggedUser = JSON.parse(localStorage.getItem('user'));
+                const loggedUser = JSON.parse(localStorage.getItem("user"));
                 if (loggedUser && loggedUser._id === userId) {
-                    const res = await axios.get(`${process.env.REACT_APP_API_URL}/users/${userId}`);
+                    const res = await axios.get(
+                        `${process.env.REACT_APP_API_URL}/users/${userId}`
+                    );
                     setUser(res.data);
                 } else {
-                    navigate('/signin');
+                    navigate("/signin");
                 }
             } catch (error) {
-                console.error('Error fetching user:', error);
-                navigate('/signin');
+                console.error("Error fetching user:", error);
+                navigate("/signin");
             }
         };
         fetchUser();
@@ -153,27 +262,46 @@ export function GameDashboard() {
 
     const fetchPlayers = useCallback(async () => {
         try {
-            const res = await axios.get(`${process.env.REACT_APP_API_URL}/players/game/${gameId}`);
-            setPlayers(res.data);
+            const res = await axios.get(
+                `${process.env.REACT_APP_API_URL}/players/game/${gameId}`
+            );
+
+            console.log("Fetched players:", res.data);
+
+            // Make sure the data is properly populated
+            const populatedData = res.data.map((player) => {
+                // If user_id is just an ID (not populated), provide a default object
+                if (player.user_id && typeof player.user_id !== "object") {
+                    return {
+                        ...player,
+                        user_id: { _id: player.user_id },
+                    };
+                }
+                return player;
+            });
+
+            setPlayers(populatedData);
         } catch (error) {
-            console.error('Error fetching players:', error);
+            console.error("Error fetching players:", error);
         }
     }, [gameId]);
 
     const fetchGame = useCallback(async () => {
         try {
-            const res = await axios.get(`${process.env.REACT_APP_API_URL}/games/${gameId}`);
+            const res = await axios.get(
+                `${process.env.REACT_APP_API_URL}/games/${gameId}`
+            );
             const gameData = res.data;
             setGame(gameData);
 
             const gameDate = new Date(gameData.game_date);
 
             const year = gameDate.getFullYear();
-            const month = String(gameDate.getMonth() + 1).padStart(2, '0');
-            const day = String(gameDate.getDate()).padStart(2, '0');
+            const month = String(gameDate.getMonth() + 1).padStart(2, "0");
+            const day = String(gameDate.getDate()).padStart(2, "0");
 
-            const hours = String(gameDate.getHours()).padStart(2, '0');
-            const minutes = String(gameDate.getMinutes()).padStart(2, '0');
+            const hours = String(gameDate.getHours()).padStart(2, "0");
+            const minutes = String(gameDate.getMinutes()).padStart(2, "0");
 
             const formattedDate = `${year}-${month}-${day}`;
             const formattedTime = `${hours}:${minutes}`;
@@ -184,15 +312,34 @@ export function GameDashboard() {
                 location: gameData.location,
                 date: formattedDate,
                 time: formattedTime,
-                notes: gameData.notes || '',
+                notes: gameData.notes || "",
                 handed: gameData.handed,
-                isPublic: gameData.is_public
+                isPublic: gameData.is_public,
             });
             fetchPlayers();
         } catch (error) {
-            console.error('Error fetching game:', error);
+            console.error("Error fetching game:", error);
         }
     }, [gameId, fetchPlayers]);
+
+    const fetchUserGroups = useCallback(async () => {
+        if (!user) return;
+        try {
+            const response = await axios.get(
+                `${process.env.REACT_APP_API_URL}/groups/user/${user._id}`,
+                { params: { membership_status: "accepted" } }
+            );
+            setUserGroups(response.data);
+        } catch (error) {
+            console.error("Error fetching user groups:", error);
+        }
+    }, [user]);
+
+    useEffect(() => {
+        if (user) {
+            fetchUserGroups();
+        }
+    }, [user, fetchUserGroups]);
 
     useEffect(() => {
         fetchGame();
@@ -210,9 +357,48 @@ export function GameDashboard() {
         }
     }, [user, game, players]);
 
+    useEffect(() => {
+        if (game && game.group_id) {
+            setSelectedGroup(game.group_id);
+        } else {
+            setSelectedGroup(null);
+        }
+    }, [game]);
+
+    useEffect(() => {
+        if (game && !isHost) {
+            fetchHostInfo();
+        }
+    }, [game, isHost, fetchHostInfo]);
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setGameForm({ ...gameForm, [name]: value });
+
+        if (name === "group_id") {
+            // Group selection logic
+            if (value) {
+                const selectedGroup = userGroups.find(
+                    (group) => group._id === value
+                );
+                if (selectedGroup) {
+                    setSelectedGroup(selectedGroup);
+                    setGameForm((prev) => ({
+                        ...prev,
+                        group_id: value,
+                        isPublic: selectedGroup.is_public,
+                    }));
+                }
+            } else {
+                setSelectedGroup(null);
+                setGameForm((prev) => ({
+                    ...prev,
+                    group_id: value,
+                }));
+            }
+        } else {
+            // For other fields, standard update
+            setGameForm({ ...gameForm, [name]: value });
+        }
     };
 
     const handleUpdate = async (e) => {
@@ -228,38 +414,55 @@ export function GameDashboard() {
                 blinds: gameForm.blinds,
                 notes: gameForm.notes,
                 handed: gameForm.handed,
-                is_public: gameForm.isPublic
+                is_public: gameForm.isPublic,
             };
 
-            await axios.put(`${process.env.REACT_APP_API_URL}/games/${gameId}`, updatedGame);
+            await axios.put(
+                `${process.env.REACT_APP_API_URL}/games/${gameId}`,
+                updatedGame
+            );
             setEditing(false);
             fetchGame();
         } catch (error) {
-            console.error('Error updating game:', error);
+            console.error("Error updating game:", error);
         }
     };
 
     const handleDelete = async () => {
-        const confirmDelete = window.confirm("Are you sure you want to delete this game?");
+        const confirmDelete = window.confirm(
+            "Are you sure you want to delete this game?"
+        );
         if (!confirmDelete) return;
         try {
-            await axios.delete(`${process.env.REACT_APP_API_URL}/games/${gameId}`);
+            await axios.delete(
+                `${process.env.REACT_APP_API_URL}/games/${gameId}`
+            );
             navigate(`/dashboard/${userId}/host`);
         } catch (error) {
-            console.error('Error deleting game:', error);
+            console.error("Error deleting game:", error);
         }
     };
 
     const handleEdit = () => {
-        if (isHost) {
-            setEditing(true);
-        } else {
-            alert("Only the host can edit this game.");
-        }
+        setEditing(true);
+        const gameDate = new Date(game.game_date);
+
+        setGameForm({
+            name: game.game_name,
+            blinds: game.blinds,
+            location: game.location,
+            date: gameDate.toISOString().split("T")[0],
+            time: gameDate.toTimeString().slice(0, 5),
+            handed: game.handed.toString(),
+            notes: game.notes || "",
+            isPublic: game.is_public,
+        });
     };
 
     const handleLeaveGame = async () => {
-        const confirmLeave = window.confirm("Are you sure you want to leave this game?");
+        const confirmLeave = window.confirm(
+            "Are you sure you want to leave this game?"
+        );
         if (!confirmLeave) return;
 
         try {
@@ -268,10 +471,13 @@ export function GameDashboard() {
                 inviterId: user._id,
                 inviteeId: user._id,
             };
-            await axios.post(`${process.env.REACT_APP_API_URL}/players/remove-player`, data);
+            await axios.post(
+                `${process.env.REACT_APP_API_URL}/players/remove-player`,
+                data
+            );
             navigate(`/dashboard/${userId}/games`);
         } catch (error) {
-            console.error('Error leaving game:', error);
+            console.error("Error leaving game:", error);
         }
     };
 
@@ -290,83 +496,128 @@ export function GameDashboard() {
         setTimeout(() => setShowShareModal(false), 3000); // Hide after 3 seconds
     };
 
-    const menus = [
-        { title: 'Overview', page: 'overview' },
-        { title: 'Games', page: 'games' },
-        { title: 'Host', page: 'host' },
-        { title: 'Community', page: 'community' },
-        { title: 'Bankroll', page: 'bankroll' },
-        { title: 'Notifications', page: 'notifications' }
-    ];
-
     if (!game || !user) {
         return <div>Loading...</div>;
     }
 
     const gameDate = new Date(game.game_date);
     const formattedDate = gameDate.toLocaleDateString();
-    const formattedTime = gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const formattedTime = gameDate.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+    });
 
-    const acceptedPlayers = players.filter(player => player.invitation_status === 'accepted');
-    const pendingPlayers = players.filter(player => player.invitation_status === 'pending');
-    const waitlistedPlayers = players.filter(player => player.invitation_status === 'waitlist')
-        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    const acceptedPlayers = players.filter(
+        (player) => player.invitation_status === "accepted"
+    );
 
     return (
         <div className="dashboard">
-            <Sidebar menus={menus} setPage={() => { }} page="host" username={user.username} />
-            <div className='logged-content-container game-dashboard'>
-                <div className='dashboard-heading'>
+            <Sidebar
+                page="host"
+                username={user.username}
+            />
+            <div className="logged-content-container game-dashboard">
+                <div className="dashboard-heading">
                     <h1>
                         {game.game_name}
-                        {game.is_public && <span className="game-type-tag public">Public</span>}
-                        {!game.is_public && <span className="game-type-tag private">Private</span>}
+                        {game.is_public && (
+                            <span className="game-type-tag public">Public</span>
+                        )}
+                        {!game.is_public && (
+                            <span className="game-type-tag private">
+                                Private
+                            </span>
+                        )}
                     </h1>
-                    <div className='buttons'>
+                    <div className="buttons">
                         {editing ? (
                             <>
-                                {isHost && <button className="save" onClick={handleUpdate}>Save</button>}
-                                {isHost && <button className="cancel" onClick={() => setEditing(false)}>Cancel</button>}
+                                {isHost && (
+                                    <button
+                                        className="save"
+                                        onClick={handleUpdate}
+                                    >
+                                        Save
+                                    </button>
+                                )}
+                                {isHost && (
+                                    <button
+                                        className="cancel"
+                                        onClick={() => setEditing(false)}
+                                    >
+                                        Cancel
+                                    </button>
+                                )}
                             </>
                         ) : (
                             <>
-                                {isHost && <button className="edit" onClick={handleEdit}>Edit & Invite</button>}
-                                {isHost && <button className="delete" onClick={handleDelete}>Delete</button>}
-                                {!isHost && isPlayer && (
-                                    <button className="leave-game" onClick={handleLeaveGame}>Leave Game</button>
-                                )}
-                                {!isHost && !isPlayer && game.is_public && (
-                                    <button className="request-button" onClick={handleRequestToJoin}>
-                                        {acceptedPlayers.length >= game.handed ? "Join Waitlist" : "Request to Join"}
+                                {isHost && (
+                                    <button
+                                        className="edit"
+                                        onClick={handleEdit}
+                                    >
+                                        Edit & Invite
                                     </button>
                                 )}
-                                {!isHost && isPlayer && game.game_status === 'completed' && (
-                                    <ReviewButton
-                                        gameId={gameId}
-                                        gameStatus={game.game_status}
-                                        isHost={isHost}
-                                        onReviewClick={handleReviewClick}
-                                    />
+                                {isHost && (
+                                    <button
+                                        className="delete"
+                                        onClick={handleDelete}
+                                    >
+                                        Delete
+                                    </button>
                                 )}
-                                <button className="back" onClick={() => navigate(-1)}>Back</button>
+                                {!isHost && isPlayer && (
+                                    <button
+                                        className="leave-game"
+                                        onClick={handleLeaveGame}
+                                    >
+                                        Leave Game
+                                    </button>
+                                )}
+                                {!isHost && !isPlayer && game.is_public && (
+                                    <button
+                                        className="request-button"
+                                        onClick={handleRequestToJoin}
+                                    >
+                                        {acceptedPlayers.length >= game.handed
+                                            ? "Join Waitlist"
+                                            : "Request to Join"}
+                                    </button>
+                                )}
+                                {!isHost &&
+                                    isPlayer &&
+                                    game.game_status === "completed" && (
+                                        <ReviewButton
+                                            gameId={gameId}
+                                            gameStatus={game.game_status}
+                                            isHost={isHost}
+                                            onReviewClick={handleReviewClick}
+                                        />
+                                    )}
+                                <button
+                                    className="back"
+                                    onClick={() => navigate(-1)}
+                                >
+                                    Back
+                                </button>
                             </>
                         )}
                     </div>
                 </div>
-                <div className='game-dashboard-container'>
-                    <div className='summary-item'>
-                        <div className='game-summary-header'>
-                            <h2>Details</h2>
-                            {game.is_public && (
-                                <button className="share-link" onClick={handleShareLink}>
-                                    Share Game Link
-                                </button>
-                            )}
-                        </div>
-                        {showShareModal && (
-                            <div className="share-modal">
-                                Link copied to clipboard!
-                            </div>
+                <div className="game-dashboard-container">
+                    <div className="summary-item">
+                        {/* Host Information Section - Only show when not editing and not the host */}
+                        {!editing && !isHost && hostProfile && (
+                            <HostInfo
+                                hostProfile={hostProfile}
+                                hostStats={hostStats}
+                                hostReviews={hostReviews}
+                                averageRating={averageRating}
+                                generateAvatar={generateAvatar}
+                                formatDate={formatDate}
+                            />
                         )}
                         {editing ? (
                             <form className='host-form compact'>
@@ -655,6 +906,24 @@ export function GameDashboard() {
                             </div>
                         )}
                     </div>
+                    <div className="summary-item players-item">
+                        {/* Players List Section */}
+                        <PlayersList
+                            players={players}
+                            editing={editing}
+                            isHost={isHost}
+                            user={user}
+                            gameId={gameId}
+                            fetchPlayers={fetchPlayers}
+                            game={game}
+                            joinRequests={joinRequests}
+                            handleAcceptRequest={handleAcceptRequest}
+                            openRejectModal={openRejectModal}
+                            isLoadingRequests={isLoadingRequests}
+                        />
+                    </div>
+
+                    {/* Modals */}
                     {isRejectModalOpen && (
                         <RejectModal
                             open={isRejectModalOpen}
@@ -676,6 +945,6 @@ export function GameDashboard() {
             </div>
         </div>
     );
-}
+};
 
 export default GameDashboard;

@@ -1,10 +1,11 @@
 .sidebar-container {
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    width: 150px;
+    width: 190px;
     background-color: #ffffff;
     height: 100%;
-    padding: 0 20px;
+    padding: 50px 20px 0 20px;
     position: fixed;
     top: 0;
     left: 0;
@@ -17,6 +18,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-bottom: 60px;
 }
 
 .menu {
