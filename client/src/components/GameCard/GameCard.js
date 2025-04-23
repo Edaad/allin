@@ -202,8 +202,8 @@ function GameCard({ game, user, customActions, showBorder = true }) {
 				</div>
 			</div>
 			<div className="game-card-footer">
-				<Link to={`/guest-join/${game._id}`} className="join-button">
-					Join Game
+				<Link to={`/guest/join/${game._id}`} className="join-button">
+					Join as Guest
 				</Link>
 			</div>
 		</div>
