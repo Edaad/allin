@@ -38,6 +38,8 @@ export function Host() {
 	};
 	const [gameForm, setGameForm] = useState(initialGameFormState);
 
+	const [dateError, setDateError] = useState(null);
+
 	useEffect(() => {
 		const loggedUser = JSON.parse(localStorage.getItem("user"));
 		if (loggedUser && loggedUser._id === userId) {
@@ -46,6 +48,37 @@ export function Host() {
 			navigate("/signin");
 		}
 	}, [userId, navigate]);
+
+	useEffect(() => {
+		if (gameForm.date && gameForm.time) {
+		  const dateValidation = validateGameDate(gameForm.date, gameForm.time);
+		  if (!dateValidation.isValid) {
+			setDateError(dateValidation.errorMessage);
+		  } else {
+			setDateError(null);
+		  }
+		}
+	  }, [gameForm.date, gameForm.time]);
+
+	const validateGameDate = (date, time) => {
+		if (!date || !time) return { isValid: true }; // Skip validation if fields are empty
+		
+		// Create date object from form inputs
+		const gameDateTime = new Date(`${date}T${time}`);
+		
+		// Create current date and reset hours for fair comparison
+		const currentDate = new Date();
+		currentDate.setHours(0, 0, 0, 0);
+		
+		if (gameDateTime < currentDate) {
+		  return {
+			isValid: false,
+			errorMessage: "Game date cannot be in the past. Please select a future date."
+		  };
+		}
+		
+		return { isValid: true };
+	  };
 
 	// Fetch user's groups
 	const fetchUserGroups = useCallback(async () => {
@@ -147,6 +180,13 @@ export function Host() {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+
+		const dateValidation = validateGameDate(gameForm.date, gameForm.time);
+		if (!dateValidation.isValid) {
+		  setDateError(dateValidation.errorMessage);
+		  return; // Prevent form submission
+		}
+
 		try {
 			const gameDateTimeString = `${gameForm.date}T${gameForm.time}:00`;
 			const gameDateTime = new Date(gameDateTimeString);
@@ -379,6 +419,8 @@ export function Host() {
 									label="Date"
 									value={gameForm.date}
 									onChange={handleInputChange}
+									error={dateError}
+									touched={!!dateError}
 								/>
 								<Input
 									name="time"
