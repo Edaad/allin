@@ -2,6 +2,10 @@
     margin-bottom: 20px;
 }
 
+.host-info-wrapper h2 {
+    font-size: 1.5rem;
+}
+
 .host-info {
     display: flex;
     flex-direction: column;
@@ -41,6 +45,7 @@
     margin: 0 0 10px 0;
     font-size: 18px;
     color: #333;
+    font-weight: 600;
 }
 
 .host-stats {
