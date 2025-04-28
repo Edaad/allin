@@ -1,11 +1,11 @@
 // src/pages/Dashboard/Profile/ProfileView.js
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { minidenticon } from 'minidenticons';
 import './ProfileView.css';
 import Sidebar from '../../../components/Sidebar/Sidebar';
 import HostReviews from '../../../components/HostReviews/HostReviews';
+import PokerChipAvatar from "../../../components/PokerChipAvatar/PokerChipAvatar";
 
 export function ProfileView() {
     const [currentUser, setCurrentUser] = useState(null);
@@ -68,15 +68,6 @@ export function ProfileView() {
 
         fetchProfile();
     }, [currentUser, profileId]);
-
-    // Generate identicon for avatar placeholder
-    const MinidenticonImg = ({ username, saturation, lightness, ...props }) => {
-        const svgURI = useMemo(
-            () => 'data:image/svg+xml;utf8,' + encodeURIComponent(minidenticon(username, saturation, lightness)),
-            [username, saturation, lightness]
-        );
-        return (<img src={svgURI} alt={username} {...props} />);
-    };
 
     // Determine friendship status
     const getFriendshipStatus = () => {
@@ -230,8 +221,10 @@ export function ProfileView() {
                                         className="profile-avatar"
                                     />
                                 ) : (
-                                    <MinidenticonImg
-                                        username={profileUser?.username || 'user'}
+                                    <PokerChipAvatar
+                                        username={profileUser?.username || "user"}
+                                        firstName={profileUser?.names?.firstName || ''}
+                                        lastName={profileUser?.names?.lastName || ''}
                                         className="profile-avatar identicon"
                                     />
                                 )}
