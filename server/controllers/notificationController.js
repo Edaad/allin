@@ -1,15 +1,43 @@
 // controllers/notificationController.js
-const notificationService = require('../services/notificationService');
+const Notification = require('../models/notification');
+const User = require('../models/user');
+const Game = require('../models/game');
+const Group = require('../models/group');
 
 // Get all notifications for a user
 const getNotifications = async (req, res) => {
   try {
     const { userId } = req.params;
-    const { page, limit, read } = req.query;
-    
-    const result = await notificationService.getNotifications(userId, { page, limit, read });
-    
-    res.status(200).json(result);
+    const { page = 1, limit = 20, read } = req.query;
+
+    const query = { user_id: userId };
+
+    // Filter by read status if provided
+    if (read !== undefined) {
+      query.read = read === 'true';
+    }
+
+    // Pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    // Fetch notifications with pagination and sorting
+    const notifications = await Notification.find(query)
+      .sort({ created_at: -1 })
+      .skip(skip)
+      .limit(parseInt(limit))
+      .populate('referenced_id', null, null, {
+        refPath: 'referenced_model'
+      });
+
+    // Get total count for pagination
+    const totalCount = await Notification.countDocuments(query);
+
+    res.status(200).json({
+      notifications,
+      totalPages: Math.ceil(totalCount / parseInt(limit)),
+      currentPage: parseInt(page),
+      totalCount
+    });
   } catch (err) {
     console.error('Error fetching notifications:', err);
     res.status(500).json({ message: 'Server error' });
@@ -20,9 +48,12 @@ const getNotifications = async (req, res) => {
 const getUnreadCount = async (req, res) => {
   try {
     const { userId } = req.params;
-    
-    const count = await notificationService.getUnreadCount(userId);
-    
+
+    const count = await Notification.countDocuments({
+      user_id: userId,
+      read: false
+    });
+
     res.status(200).json({ count });
   } catch (err) {
     console.error('Error fetching unread count:', err);
@@ -34,15 +65,20 @@ const getUnreadCount = async (req, res) => {
 const markAsRead = async (req, res) => {
   try {
     const { id } = req.params;
-    
-    const notification = await notificationService.markAsRead(id);
-    
+
+    const notification = await Notification.findByIdAndUpdate(
+      id,
+      { read: true },
+      { new: true }
+    );
+
+    if (!notification) {
+      return res.status(404).json({ message: 'Notification not found' });
+    }
+
     res.status(200).json(notification);
   } catch (err) {
     console.error('Error marking notification as read:', err);
-    if (err.message === 'Notification not found') {
-      return res.status(404).json({ message: 'Notification not found' });
-    }
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -51,10 +87,16 @@ const markAsRead = async (req, res) => {
 const markAllAsRead = async (req, res) => {
   try {
     const { userId } = req.params;
-    
-    const result = await notificationService.markAllAsRead(userId);
-    
-    res.status(200).json(result);
+
+    const result = await Notification.updateMany(
+      { user_id: userId, read: false },
+      { read: true }
+    );
+
+    res.status(200).json({
+      message: 'All notifications marked as read',
+      modifiedCount: result.modifiedCount
+    });
   } catch (err) {
     console.error('Error marking all notifications as read:', err);
     res.status(500).json({ message: 'Server error' });
@@ -65,15 +107,16 @@ const markAllAsRead = async (req, res) => {
 const deleteNotification = async (req, res) => {
   try {
     const { id } = req.params;
-    
-    const result = await notificationService.deleteNotification(id);
-    
-    res.status(200).json(result);
-  } catch (err) {
-    console.error('Error deleting notification:', err);
-    if (err.message === 'Notification not found') {
+
+    const notification = await Notification.findByIdAndDelete(id);
+
+    if (!notification) {
       return res.status(404).json({ message: 'Notification not found' });
     }
+
+    res.status(200).json({ message: 'Notification deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting notification:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -82,10 +125,13 @@ const deleteNotification = async (req, res) => {
 const deleteAllNotifications = async (req, res) => {
   try {
     const { userId } = req.params;
-    
-    const result = await notificationService.deleteAllNotifications(userId);
-    
-    res.status(200).json(result);
+
+    const result = await Notification.deleteMany({ user_id: userId });
+
+    res.status(200).json({
+      message: 'All notifications deleted',
+      deletedCount: result.deletedCount
+    });
   } catch (err) {
     console.error('Error deleting all notifications:', err);
     res.status(500).json({ message: 'Server error' });
