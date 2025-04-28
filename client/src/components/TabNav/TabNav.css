@@ -28,7 +28,8 @@
     font-weight: 500;
     padding: 10px 15px;
     cursor: pointer;
-    border-bottom: 2px solid #343434;
+    border-bottom: 2px solid rgb(53, 115, 55);
+    border-radius: 0 !important;
 }
 
 /* For smaller screens */
