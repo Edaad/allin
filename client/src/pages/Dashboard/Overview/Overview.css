@@ -14,7 +14,6 @@
 .summary-item {
     display: flex;
     flex-direction: column;
-    gap: 10px;
     padding: 30px;
     box-shadow: 0 0px 8px rgba(0, 0, 0, 0.1);
     border-radius: 12px;
@@ -271,11 +270,8 @@
 }
 
 /* Friends section */
-.friend-section {
-    margin-bottom: 20px;
-}
 
-.friend-section + .friend-section {
+.friend-section+.friend-section {
     padding-top: 10px;
 }
 
@@ -286,7 +282,7 @@
     margin-top: 10px;
 }
 
-.accept-button, 
+.accept-button,
 .decline-button {
     padding: 8px 16px;
     border-radius: 4px;
@@ -332,13 +328,13 @@
     .overview-layout {
         flex-direction: column;
     }
-    
+
     .overview-main,
     .overview-sidebar {
         flex: 0 0 100%;
         width: 100%;
     }
-    
+
     .overview-sidebar {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
