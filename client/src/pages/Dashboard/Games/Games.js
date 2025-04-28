@@ -66,9 +66,8 @@ export function Games() {
 		if (!game) return false;
 
 		// Search through game name, location, blinds
-		const searchString = `${game.game_name || ""} ${game.location || ""} ${
-			game.blinds || ""
-		} ${game.host_id?.username || ""}`.toLowerCase();
+		const searchString = `${game.game_name || ""} ${game.location || ""} ${game.blinds || ""
+			} ${game.host_id?.username || ""}`.toLowerCase();
 		return searchString.includes(searchTerm.toLowerCase());
 	});
 
@@ -193,7 +192,7 @@ export function Games() {
 					<h1>Games</h1>
 				</div>
 
-				{/* Tab navigation */}
+				{/* Updated TabNav component */}
 				<TabNav
 					activeTab={tab}
 					onTabChange={handleTabChange}
