@@ -1,6 +1,5 @@
 // src/pages/Dashboard/Community/Community.js
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { debounce } from 'lodash';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../Dashboard.css';
@@ -16,8 +15,9 @@ export function Community() {
     const { userId } = useParams();
     const navigate = useNavigate();
     const [page, setPage] = useState('community');
-    const [query, setQuery] = useState("");
-    const [data, setData] = useState([]);
+    const [searchTerm, setSearchTerm] = useState(""); // Local search term for immediate filtering
+    const [allData, setAllData] = useState([]); // Store all data for local filtering
+    const [data, setData] = useState([]); // Filtered data to display
     const [groups, setGroups] = useState([]);
     const [activeTab, setActiveTab] = useState('All');
     const [createGroupModalOpen, setCreateGroupModalOpen] = useState(false);
@@ -25,38 +25,61 @@ export function Community() {
     const [searchFocused, setSearchFocused] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
     const [animateProfiles, setAnimateProfiles] = useState(false);
+    const [loading, setLoading] = useState(false);
 
-    const fetchData = useMemo(
-        () =>
-            debounce(async (searchQuery) => {
-                if (!user) return;
+    // Fetch data from API only when tab changes or on initial load
+    const fetchData = useCallback(async () => {
+        if (!user) return;
 
-                try {
-                    // Only fetch users if not on Groups tab
-                    if (activeTab !== 'Groups') {
-                        setHasSearched(true);
-                        const res = await axios.get(`${process.env.REACT_APP_API_URL}/users`, {
-                            params: {
-                                query: searchQuery.length >= 3 ? searchQuery : '',
-                                tab: activeTab,
-                                userId: user._id,
-                            },
-                        });
-                        setData(res.data);
-                        setAnimateProfiles(true);
-                        // Reset animation flag after animation delay
-                        setTimeout(() => setAnimateProfiles(false), 500);
-                    }
-                } catch (error) {
-                    console.error('Error fetching data:', error);
-                }
-            }, 200),
-        [user, activeTab]
-    );
+        // Only fetch users if not on Groups tab
+        if (activeTab !== 'Groups') {
+            setLoading(true);
+            try {
+                const res = await axios.get(`${process.env.REACT_APP_API_URL}/users`, {
+                    params: {
+                        query: '', // Fetch all data for the active tab
+                        tab: activeTab,
+                        userId: user._id,
+                    },
+                });
+                setAllData(res.data);
+                setData(res.data); // Initially show all data
+                setAnimateProfiles(true);
+                setTimeout(() => setAnimateProfiles(false), 500);
+                setHasSearched(true);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+    }, [user, activeTab]);
+
+    // Filter data locally based on search term
+    useEffect(() => {
+        if (activeTab !== 'Groups' && allData.length > 0) {
+            if (searchTerm.trim() === '') {
+                setData(allData);
+                return;
+            }
+
+            const searchTermLower = searchTerm.toLowerCase();
+            const filtered = allData.filter(item => {
+                const fullName = `${item.names?.firstName || ''} ${item.names?.lastName || ''}`.toLowerCase();
+                const username = (item.username || '').toLowerCase();
+
+                return fullName.includes(searchTermLower) || username.includes(searchTermLower);
+            });
+
+            setData(filtered);
+            setHasSearched(true);
+        }
+    }, [searchTerm, allData, activeTab]);
 
     const fetchGroups = useCallback(async () => {
         if (!user) return;
 
+        setLoading(true);
         try {
             let endpoint;
             let params = {};
@@ -79,22 +102,19 @@ export function Community() {
             setGroups(res.data);
         } catch (error) {
             console.error('Error fetching groups:', error);
+        } finally {
+            setLoading(false);
         }
     }, [user, filterGroupsBy]);
 
+    // Refetch when tab or filter changes
     useEffect(() => {
         if (activeTab === 'Groups') {
             fetchGroups();
         } else {
-            fetchData(query);
+            fetchData();
         }
-    }, [query, activeTab, user, fetchData, fetchGroups, filterGroupsBy]);
-
-    useEffect(() => {
-        return () => {
-            fetchData.cancel();
-        };
-    }, [fetchData]);
+    }, [activeTab, fetchData, fetchGroups, filterGroupsBy]);
 
     useEffect(() => {
         const loggedUser = JSON.parse(localStorage.getItem('user'));
@@ -115,13 +135,15 @@ export function Community() {
         fetchGroups();
     };
 
+    // Handle search input immediately for local filtering
     const handleSearchChange = (e) => {
-        setQuery(e.target.value);
+        setSearchTerm(e.target.value);
     };
 
+    // When changing tabs, reset search and fetch new data
     const handleTabChange = (newTab) => {
         setActiveTab(newTab);
-        setQuery(''); // Reset search when changing tabs
+        setSearchTerm('');
         setHasSearched(false);
     };
 
@@ -274,37 +296,43 @@ export function Community() {
                             </div>
                         </div>
 
-                        <div
-                            className="groups-list"
-                            variants={containerVariants}
-                            initial="hidden"
-                            animate="visible"
-                        >
-                            {groups.length > 0 ? (
-                                groups.map((group, index) => (
-                                    <div
-                                        key={group._id}
-                                        variants={itemVariants}
-                                        custom={index}
-                                        className="group-card-wrapper"
+                        {loading ? (
+                            <div className="loading-container">
+                                <p>Loading groups...</p>
+                            </div>
+                        ) : (
+                            <div
+                                className="groups-list"
+                                variants={containerVariants}
+                                initial="hidden"
+                                animate="visible"
+                            >
+                                {groups.length > 0 ? (
+                                    groups.map((group, index) => (
+                                        <div
+                                            key={group._id}
+                                            variants={itemVariants}
+                                            custom={index}
+                                            className="group-card-wrapper"
+                                        >
+                                            <GroupCard
+                                                group={group}
+                                                user={user}
+                                            />
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p
+                                        className="no-groups-message"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ delay: 0.3 }}
                                     >
-                                        <GroupCard
-                                            group={group}
-                                            user={user}
-                                        />
-                                    </div>
-                                ))
-                            ) : (
-                                <p
-                                    className="no-groups-message"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ delay: 0.3 }}
-                                >
-                                    {getEmptyMessage()}
-                                </p>
-                            )}
-                        </div>
+                                        {getEmptyMessage()}
+                                    </p>
+                                )}
+                            </div>
+                        )}
 
                         <CreateGroupModal
                             open={createGroupModalOpen}
@@ -327,15 +355,15 @@ export function Community() {
                                     className="search-input"
                                     type="text"
                                     placeholder={`Search for ${activeTab.toLowerCase() === 'all' ? 'people' : activeTab.toLowerCase()} by name or username...`}
-                                    value={query}
+                                    value={searchTerm}
                                     onChange={handleSearchChange}
                                     onFocus={() => setSearchFocused(true)}
                                     onBlur={() => setSearchFocused(false)}
                                 />
-                                {query && (
+                                {searchTerm && (
                                     <button
                                         className="clear-search"
-                                        onClick={() => setQuery('')}
+                                        onClick={() => setSearchTerm('')}
                                     >
                                         ×
                                     </button>
@@ -343,73 +371,79 @@ export function Community() {
                             </div>
                         </div>
 
-                        <div
-                            className={`profiles-container ${animateProfiles ? 'animate' : ''}`}
-                            variants={containerVariants}
-                            initial="hidden"
-                            animate="visible"
-                        >
-                            {data.filter(item => item._id !== user?._id).length > 0 ? (
-                                <div className="profiles-grid">
-                                    {data.filter(item => item._id !== user?._id).map((item, index) => (
-                                        <div
-                                            key={item._id}
-                                            className="profile-card-wrapper"
-                                            variants={itemVariants}
-                                            custom={index}
-                                        >
-                                            <Profile
-                                                data={item}
-                                                currentUser={user}
-                                                refreshData={fetchData}
-                                                updateUserState={updateUserState}
-                                                className="profile-card-enhanced"
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div
-                                    className="empty-state"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ delay: 0.3 }}
-                                >
-                                    {hasSearched && query ? (
-                                        <>
-                                            <div className="empty-icon">🔍</div>
-                                            <h3>{getNoUserFoundMessage()}</h3>
-                                            <p>Try a different search term</p>
-                                        </>
-                                    ) : activeTab !== 'All' && !query ? (
-                                        <>
-                                            <div className="empty-icon">
-                                                {activeTab === 'Friends' ? '👥' :
-                                                    activeTab === 'PendingRequests' ? '⏳' :
-                                                        activeTab === 'Invitations' ? '✉️' : '🙋'}
+                        {loading ? (
+                            <div className="loading-container">
+                                <p>Loading users...</p>
+                            </div>
+                        ) : (
+                            <div
+                                className={`profiles-container ${animateProfiles ? 'animate' : ''}`}
+                                variants={containerVariants}
+                                initial="hidden"
+                                animate="visible"
+                            >
+                                {data.filter(item => item._id !== user?._id).length > 0 ? (
+                                    <div className="profiles-grid">
+                                        {data.filter(item => item._id !== user?._id).map((item, index) => (
+                                            <div
+                                                key={item._id}
+                                                className="profile-card-wrapper"
+                                                variants={itemVariants}
+                                                custom={index}
+                                            >
+                                                <Profile
+                                                    data={item}
+                                                    currentUser={user}
+                                                    refreshData={fetchData}
+                                                    updateUserState={updateUserState}
+                                                    className="profile-card-enhanced"
+                                                />
                                             </div>
-                                            <h3>{getEmptyMessage()}</h3>
-                                            {activeTab === 'Friends' && (
-                                                <button
-                                                    className="create-group-button"
-                                                    onClick={() => setCreateGroupModalOpen(true)}
-                                                    whileHover={{ scale: 1.02 }}
-                                                    whileTap={{ scale: 0.98 }}
-                                                >
-                                                    + Add Friends
-                                                </button>
-                                            )}
-                                        </>
-                                    ) : !hasSearched ? (
-                                        <>
-                                            <div className="empty-icon">👋</div>
-                                            <h3>Connect with other players</h3>
-                                            <p>Search for people to add as friends</p>
-                                        </>
-                                    ) : null}
-                                </div>
-                            )}
-                        </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div
+                                        className="empty-state"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ delay: 0.3 }}
+                                    >
+                                        {hasSearched && searchTerm ? (
+                                            <>
+                                                <div className="empty-icon">🔍</div>
+                                                <h3>{getNoUserFoundMessage()}</h3>
+                                                <p>Try a different search term</p>
+                                            </>
+                                        ) : activeTab !== 'All' && !searchTerm ? (
+                                            <>
+                                                <div className="empty-icon">
+                                                    {activeTab === 'Friends' ? '👥' :
+                                                        activeTab === 'PendingRequests' ? '⏳' :
+                                                            activeTab === 'Invitations' ? '✉️' : '🙋'}
+                                                </div>
+                                                <h3>{getEmptyMessage()}</h3>
+                                                {activeTab === 'Friends' && (
+                                                    <button
+                                                        className="create-group-button"
+                                                        onClick={() => handleTabChange('All')}
+                                                        whileHover={{ scale: 1.02 }}
+                                                        whileTap={{ scale: 0.98 }}
+                                                    >
+                                                        + Add Friends
+                                                    </button>
+                                                )}
+                                            </>
+                                        ) : !hasSearched ? (
+                                            <>
+                                                <div className="empty-icon">👋</div>
+                                                <h3>Connect with other players</h3>
+                                                <p>Search for people to add as friends</p>
+                                            </>
+                                        ) : null}
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </>
                 )}
             </div>

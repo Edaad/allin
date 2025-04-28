@@ -9,12 +9,13 @@ const Notification = require('../models/notification');
  */
 const getNotifications = async (userId, options = {}) => {
   const { page = 1, limit = 20, read } = options;
-  
+
   const query = { user_id: userId };
 
   // Filter by read status if provided
   if (read !== undefined) {
-    query.read = read === 'true';
+    // Convert string 'true'/'false' to boolean
+    query.read = read === 'true' || read === true;
   }
 
   // Pagination
@@ -63,11 +64,11 @@ const markAsRead = async (notificationId) => {
     { read: true },
     { new: true }
   );
-  
+
   if (!notification) {
     throw new Error('Notification not found');
   }
-  
+
   return notification;
 };
 
@@ -81,7 +82,7 @@ const markAllAsRead = async (userId) => {
     { user_id: userId, read: false },
     { read: true }
   );
-  
+
   return {
     message: 'All notifications marked as read',
     modifiedCount: result.modifiedCount
@@ -95,11 +96,11 @@ const markAllAsRead = async (userId) => {
  */
 const deleteNotification = async (notificationId) => {
   const notification = await Notification.findByIdAndDelete(notificationId);
-  
+
   if (!notification) {
     throw new Error('Notification not found');
   }
-  
+
   return { message: 'Notification deleted successfully' };
 };
 
@@ -110,7 +111,7 @@ const deleteNotification = async (notificationId) => {
  */
 const deleteAllNotifications = async (userId) => {
   const result = await Notification.deleteMany({ user_id: userId });
-  
+
   return {
     message: 'All notifications deleted',
     deletedCount: result.deletedCount
