@@ -37,9 +37,13 @@ const notifyGameJoinRequest = async (hostId, playerId, gameId) => {
       User.findById(playerId),
     ]);
 
-    if (!game || !player) return;
+    if (!game || !player) {
+      console.error("Game or player not found:", { gameId, playerId });
+      return;
+    }
 
-    await createNotification({
+    // Create and save the notification directly
+    const notification = new Notification({
       user_id: hostId,
       type: "game_join_request",
       title: "New Join Request",
@@ -47,7 +51,14 @@ const notifyGameJoinRequest = async (hostId, playerId, gameId) => {
       referenced_id: gameId,
       referenced_model: "Game",
       link: `/dashboard/${hostId}/host/game/${gameId}`,
+      read: false,
+      created_at: new Date()
     });
+
+    await notification.save();
+    console.log("Game join request notification created:", notification._id);
+
+    return notification;
   } catch (err) {
     console.error("Error in notifyGameJoinRequest:", err);
   }
