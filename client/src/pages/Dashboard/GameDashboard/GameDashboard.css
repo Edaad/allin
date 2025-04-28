@@ -8,13 +8,23 @@
     width: 100%;
 }
 
-/* Adjust widths for the summary items */
-.game-dashboard-container .summary-item:nth-child(1) {
+/* Left column containing game details and host info */
+.game-dashboard-container .left-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
     width: 65%;
 }
 
-.game-dashboard-container .summary-item:nth-child(2) {
+/* Players list takes remaining width */
+.game-dashboard-container .summary-item.players-item {
     width: 35%;
+}
+
+/* Spacing for the host info card */
+.summary-item.host-info-card {
+    margin-top: 0;
+    /* Override any default margins */
 }
 
 /* Adjust the dashboard heading to position buttons to the right */
@@ -141,8 +151,8 @@
         flex-direction: column;
     }
 
-    .game-dashboard-container .summary-item:nth-child(1),
-    .game-dashboard-container .summary-item:nth-child(2) {
-        width: unset;
+    .game-dashboard-container .left-column,
+    .game-dashboard-container .summary-item.players-item {
+        width: 100%;
     }
 }
