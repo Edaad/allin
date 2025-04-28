@@ -309,7 +309,7 @@
 .chip-icon {
     width: 100px;
     height: 100px;
-    background-image: url('../../assets/images/chip.png');
+    background-image: url('../../assets/icons/green-chip.svg');
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
@@ -318,6 +318,7 @@
     align-items: center;
     position: relative;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    border: 2px solid rgb(53, 115, 55);
     border-radius: 100%;
     transition: box-shadow 0.3s ease;
 }
@@ -397,6 +398,48 @@
     width: 20px;
     color: rgb(53, 115, 55);
     margin-right: 8px;
+}
+
+/* Add these classes for the different colored chips */
+.status-chip {
+    width: 100px;
+    height: 100px;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    border-radius: 100%;
+}
+
+.status-chip-text {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.status-chip.yellow {
+    background-image: url('../../assets/icons/green-chip.svg');
+    filter: hue-rotate(150deg) saturate(2);
+    border: 2px solid rgb(53, 115, 55);
+}
+
+.status-chip.red {
+    background-image: url('../../assets/icons/green-chip.svg');
+    filter: hue-rotate(250deg) saturate(2);
+    border: 2px solid rgb(53, 115, 55);
+}
+
+.status-chip.blue {
+    background-image: url('../../assets/icons/green-chip.svg');
+    filter: hue-rotate(100deg) saturate(2);
+    border: 1px solid;
+    border: 2px solid rgb(53, 115, 55);
+}
+
+.status-chip-container {
+    position: relative;
 }
 
 /* Pulse animation for chip button */

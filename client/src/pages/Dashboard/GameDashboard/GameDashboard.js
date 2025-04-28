@@ -606,34 +606,39 @@ export function GameDashboard() {
                     </div>
                 </div>
                 <div className="game-dashboard-container">
-                    <div className="summary-item">
-                        {/* Host Information Section - Only show when not editing and not the host */}
-                        {!editing && !isHost && hostProfile && (
-                            <HostInfo
-                                hostProfile={hostProfile}
-                                hostStats={hostStats}
-                                hostReviews={hostReviews}
-                                averageRating={averageRating}
-                                generateAvatar={generateAvatar}
-                                formatDate={formatDate}
+                    <div className="left-column">
+                        <div className="summary-item">
+                            {/* Game Details Section */}
+                            <GameDetails
+                                game={game}
+                                gameForm={gameForm}
+                                handleInputChange={handleInputChange}
+                                editing={editing}
+                                isHost={isHost}
+                                selectedGroup={selectedGroup}
+                                setGameForm={setGameForm}
+                                handleShareLink={handleShareLink}
+                                showShareModal={showShareModal}
+                                formattedDate={formattedDate}
+                                formattedTime={formattedTime}
                             />
-                        )}
+                        </div>
 
-                        {/* Game Details Section */}
-                        <GameDetails
-                            game={game}
-                            gameForm={gameForm}
-                            handleInputChange={handleInputChange}
-                            editing={editing}
-                            isHost={isHost}
-                            selectedGroup={selectedGroup}
-                            setGameForm={setGameForm}
-                            handleShareLink={handleShareLink}
-                            showShareModal={showShareModal}
-                            formattedDate={formattedDate}
-                            formattedTime={formattedTime}
-                        />
+                        {/* Host Information Section in its own card */}
+                        {!editing && !isHost && hostProfile && (
+                            <div className="summary-item host-info-card">
+                                <HostInfo
+                                    hostProfile={hostProfile}
+                                    hostStats={hostStats}
+                                    hostReviews={hostReviews}
+                                    averageRating={averageRating}
+                                    generateAvatar={generateAvatar}
+                                    formatDate={formatDate}
+                                />
+                            </div>
+                        )}
                     </div>
+
                     <div className="summary-item players-item">
                         {/* Players List Section */}
                         <PlayersList

@@ -2,91 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import HeaderComp from '../../components/Header/Header';
+import GameCard from '../../components/GameCard/GameCard';
 import './Home.css';
-
-// Create a simplified version of GameCard for the home page
-const HomeGameCard = ({ game, onJoinClick }) => {
-    // Format date to be more readable
-    const formatDate = (dateString) => {
-        const options = {
-            month: "long",
-            day: "numeric",
-            year: "numeric",
-        };
-        const date = new Date(dateString);
-        return date.toLocaleDateString("en-US", options);
-    };
-
-    // Format time to 12 hour format
-    const formatTime = (dateString) => {
-        return new Date(dateString).toLocaleTimeString("en-US", {
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
-        });
-    };
-
-    return (
-        <div className="poker-game-card">
-            <div className="game-card-header">
-                <div className="game-title-section">
-                    <div className="game-icon"></div>
-                    <h3 className="game-title">{game.game_name}</h3>
-                    <span className="host-label">
-                        <span className="gameCard-circle-divider">|</span>
-                        {game.host_id?.username || "Anonymous Host"}
-                    </span>
-                </div>
-                {game.game_status && (
-                    <div className={`game-status-indicator ${game.game_status}`}>
-                        {game.game_status.charAt(0).toUpperCase() + game.game_status.slice(1)}
-                    </div>
-                )}
-            </div>
-
-            <hr className="divider" />
-
-            <div className="card-content-wrapper">
-                <div className="gameCard-details">
-                    <div className="detail-row">
-                        <span className="card-detail-label">Date:</span>
-                        <span className="detail-value">{formatDate(game.game_date)}</span>
-                    </div>
-
-                    <div className="detail-row">
-                        <span className="card-detail-label">Time:</span>
-                        <span className="detail-value">{formatTime(game.game_date)}</span>
-                    </div>
-
-                    <div className="detail-row">
-                        <span className="card-detail-label">Location:</span>
-                        <span className="detail-value">{game.location}</span>
-                    </div>
-
-                    <div className="detail-row">
-                        <span className="card-detail-label">Blinds:</span>
-                        <span className="detail-value">{game.blinds}</span>
-                    </div>
-
-                    <div className="detail-row">
-                        <span className="card-detail-label">Open Seats:</span>
-                        <span className="detail-value">
-                            {game.acceptedPlayersCount
-                                ? `${game.handed - game.acceptedPlayersCount}/${game.handed}`
-                                : `${game.handed - 1}/${game.handed}`}
-                        </span>
-                    </div>
-                </div>
-
-                <div className="game-actions">
-                    <button className="join-button" onClick={onJoinClick}>
-                        Join Game
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-};
+import heroImage from '../../assets/images/hero_image.png';
 
 export function Home() {
     const navigate = useNavigate();
@@ -139,10 +57,20 @@ export function Home() {
         fetchPublicGames();
     }, []);
 
-    // Handle join game click
-    const handleJoinClick = () => {
-        navigate('/signup');
-    };
+    // Create custom action button that looks like the chip button
+    const renderJoinButton = (game) => (
+        <button
+            className="chip-button"
+            onClick={(e) => {
+                e.stopPropagation();
+                navigate('/signup');
+            }}
+        >
+            <div className="chip-icon">
+                <span className="request-text">Join</span>
+            </div>
+        </button>
+    );
 
     return (
         <>
@@ -150,19 +78,21 @@ export function Home() {
             <div className='home'>
                 <div className='hero'>
                     <div className='hero-text'>
-                        <h1 className='hero-main'>Time to go allin.</h1>
-                        <p className='hero-secondary'>Manage your real-life poker games with ease. Designed by Team All In.</p>
-                        <div className='hero-buttons'>
-                            <button className='cta primary' onClick={() => navigate('/signup')}>Get Started</button>
-                            <button className='cta secondary' onClick={() => navigate('/signin')}>Sign In</button>
-                        </div>
+                        <p className='hero-main'>Play, Host, and Manage Poker Games</p>
+                        <p className='hero-secondary'>
+                            All-in-one platform for playing and hosting poker games.
+                            Create your own games or join public ones.
+                            Add friends and join groups to easily play with your crew.
+                        </p>
+                        <button className='cta' onClick={() => { navigate('/signup') }}>Get Started</button>
                     </div>
+                    <img src={heroImage} alt='Friends playing poker' className='hero-img' />
                 </div>
 
                 <div className='public-games-section'>
                     <div className='section-header'>
                         <h2>Available Games</h2>
-                        <p>Join a game as a guest or create an account to host your own</p>
+                        <p>Join a game as a guest or create an account to host your own.</p>
                     </div>
 
                     {loading ? (
@@ -177,10 +107,12 @@ export function Home() {
                     ) : (
                         <div className="games-grid">
                             {publicGames.map(game => (
-                                <HomeGameCard
+                                <GameCard
                                     key={game._id}
                                     game={game}
-                                    onJoinClick={handleJoinClick}
+                                    user={null} // No user since this is the public home page
+                                    customActions={renderJoinButton(game)}
+                                    showBorder={true}
                                 />
                             ))}
                         </div>
