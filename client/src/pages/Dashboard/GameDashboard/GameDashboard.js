@@ -489,10 +489,25 @@ export function GameDashboard() {
     };
 
     const handleShareLink = () => {
-        const guestLink = `${window.location.origin}/guest/join/${gameId}`;
-        navigator.clipboard.writeText(guestLink);
-        setShowShareModal(true);
-        setTimeout(() => setShowShareModal(false), 3000); // Hide after 3 seconds
+        // Copy the main signup page URL instead of the guest join link
+        const signupLink = `${window.location.origin}/signup`;
+
+        try {
+            // Try to use the clipboard API
+            navigator.clipboard.writeText(signupLink)
+                .then(() => {
+                    setShowShareModal(true);
+                    setTimeout(() => setShowShareModal(false), 3000);
+                })
+                .catch(err => {
+                    // Fallback for clipboard API failure
+                    console.error('Could not copy text: ', err);
+                    alert(`Copy this link manually: ${signupLink}`);
+                });
+        } catch (err) {
+            // Fallback for browsers that don't support clipboard API
+            alert(`Copy this link manually: ${signupLink}`);
+        }
     };
 
     if (!game || !user) {
