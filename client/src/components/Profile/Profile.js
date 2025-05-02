@@ -13,6 +13,7 @@ const Profile = ({
 	updateUserState,
 	action,
 	onAction,
+	hideFriendActions,
 }) => {
 	const navigate = useNavigate();
 	if (!data || !data.username) {
@@ -276,6 +277,11 @@ const Profile = ({
 	};
 
 	const getButton = () => {
+		// Check if friend actions should be hidden
+		if (hideFriendActions) {
+			return null; // Don't display any friend action buttons
+		}
+
 		// Handle 'cancelInvitation' and 'removePlayer' actions
 		if (action === "cancelInvitation" || action === "removePlayer") {
 			return (
