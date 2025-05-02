@@ -13,7 +13,8 @@ const Profile = ({
 	updateUserState,
 	action,
 	onAction,
-	hideFriendActions,
+	hideFriendActions = false,
+	disableProfileClick = false // Add this prop with default value
 }) => {
 	const navigate = useNavigate();
 	if (!data || !data.username) {
@@ -267,10 +268,15 @@ const Profile = ({
 	};
 
 	const handleProfileClick = () => {
+		// Skip navigation if profile clicks are disabled
+		if (disableProfileClick) {
+			return;
+		}
+
 		// Don't navigate to profile view if clicking on your own profile
-		if (currentUser._id === data._id) {
+		if (currentUser && currentUser._id === data._id) {
 			navigate(`/dashboard/${currentUser._id}/profile`);
-		} else {
+		} else if (currentUser) {
 			// Navigate to the profile view page for other users
 			navigate(`/dashboard/${currentUser._id}/profiles/${data._id}`);
 		}
@@ -375,8 +381,8 @@ const Profile = ({
 		<div
 			className={`profile-container${size === "compact" ? "-compact" : ""
 				}`}
-			onClick={handleProfileClick}
-			style={{ cursor: "pointer" }}
+			onClick={disableProfileClick ? undefined : handleProfileClick}
+			style={{ cursor: disableProfileClick ? "default" : "pointer" }}
 		>
 			<PokerChipAvatar
 				className={`profile-picture${size === "compact" ? "-compact" : ""
