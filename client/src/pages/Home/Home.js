@@ -78,9 +78,9 @@ export function Home() {
             <div className='home'>
                 <div className='hero'>
                     <div className='hero-text'>
-                        <p className='hero-main'>Play, Host, and Manage Poker Games</p>
+                        <p className='hero-main'>Find, Host, and Manage Poker Games</p>
                         <p className='hero-secondary'>
-                            All-in-one platform for playing and hosting poker games.
+                            All-in-one platform for finding and hosting poker games.
                             Create your own games or join public ones.
                             Add friends and join groups to easily play with your crew.
                         </p>
