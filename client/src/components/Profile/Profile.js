@@ -6,6 +6,8 @@ import { minidenticon } from "minidenticons";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+
+
 const Profile = ({
 	data,
 	size,
@@ -79,9 +81,8 @@ const Profile = ({
 			return (
 				<button
 					onClick={onAction}
-					className={`profile-button${
-						size === "compact" ? "-compact" : ""
-					}`}
+					className={`profile-button${size === "compact" ? "-compact" : ""
+						}`}
 				>
 					{action === "cancelInvitation" ? "Cancel" : "Remove"}
 				</button>
@@ -113,9 +114,8 @@ const Profile = ({
 			return (
 				<button
 					onClick={() => handleFriendRequest("remove")}
-					className={`profile-button${
-						size === "compact" ? "-compact" : ""
-					}`}
+					className={`profile-button${size === "compact" ? "-compact" : ""
+						}`}
 				>
 					- Remove Friend
 				</button>
@@ -125,9 +125,8 @@ const Profile = ({
 			return (
 				<button
 					onClick={() => handleFriendRequest("cancel")}
-					className={`profile-button${
-						size === "compact" ? "-compact" : ""
-					}`}
+					className={`profile-button${size === "compact" ? "-compact" : ""
+						}`}
 				>
 					Cancel Request
 				</button>
@@ -138,17 +137,15 @@ const Profile = ({
 				<div className="request-button-container">
 					<button
 						onClick={() => handleFriendRequest("accept")}
-						className={`profile-button${
-							size === "compact" ? "-compact" : ""
-						}`}
+						className={`profile-button${size === "compact" ? "-compact" : ""
+							}`}
 					>
 						Accept
 					</button>
 					<button
 						onClick={() => handleFriendRequest("reject")}
-						className={`profile-button${
-							size === "compact" ? "-compact" : ""
-						}`}
+						className={`profile-button${size === "compact" ? "-compact" : ""
+							}`}
 					>
 						Reject
 					</button>
@@ -158,9 +155,8 @@ const Profile = ({
 		return (
 			<button
 				onClick={() => handleFriendRequest("send")}
-				className={`profile-button${
-					size === "compact" ? "-compact" : ""
-				}`}
+				className={`profile-button${size === "compact" ? "-compact" : ""
+					}`}
 			>
 				+ Add Friend
 			</button>
@@ -171,47 +167,40 @@ const Profile = ({
 
 	return (
 		<div
-			className={`profile-container${
-				size === "compact" ? "-compact" : ""
-			}`}
+			className={`profile-container${size === "compact" ? "-compact" : ""
+				}`}
 			onClick={handleProfileClick}
 			style={{ cursor: "pointer" }}
 		>
 			<MinidenticonImg
-				className={`profile-picture${
-					size === "compact" ? "-compact" : ""
-				}`}
+				className={`profile-picture${size === "compact" ? "-compact" : ""
+					}`}
 				username={data.username}
 			/>
 			<div
-				className={`profile-details-wrapper${
-					size === "compact" ? "-compact" : ""
-				}`}
+				className={`profile-details-wrapper${size === "compact" ? "-compact" : ""
+					}`}
 			>
 				<div
-					className={`profile-details-container${
-						size === "compact" ? "-compact" : ""
-					}`}
+					className={`profile-details-container${size === "compact" ? "-compact" : ""
+						}`}
 				>
 					<span
-						className={`profile-username${
-							size === "compact" ? "-compact" : ""
-						}`}
+						className={`profile-username${size === "compact" ? "-compact" : ""
+							}`}
 					>
 						{data.username}
 					</span>
 					<span
-						className={`profile-name${
-							size === "compact" ? "-compact" : ""
-						}`}
+						className={`profile-name${size === "compact" ? "-compact" : ""
+							}`}
 					>
 						{data.names.firstName} {data.names.lastName}
 					</span>
 					{/* Display the mutual friends count */}
 					<span
-						className={`profile-mutual-friends${
-							size === "compact" ? "-compact" : ""
-						}`}
+						className={`profile-mutual-friends${size === "compact" ? "-compact" : ""
+							}`}
 					>
 						{mutualFriendsCount} Mutual Friend
 						{mutualFriendsCount !== 1 ? "s" : ""}
