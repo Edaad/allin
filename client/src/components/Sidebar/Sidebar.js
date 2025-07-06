@@ -1,15 +1,37 @@
-import React, { useMemo, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "./Sidebar.css";
-import { minidenticon } from "minidenticons";
 import Logo from "../Logo/Logo";
 import axios from "axios";
 import { DASHBOARD_MENU_ITEMS } from "../../constants/menuConfig";
+// Remove minidenticon import
+// import { minidenticon } from "minidenticons";
+// Add our new component
+import PokerChipAvatar from "../PokerChipAvatar/PokerChipAvatar";
 
 const Sidebar = ({ page, username }) => {
 	const navigate = useNavigate();
 	const { userId } = useParams();
 	const [unreadCount, setUnreadCount] = useState(0);
+	const [userData, setUserData] = useState(null);
+
+	// Fetch user data to get first and last name for avatar
+	useEffect(() => {
+		const fetchUserData = async () => {
+			if (!userId) return;
+
+			try {
+				const response = await axios.get(
+					`${process.env.REACT_APP_API_URL}/users/${userId}`
+				);
+				setUserData(response.data);
+			} catch (error) {
+				console.error("Error fetching user data:", error);
+			}
+		};
+
+		fetchUserData();
+	}, [userId]);
 
 	// Fetch unread notification count
 	useEffect(() => {
@@ -30,10 +52,7 @@ const Sidebar = ({ page, username }) => {
 		};
 
 		fetchUnreadCount();
-
-		// Set up interval to periodically check for new notifications
 		const interval = setInterval(fetchUnreadCount, 60000); // Check every minute
-
 		return () => clearInterval(interval);
 	}, [userId]);
 
@@ -42,17 +61,7 @@ const Sidebar = ({ page, username }) => {
 		navigate("/signin");
 	};
 
-	const MinidenticonImg = ({ username, saturation, lightness, ...props }) => {
-		const svgURI = useMemo(
-			() =>
-				"data:image/svg+xml;utf8," +
-				encodeURIComponent(
-					minidenticon(username, saturation, lightness)
-				),
-			[username, saturation, lightness]
-		);
-		return <img src={svgURI} alt={username} {...props} />;
-	};
+	// Remove the MinidenticonImg component
 
 	return (
 		<div className="sidebar-container">
@@ -83,9 +92,12 @@ const Sidebar = ({ page, username }) => {
 					className="menu-item"
 					onClick={() => navigate(`/dashboard/${userId}/account`)}
 				>
-					<MinidenticonImg
+					{/* Replace minidenticon with PokerChipAvatar */}
+					<PokerChipAvatar
 						className="profile-pic"
 						username={username}
+						firstName={userData?.names?.firstName || ''}
+						lastName={userData?.names?.lastName || ''}
 					/>
 					<span
 						className={`account-username ${page === "account" ? "bg-highlight" : ""

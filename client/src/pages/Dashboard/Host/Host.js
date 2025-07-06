@@ -7,6 +7,8 @@ import Sidebar from "../../../components/Sidebar/Sidebar";
 import GameCard from "../../../components/GameCard/GameCard";
 import Input from "../../../components/Input/Input";
 import Select from "../../../components/Select/Select";
+// Import the TabNav component
+import TabNav from "../../../components/TabNav/TabNav";
 
 export function Host() {
 	const [user, setUser] = useState(null);
@@ -36,6 +38,8 @@ export function Host() {
 	};
 	const [gameForm, setGameForm] = useState(initialGameFormState);
 
+	const [dateError, setDateError] = useState(null);
+
 	useEffect(() => {
 		const loggedUser = JSON.parse(localStorage.getItem("user"));
 		if (loggedUser && loggedUser._id === userId) {
@@ -44,6 +48,37 @@ export function Host() {
 			navigate("/signin");
 		}
 	}, [userId, navigate]);
+
+	useEffect(() => {
+		if (gameForm.date && gameForm.time) {
+		  const dateValidation = validateGameDate(gameForm.date, gameForm.time);
+		  if (!dateValidation.isValid) {
+			setDateError(dateValidation.errorMessage);
+		  } else {
+			setDateError(null);
+		  }
+		}
+	  }, [gameForm.date, gameForm.time]);
+
+	const validateGameDate = (date, time) => {
+		if (!date || !time) return { isValid: true }; // Skip validation if fields are empty
+		
+		// Create date object from form inputs
+		const gameDateTime = new Date(`${date}T${time}`);
+		
+		// Create current date and reset hours for fair comparison
+		const currentDate = new Date();
+		currentDate.setHours(0, 0, 0, 0);
+		
+		if (gameDateTime < currentDate) {
+		  return {
+			isValid: false,
+			errorMessage: "Game date cannot be in the past. Please select a future date."
+		  };
+		}
+		
+		return { isValid: true };
+	  };
 
 	// Fetch user's groups
 	const fetchUserGroups = useCallback(async () => {
@@ -68,12 +103,12 @@ export function Host() {
 				`${process.env.REACT_APP_API_URL}/games`,
 				{ params: { host_id: user._id, status: "upcoming" } }
 			);
-			
+
 			const completedResponse = await axios.get(
 				`${process.env.REACT_APP_API_URL}/games`,
 				{ params: { host_id: user._id, status: "completed" } }
 			);
-			
+
 			setStatsData({
 				totalGames: upcomingResponse.data.length + completedResponse.data.length,
 				upcomingGames: upcomingResponse.data.length,
@@ -145,6 +180,13 @@ export function Host() {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+
+		const dateValidation = validateGameDate(gameForm.date, gameForm.time);
+		if (!dateValidation.isValid) {
+		  setDateError(dateValidation.errorMessage);
+		  return; // Prevent form submission
+		}
+
 		try {
 			const gameDateTimeString = `${gameForm.date}T${gameForm.time}:00`;
 			const gameDateTime = new Date(gameDateTimeString);
@@ -198,12 +240,15 @@ export function Host() {
 		})),
 	];
 
+	// Define tabs for consistent format with Community page
+	const tabs = [
+		{ id: "Upcoming games", label: "Upcoming Games" },
+		{ id: "Past games", label: "Past Games" },
+	];
+
 	return (
 		<div className="dashboard">
-			<Sidebar
-				page={page}
-				username={user.username}
-			/>
+			<Sidebar page={page} username={user.username} />
 			<div className="logged-content-container">
 				<div className="dashboard-heading">
 					<h1>Host Dashboard</h1>
@@ -228,7 +273,7 @@ export function Host() {
 							<p>Total Games</p>
 						</div>
 					</div>
-					
+
 					<div className="stat-card">
 						<div className="stat-icon upcoming">
 							<i className="fas fa-calendar-alt"></i>
@@ -238,7 +283,7 @@ export function Host() {
 							<p>Upcoming Games</p>
 						</div>
 					</div>
-					
+
 					<div className="stat-card">
 						<div className="stat-icon completed">
 							<i className="fas fa-check-circle"></i>
@@ -374,6 +419,8 @@ export function Host() {
 									label="Date"
 									value={gameForm.date}
 									onChange={handleInputChange}
+									error={dateError}
+									touched={!!dateError}
 								/>
 								<Input
 									name="time"
@@ -399,26 +446,13 @@ export function Host() {
 					</div>
 				)}
 
-				{/* Games Tab Container */}
+				{/* Updated Games Tab Container */}
 				<div className="games-section">
-					<div className="tab-container">
-						<button
-							className={`tab${tab === "Upcoming games" ? "-selected" : ""}`}
-							onClick={() => {
-								setTab("Upcoming games");
-							}}
-						>
-							Upcoming Games
-						</button>
-						<button
-							className={`tab${tab === "Past games" ? "-selected" : ""}`}
-							onClick={() => {
-								setTab("Past games");
-							}}
-						>
-							Past Games
-						</button>
-					</div>
+					<TabNav
+						activeTab={tab}
+						onTabChange={setTab}
+						tabs={tabs}
+					/>
 
 					<div className="games-list">
 						{games.length > 0 ? (

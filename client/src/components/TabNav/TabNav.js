@@ -2,7 +2,7 @@ import React from 'react';
 import './TabNav.css';
 
 /**
- * Reusable tab navigation component
+ * Reusable tab navigation component styled to match Community page
  * @param {Object} props - Component props
  * @param {string} props.activeTab - Currently active tab
  * @param {function} props.onTabChange - Function to call when tab is changed
@@ -15,7 +15,7 @@ const TabNav = ({ activeTab, onTabChange, tabs }) => {
                 <button
                     key={tab.id}
                     onClick={() => onTabChange(tab.id)}
-                    className={`tab${activeTab === tab.id ? '-selected' : ''}`}
+                    className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
                 >
                     {tab.label}
                 </button>

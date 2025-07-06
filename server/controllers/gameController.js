@@ -228,75 +228,105 @@ const getGameById = async (req, res) => {
 	}
 };
 
+// Create a new game
 const createGame = async (req, res) => {
 	try {
-		// Create a new object with explicit boolean conversion for is_public
-		const gameData = {
-			...req.body,
-			is_public: req.body.is_public === true,
-		};
-
-		console.log("Creating game with data:", gameData);
-
-		const newGame = new Game(gameData);
-		await newGame.save();
-
-		// Add notification for game creation
-		try {
-			await notificationService.notifyGameCreated(
-				gameData.host_id,
-				newGame._id
-			);
-			console.log("Game creation notification sent");
-		} catch (notificationError) {
-			console.error("Error creating notification:", notificationError);
-			// Continue execution even if notification fails
-		}
-
-		console.log("Game created:", newGame);
-		res.status(201).send(newGame);
+	  // Create a new object with explicit boolean conversion for is_public
+	  const gameData = {
+		...req.body,
+		is_public: req.body.is_public === true,
+	  };
+  
+	  // Add date validation
+	  const gameDate = new Date(gameData.game_date);
+	  const currentDate = new Date();
+	  
+	  // Set both dates to start of day for proper comparison
+	  currentDate.setHours(0, 0, 0, 0);
+	  
+	  if (gameDate < currentDate) {
+		return res.status(400).json({ 
+		  message: "Game date cannot be in the past. Please select a future date."
+		});
+	  }
+  
+	  console.log("Creating game with data:", gameData);
+  
+	  const newGame = new Game(gameData);
+	  await newGame.save();
+  
+	  // Add notification for game creation
+	  try {
+		await notificationService.notifyGameCreated(
+		  gameData.host_id,
+		  newGame._id
+		);
+		console.log("Game creation notification sent");
+	  } catch (notificationError) {
+		console.error("Error creating notification:", notificationError);
+		// Continue execution even if notification fails
+	  }
+  
+	  console.log("Game created:", newGame);
+	  res.status(201).send(newGame);
 	} catch (err) {
-		console.error("Error creating game:", err);
-		res.status(400).send(err);
+	  console.error("Error creating game:", err);
+	  res.status(400).send(err);
 	}
-};
+  };
 
+// Update a game
 const updateGame = async (req, res) => {
 	try {
-		// Ensure boolean conversion for is_public field
-		const updateData = {
-			...req.body,
-		};
-
-		if (updateData.is_public !== undefined) {
-			updateData.is_public = updateData.is_public === true;
+	  // Ensure boolean conversion for is_public field
+	  const updateData = {
+		...req.body,
+	  };
+  
+	  if (updateData.is_public !== undefined) {
+		updateData.is_public = updateData.is_public === true;
+	  }
+	  
+	  // Add date validation
+	  if (updateData.game_date) {
+		const gameDate = new Date(updateData.game_date);
+		const currentDate = new Date();
+		
+		// Set both dates to start of day for proper comparison
+		currentDate.setHours(0, 0, 0, 0);
+		
+		if (gameDate < currentDate) {
+		  return res.status(400).json({ 
+			message: "Game date cannot be in the past. Please select a future date."
+		  });
 		}
-
-		const updatedGame = await Game.findByIdAndUpdate(
-			req.params.id,
-			updateData,
-			{ new: true }
-		);
-		if (!updatedGame) {
-			return res.status(404).send({ message: "Game not found" });
-		}
-
-		// Add notification for game update
-		try {
-			// This will notify both players and the host
-			await notificationService.notifyGameEdited(updatedGame._id);
-			console.log("Game update notifications sent");
-		} catch (notificationError) {
-			console.error("Error creating notifications:", notificationError);
-			// Continue execution even if notification fails
-		}
-
-		res.json(updatedGame);
+	  }
+  
+	  const updatedGame = await Game.findByIdAndUpdate(
+		req.params.id,
+		updateData,
+		{ new: true }
+	  );
+	  if (!updatedGame) {
+		return res.status(404).send({ message: "Game not found" });
+	  }
+  
+	  // Add notification for game update
+	  try {
+		// This will notify both players and the host
+		await notificationService.notifyGameEdited(updatedGame._id);
+		console.log("Game update notifications sent");
+	  } catch (notificationError) {
+		console.error("Error creating notifications:", notificationError);
+		// Continue execution even if notification fails
+	  }
+  
+	  res.json(updatedGame);
 	} catch (err) {
-		console.error("Error updating game:", err);
-		res.status(400).send(err);
+	  console.error("Error updating game:", err);
+	  res.status(400).send(err);
 	}
-};
+  };
 
 const deleteGame = async (req, res) => {
 	try {

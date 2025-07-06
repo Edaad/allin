@@ -1,11 +1,11 @@
 // src/pages/Dashboard/Profile/ProfileManagement.js
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { minidenticon } from "minidenticons";
 import "./ProfileManagement.css";
 import Sidebar from "../../../components/Sidebar/Sidebar";
 import Input from "../../../components/Input/Input";
+import PokerChipAvatar from "../../../components/PokerChipAvatar/PokerChipAvatar";
 
 export function ProfileManagement() {
 	const [user, setUser] = useState(null);
@@ -119,19 +119,6 @@ export function ProfileManagement() {
 
 		fetchProfile();
 	}, [user, userId]);
-
-	// Generate identicon for avatar placeholder
-	const MinidenticonImg = ({ username, saturation, lightness, ...props }) => {
-		const svgURI = useMemo(
-			() =>
-				"data:image/svg+xml;utf8," +
-				encodeURIComponent(
-					minidenticon(username, saturation, lightness)
-				),
-			[username, saturation, lightness]
-		);
-		return <img src={svgURI} alt={username} {...props} />;
-	};
 
 	// Handle form input changes
 	const handleChange = (e) => {
@@ -378,8 +365,10 @@ export function ProfileManagement() {
 										className="profile-avatar"
 									/>
 								) : (
-									<MinidenticonImg
+									<PokerChipAvatar
 										username={user?.username || "user"}
+										firstName={user?.names?.firstName || ''}
+										lastName={user?.names?.lastName || ''}
 										className="profile-avatar identicon"
 									/>
 								)}

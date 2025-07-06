@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import "./HostInfo.css";
+// Import the PokerChipAvatar component
+import PokerChipAvatar from "../PokerChipAvatar/PokerChipAvatar";
 
 /**
  * Displays host information and reviews
  */
-const HostInfo = ({ hostProfile, hostStats, hostReviews, averageRating, generateAvatar, formatDate }) => {
+const HostInfo = ({ hostProfile, hostStats, hostReviews, averageRating, formatDate }) => {
     const [showMoreReviews, setShowMoreReviews] = useState(false);
 
     if (!hostProfile) return null;
@@ -16,9 +18,11 @@ const HostInfo = ({ hostProfile, hostStats, hostReviews, averageRating, generate
             <div className="host-info">
                 <div className="host-header">
                     <div className="host-avatar">
-                        <img
-                            src={generateAvatar(hostProfile.username)}
-                            alt={`${hostProfile.username}'s avatar`}
+                        {/* Replace generateAvatar with PokerChipAvatar */}
+                        <PokerChipAvatar
+                            username={hostProfile.username}
+                            firstName={hostProfile.names?.firstName || ''}
+                            lastName={hostProfile.names?.lastName || ''}
                             className="avatar-image"
                         />
                     </div>
@@ -38,30 +42,6 @@ const HostInfo = ({ hostProfile, hostStats, hostReviews, averageRating, generate
                                 <span className="stat-value">{hostStats.gamesPlayed}</span>
                             </div>
                         </div>
-                        {averageRating > 0 && (
-                            <div className="host-rating">
-                                <div className="rating-display">
-                                    <span className="rating-number">
-                                        {averageRating.toFixed(1)}
-                                    </span>
-                                    <div className="star-rating">
-                                        {[1, 2, 3, 4, 5].map((star) => (
-                                            <span
-                                                key={star}
-                                                className={`star ${star <= Math.round(averageRating) ? "filled" : ""
-                                                    }`}
-                                            >
-                                                ★
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                                <span className="review-count">
-                                    {hostReviews.length}{" "}
-                                    {hostReviews.length === 1 ? "review" : "reviews"}
-                                </span>
-                            </div>
-                        )}
                     </div>
                 </div>
 
@@ -94,9 +74,12 @@ const HostInfo = ({ hostProfile, hostStats, hostReviews, averageRating, generate
                                 .map((review) => (
                                     <div key={review._id} className="review-item">
                                         <div className="review-header">
-                                            <span className="reviewer-name">
-                                                {review.reviewer_id?.username || "Anonymous"}
-                                            </span>
+                                            {/* Add PokerChipAvatar for reviewer avatar */}
+                                            <div className="reviewer-info">
+                                                <span className="reviewer-name">
+                                                    {review.reviewer_id?.username || "Anonymous"}
+                                                </span>
+                                            </div>
                                             <div className="review-stars">
                                                 {[...Array(5)].map((_, i) => (
                                                     <span

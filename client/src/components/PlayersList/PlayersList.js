@@ -57,6 +57,7 @@ const PlayersList = ({
                                     data={player.user_id}
                                     size={"compact"}
                                     currentUser={user}
+                                    hideFriendActions={true} // Add this prop to hide friend actions
                                 />
                             ))}
                         </div>
@@ -74,6 +75,7 @@ const PlayersList = ({
                                         data={player.user_id}
                                         size={"compact"}
                                         currentUser={user}
+                                        hideFriendActions={true} // Add this prop to hide friend actions
                                     />
                                 ))}
                             </div>
@@ -91,6 +93,7 @@ const PlayersList = ({
                                             data={player.user_id}
                                             size="compact"
                                             currentUser={user}
+                                            hideFriendActions={true} // Add this prop to hide friend actions
                                         />
                                     </div>
                                 ))}
@@ -115,6 +118,7 @@ const PlayersList = ({
                                                     data={request.user_id}
                                                     size="compact"
                                                     currentUser={user}
+                                                    hideFriendActions={true} // Add this prop to hide friend actions
                                                 />
                                                 <div className="join-request-actions">
                                                     <button

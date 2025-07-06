@@ -68,7 +68,7 @@ export const useGameData = (user, initialTab = "Public Games") => {
         "Upcoming Games": {
             blinds: [],
             handed: { min: 2, max: 10 },
-            dateRange: { startDate: "", endDate: "" },
+            dateRange: { startDate: getCurrentDate(), endDate: "" }, // Updated to use current date
             timeRange: { startTime: "", endTime: "" },
         },
         "Past Games": {
@@ -112,9 +112,6 @@ export const useGameData = (user, initialTab = "Public Games") => {
 
         try {
             let result = [];
-
-            // Don't clear games immediately to avoid flickering
-            // Only clear them once we have new data
 
             switch (tab) {
                 case "Public Games":
@@ -181,7 +178,10 @@ export const useGameData = (user, initialTab = "Public Games") => {
                     // Make sure this is still the current request
                     if (currentRequestIdRef.current !== requestId) return;
 
-                    result = requestedRes.data;
+                    // Filter out any games where user is the host
+                    result = requestedRes.data.filter(game =>
+                        game.host_id && game.host_id._id !== user._id
+                    );
                     break;
 
                 case "Invitations":
@@ -198,20 +198,35 @@ export const useGameData = (user, initialTab = "Public Games") => {
                 case "Upcoming Games":
                 case "Past Games":
                     const status = tab === "Upcoming Games" ? "upcoming" : "completed";
-                    const params = {
-                        status,
-                        ...filterParams,
-                    };
 
-                    const res = await axios.get(
+                    // Get games user is a player in
+                    const playerGamesRes = await axios.get(
                         `${process.env.REACT_APP_API_URL}/games/player/${user._id}`,
-                        { params }
+                        { params: { status, ...filterParams } }
+                    );
+
+                    // Get games user is hosting
+                    const hostedGamesRes = await axios.get(
+                        `${process.env.REACT_APP_API_URL}/games`,
+                        { params: { host_id: user._id, status, ...filterParams } }
                     );
 
                     // Make sure this is still the current request
                     if (currentRequestIdRef.current !== requestId) return;
 
-                    result = res.data;
+                    // Combine player games and hosted games
+                    // Add a playerStatus of "host" to hosted games for consistent display
+                    const hostedGames = hostedGamesRes.data.map(game => ({
+                        ...game,
+                        playerStatus: "host"
+                    }));
+
+                    result = [...playerGamesRes.data, ...hostedGames];
+
+                    // Remove duplicates in case a game appears in both lists
+                    result = result.filter((game, index, self) =>
+                        index === self.findIndex(g => g._id === game._id)
+                    );
                     break;
 
                 default:
@@ -220,23 +235,20 @@ export const useGameData = (user, initialTab = "Public Games") => {
 
             // Only update state if this is still the current request
             if (currentRequestIdRef.current === requestId) {
-                // Clear old data and set new data atomically to prevent flickering
                 setGames(result);
             }
         } catch (error) {
             console.error("Error fetching games:", error);
 
-            // Only update state if this is still the current request
             if (currentRequestIdRef.current === requestId) {
                 setGames([]);
             }
         } finally {
-            // Only update loading state if this is still the current request
             if (currentRequestIdRef.current === requestId) {
                 setLoading(false);
             }
         }
-    }, [tab, user, filterParams, fetchWaitlistPosition]);
+    }, [user, tab, filterParams, fetchWaitlistPosition]);
 
     // Memoize handleTabChange to prevent it from causing infinite loops
     const handleTabChange = useCallback((newTab) => {

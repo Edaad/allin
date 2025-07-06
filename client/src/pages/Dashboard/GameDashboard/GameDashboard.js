@@ -489,10 +489,25 @@ export function GameDashboard() {
     };
 
     const handleShareLink = () => {
-        const guestLink = `${window.location.origin}/guest/join/${gameId}`;
-        navigator.clipboard.writeText(guestLink);
-        setShowShareModal(true);
-        setTimeout(() => setShowShareModal(false), 3000); // Hide after 3 seconds
+        // Copy the main signup page URL instead of the guest join link
+        const signupLink = `${window.location.origin}/signup`;
+
+        try {
+            // Try to use the clipboard API
+            navigator.clipboard.writeText(signupLink)
+                .then(() => {
+                    setShowShareModal(true);
+                    setTimeout(() => setShowShareModal(false), 3000);
+                })
+                .catch(err => {
+                    // Fallback for clipboard API failure
+                    console.error('Could not copy text: ', err);
+                    alert(`Copy this link manually: ${signupLink}`);
+                });
+        } catch (err) {
+            // Fallback for browsers that don't support clipboard API
+            alert(`Copy this link manually: ${signupLink}`);
+        }
     };
 
     if (!game || !user) {
@@ -606,34 +621,39 @@ export function GameDashboard() {
                     </div>
                 </div>
                 <div className="game-dashboard-container">
-                    <div className="summary-item">
-                        {/* Host Information Section - Only show when not editing and not the host */}
-                        {!editing && !isHost && hostProfile && (
-                            <HostInfo
-                                hostProfile={hostProfile}
-                                hostStats={hostStats}
-                                hostReviews={hostReviews}
-                                averageRating={averageRating}
-                                generateAvatar={generateAvatar}
-                                formatDate={formatDate}
+                    <div className="left-column">
+                        <div className="summary-item">
+                            {/* Game Details Section */}
+                            <GameDetails
+                                game={game}
+                                gameForm={gameForm}
+                                handleInputChange={handleInputChange}
+                                editing={editing}
+                                isHost={isHost}
+                                selectedGroup={selectedGroup}
+                                setGameForm={setGameForm}
+                                handleShareLink={handleShareLink}
+                                showShareModal={showShareModal}
+                                formattedDate={formattedDate}
+                                formattedTime={formattedTime}
                             />
-                        )}
+                        </div>
 
-                        {/* Game Details Section */}
-                        <GameDetails
-                            game={game}
-                            gameForm={gameForm}
-                            handleInputChange={handleInputChange}
-                            editing={editing}
-                            isHost={isHost}
-                            selectedGroup={selectedGroup}
-                            setGameForm={setGameForm}
-                            handleShareLink={handleShareLink}
-                            showShareModal={showShareModal}
-                            formattedDate={formattedDate}
-                            formattedTime={formattedTime}
-                        />
+                        {/* Host Information Section in its own card */}
+                        {!editing && !isHost && hostProfile && (
+                            <div className="summary-item host-info-card">
+                                <HostInfo
+                                    hostProfile={hostProfile}
+                                    hostStats={hostStats}
+                                    hostReviews={hostReviews}
+                                    averageRating={averageRating}
+                                    generateAvatar={generateAvatar}
+                                    formatDate={formatDate}
+                                />
+                            </div>
+                        )}
                     </div>
+
                     <div className="summary-item players-item">
                         {/* Players List Section */}
                         <PlayersList

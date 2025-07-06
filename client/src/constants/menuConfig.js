@@ -8,6 +8,5 @@ export const DASHBOARD_MENU_ITEMS = [
     { title: "Games", page: "games" },
     { title: "Host", page: "host" },
     { title: "Community", page: "community" },
-    { title: "Bankroll", page: "bankroll" },
     { title: "Notifications", page: "notifications" }
 ];

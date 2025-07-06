@@ -353,12 +353,12 @@
 }
 
 /* Games section styles */
-.games-section {
+.group-games-section {
     margin-top: 50px;
     width: 100%;
 }
 
-.games-section .summary-header {
+.group-games-section .summary-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -367,7 +367,7 @@
     padding-bottom: 10px;
 }
 
-.games-section .summary-header h2 {
+.group-games-section .summary-header h2 {
     margin: 0;
     font-size: 1.5rem;
     font-weight: 600;
@@ -395,7 +395,7 @@
 
 /* Add this new rule for single cards */
 .game-cards-grid:only-child,
-.game-cards-grid > *:only-child {
+.game-cards-grid>*:only-child {
     grid-column: 1 / -1;
     max-width: 100%;
 }

@@ -84,30 +84,51 @@ function GameCard({ game, user, customActions, showBorder = true }) {
 
 	// Render the status badge or action button
 	const renderActionOrStatus = () => {
-		// If the user is the host, show "Host" status
-		if (user._id === game.host_id?._id) {
-			return <div className="status-badge host">Host</div>;
+		// If the user is the host, show "Host" status with blue chip
+		if (user?._id === game.host_id?._id) {
+			return (
+				<div className="status-chip-container">
+					<div className="status-chip blue">
+						<span className="status-chip-text">Host</span>
+					</div>
+				</div>
+			);
 		}
 
-		// If the user has a status other than "none", show the status badge
+		// If the user has a status other than "none", show the status badge or appropriate chip
 		if (playerStatus !== "none" && playerStatus) {
-			// Handle rejection reason display
-			if (playerStatus === "rejected") {
+			// Handle different player statuses with appropriate chips
+			if (playerStatus === "requested") {
 				return (
-					<div className="status-badge-container">
-						<div
-							className="status-badge rejected"
-							onMouseEnter={() => setShowReason(true)}
-							onMouseLeave={() => setShowReason(false)}
-						>
-							<i className="fa-solid fa-circle-exclamation info-icon"></i>
-							Declined
+					<div className="status-chip-container">
+						<div className="status-chip yellow">
+							<span className="status-chip-text">Pending</span>
+						</div>
+					</div>
+				);
+			} else if (playerStatus === "rejected") {
+				return (
+					<div
+						className="status-chip-container"
+						onMouseEnter={() => setShowReason(true)}
+						onMouseLeave={() => setShowReason(false)}
+					>
+						<div className="status-chip red">
+							<span className="status-chip-text">Denied</span>
 						</div>
 						{showReason && game.rejection_reason && (
 							<div className="rejection-reason-tooltip">
 								{game.rejection_reason}
 							</div>
 						)}
+					</div>
+				);
+			} else if (playerStatus === "accepted") {
+				return (
+					<div className="status-chip-container">
+						<div className="status-chip blue">
+							<span className="status-chip-text">Joined</span>
+						</div>
 					</div>
 				);
 			}
@@ -120,11 +141,9 @@ function GameCard({ game, user, customActions, showBorder = true }) {
 				);
 			}
 
-			// Other statuses display
+			// Other statuses (pending, completed, etc) keep using status badges
 			const statusLabels = {
-				accepted: "Joined",
 				pending: "Invited",
-				requested: "Request Sent",
 				completed: "Completed",
 			};
 
@@ -144,7 +163,7 @@ function GameCard({ game, user, customActions, showBorder = true }) {
 			);
 		}
 
-		// For public games where player hasn't joined yet, show the chip button
+		// For public games where player hasn't joined yet, show the green chip button
 		return (
 			<button
 				className="chip-button"
@@ -215,9 +234,8 @@ function GameCard({ game, user, customActions, showBorder = true }) {
 						<span className="card-detail-label">Open Seats:</span>
 						<span className="detail-value">
 							{game.acceptedPlayersCount
-								? `${game.handed - game.acceptedPlayersCount}/${
-										game.handed
-								  }`
+								? `${game.handed - game.acceptedPlayersCount}/${game.handed
+								}`
 								: `${game.handed - 1}/${game.handed}`}
 						</span>
 					</div>

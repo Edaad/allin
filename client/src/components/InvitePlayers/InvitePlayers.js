@@ -212,8 +212,7 @@ export default function InvitePlayers({ user, gameId, players, fetchPlayers }) {
 				error.response?.data || "No response data"
 			);
 			setError(
-				`Failed to send invitations: ${
-					error.message || "Unknown error"
+				`Failed to send invitations: ${error.message || "Unknown error"
 				}`
 			);
 		}
@@ -299,7 +298,13 @@ export default function InvitePlayers({ user, gameId, players, fetchPlayers }) {
 												(f) => f._id === person._id
 											)}
 										/>
-										<Profile data={person} size="compact" />
+										<Profile
+											data={person}
+											size="compact"
+											currentUser={user}
+											hideFriendActions={true}
+											disableProfileClick={true}
+										/>
 									</label>
 								</div>
 							))}
@@ -331,20 +336,23 @@ export default function InvitePlayers({ user, gameId, players, fetchPlayers }) {
 							<Profile
 								data={player.user_id}
 								size="compact"
+								currentUser={user}
 								action="cancelInvitation"
 								onAction={() =>
 									handleCancelInvite(player.user_id._id)
 								}
+								hideFriendActions={true}
+								disableProfileClick={true}
 							/>
 						</li>
 					))}
 				{players.filter(
 					(player) => player.invitation_status === "pending"
 				).length === 0 && (
-					<li className="no-invitations-message">
-						No pending invitations
-					</li>
-				)}
+						<li className="no-invitations-message">
+							No pending invitations
+						</li>
+					)}
 			</ul>
 
 			<h3>Accepted Players</h3>
@@ -356,18 +364,21 @@ export default function InvitePlayers({ user, gameId, players, fetchPlayers }) {
 							<Profile
 								data={player.user_id}
 								size="compact"
+								currentUser={user}
 								action="removePlayer"
 								onAction={() =>
 									handleRemovePlayer(player.user_id._id)
 								}
+								hideFriendActions={true}
+								disableProfileClick={true}
 							/>
 						</li>
 					))}
 				{players.filter(
 					(player) => player.invitation_status === "accepted"
 				).length === 0 && (
-					<li className="no-players-message">No accepted players</li>
-				)}
+						<li className="no-players-message">No accepted players</li>
+					)}
 			</ul>
 
 			<h3>Waitlist</h3>
@@ -388,10 +399,13 @@ export default function InvitePlayers({ user, gameId, players, fetchPlayers }) {
 								<Profile
 									data={player.user_id}
 									size="compact"
+									currentUser={user}
 									action="removePlayer"
 									onAction={() =>
 										handleRemovePlayer(player.user_id._id)
 									}
+									hideFriendActions={true}
+									disableProfileClick={true}
 								/>
 							</div>
 						</li>
@@ -399,10 +413,10 @@ export default function InvitePlayers({ user, gameId, players, fetchPlayers }) {
 				{players.filter(
 					(player) => player.invitation_status === "waitlist"
 				).length === 0 && (
-					<li className="no-waitlist-message">
-						No players on waitlist
-					</li>
-				)}
+						<li className="no-waitlist-message">
+							No players on waitlist
+						</li>
+					)}
 			</ul>
 		</div>
 	);

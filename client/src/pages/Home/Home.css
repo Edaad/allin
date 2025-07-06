@@ -1,15 +1,14 @@
 .home {
     padding-top: 100px;
     position: relative;
+    background-color: white;
 }
 
 .hero {
     position: relative;
-    padding: 10vh 120px 120px 120px;
-    height: calc(100vh - 100px);
     box-sizing: border-box;
     display: flex;
-    gap: 10px;
+    gap: 5vw;
     flex-direction: row;
 }
 
@@ -17,8 +16,9 @@
     display: flex;
     flex-direction: column;
     gap: 3vh;
-    max-width: 47%;
+    max-width: 50%;
     z-index: 1;
+    padding: 100px 0 0 100px;
 }
 
 .hero-main {
@@ -36,10 +36,9 @@
 }
 
 .hero-img {
-    position: fixed;
-    right: 0;
-    width: 90vh;
-    z-index: 0;
+    width: 40vw;
+    height: 45vw;
+    position: sticky;
     overflow: hidden;
 }
 
@@ -62,26 +61,93 @@
     color: white;
 }
 
+.public-games-section {
+    padding: 0 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.section-header h2 {
+    font-size: 2.5rem;
+    color: #343434;
+    margin: 0 0 1rem 0;
+}
+
+.section-header p {
+    font-size: 1.1rem;
+    color: #666;
+    margin: 0;
+}
+
+/* Updated games grid to show 2 cards per row */
+.games-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+    /* Reduced from 30px */
+    margin-top: 2rem;
+}
+
+.loading-games,
+.error-message,
+.no-games-message {
+    text-align: center;
+    padding: 40px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 20px 0;
+    grid-column: 1 / -1;
+    /* Make these messages span all columns */
+}
+
+.error-message {
+    color: #dc3545;
+}
+
+.no-games-message {
+    color: #666;
+}
+
+.no-games-message p {
+    margin-bottom: 1.5rem;
+}
+
 /* Media Queries */
+@media (max-width: 1200px) {
+    .hero-main {
+        font-size: 3rem;
+        white-space: normal;
+    }
+}
+
+@media (max-width: 992px) {
+    .games-grid {
+        grid-template-columns: 1fr;
+        /* Single column on medium screens */
+    }
+}
+
 @media (max-width: 768px) {
-    .hero {
-        flex-direction: column;
-        height: auto;
-    }
 
-    .hero-text {
-        max-width: 100%;
-    }
-
-    .hero-img {
-        display: none;
+    .hero,
+    .public-games-section {
+        padding: 40px 20px;
     }
 
     .hero-main {
-        font-size: 5vh;
+        font-size: 2.5rem;
     }
 
     .hero-secondary {
-        font-size: 2vh;
+        font-size: 1.1rem;
+    }
+
+    .section-header h2 {
+        font-size: 2rem;
     }
 }
